@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be8 · Market Intelligence Platform</title>
+<meta name="description" content="Torre de Inteligência Estratégica Be8 — Câmbio, Commodities, Biodiesel, Comex, Grãos">
+
+<!-- Tipografia executiva: Fraunces (display editorial) + Inter Tight (UI técnico) + JetBrains Mono (dados) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* Be8 — extraído da identidade visual oficial */
+  --be8-deep:      #081f2e;   /* azul-marinho profundo, base institucional */
+  --be8-deep-2:    #0a2638;
+  --be8-deep-3:    #0e3047;
+  --be8-night:     #050f17;
+  --be8-green-1:   #0eb194;   /* verde-água energia */
+  --be8-green-2:   #55c94f;   /* verde-folha vivacidade */
+  --be8-gold:      #d4a84b;   /* alerta premium */
+  --be8-red:       #e85f5f;   /* queda */
+  --be8-ice:       #e8f1f5;   /* texto principal sobre dark */
+  --be8-mist:      #a8bdc9;   /* texto secundário */
+  --be8-dim:       #5e7382;   /* texto auxiliar */
+  --be8-border:    rgba(168, 189, 201, 0.10);
+  --be8-border-2:  rgba(168, 189, 201, 0.18);
+  --be8-glass:     rgba(8, 31, 46, 0.6);
+
+  --grad-energy:   linear-gradient(135deg, #0eb194 0%, #55c94f 100%);
+  --grad-deep:     linear-gradient(180deg, #081f2e 0%, #050f17 100%);
+  --grad-card:     linear-gradient(155deg, rgba(14,177,148,0.04) 0%, rgba(8,31,46,0) 50%);
+
+  --font-display:  'Fraunces', Georgia, serif;
+  --font-ui:       'Inter Tight', system-ui, -apple-system, sans-serif;
+  --font-mono:     'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--be8-night);
+  color: var(--be8-ice);
+  font-family: var(--font-ui);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.005em;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Atmosfera de fundo — grid sutil + luz verde */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14,177,148,0.10), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(85,201,79,0.06), transparent 50%),
+    linear-gradient(180deg, #081f2e 0%, #050f17 100%);
+  z-index: -2;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(168,189,201,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168,189,201,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index: -1;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+/* ==================================================================
+   HEADER — Bloomberg-style ticker + identidade
+   ================================================================== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(5, 15, 23, 0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid var(--be8-border-2);
+}
+
+.topbar-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px;
+  gap: 32px;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 14px;
+}
+.brand-logo {
+  height: 36px; width: auto;
+  filter: drop-shadow(0 0 12px rgba(14,177,148,0.15));
+}
+.brand-divider {
+  width: 1px; height: 28px; background: var(--be8-border-2);
+}
+.brand-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--be8-mist);
+}
+.brand-title strong {
+  font-weight: 600;
+  color: var(--be8-ice);
+  letter-spacing: 0.18em;
+}
+
+.session-meta {
+  display: flex; align-items: center; gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--be8-mist);
+  letter-spacing: 0.05em;
+}
+.session-meta span { display: flex; align-items: center; gap: 8px; }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--be8-green-2);
+  box-shadow: 0 0 0 0 rgba(85,201,79,0.6);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(85,201,79,0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(85,201,79,0); }
+  100% { box-shadow: 0 0 0 0 rgba(85,201,79,0); }
+}
+
+/* Ticker rolante */
+.ticker-strip {
+  border-top: 1px solid var(--be8-border);
+  border-bottom: 1px solid var(--be8-border);
+  background: rgba(8, 31, 46, 0.5);
+  overflow: hidden;
+  position: relative;
+}
+.ticker-strip::before,
+.ticker-strip::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 80px;
+  z-index: 2; pointer-events: none;
+}
+.ticker-strip::before { left: 0; background: linear-gradient(90deg, var(--be8-night), transparent); }
+.ticker-strip::after { right: 0; background: linear-gradient(-90deg, var(--be8-night), transparent); }
+
+.ticker-track {
+  display: inline-flex; gap: 48px; padding: 11px 0;
+  animation: ticker-scroll 90s linear infinite;
+  white-space: nowrap;
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 11.5px;
+  letter-spacing: 0.02em;
+}
+.ticker-item .label {
+  color: var(--be8-mist); font-weight: 500;
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em;
+}
+.ticker-item .value { color: var(--be8-ice); font-weight: 600; }
+.ticker-item .delta { font-weight: 500; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; }
+.delta.up   { color: #6ddc6a; background: rgba(85,201,79,0.10); }
+.delta.down { color: #ff8585; background: rgba(232,95,95,0.10); }
+.delta.flat { color: var(--be8-mist); background: rgba(168,189,201,0.08); }
+.delta.pending { color: var(--be8-gold); background: rgba(212,168,75,0.10); }
+
+/* ==================================================================
+   NAVIGATION TABS
+   ================================================================== */
+.nav-tabs {
+  display: flex; gap: 4px;
+  padding: 0 32px;
+  background: rgba(5, 15, 23, 0.6);
+  border-bottom: 1px solid var(--be8-border);
+}
+.nav-tab {
+  padding: 14px 18px;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--be8-dim);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-tab:hover { color: var(--be8-mist); }
+.nav-tab.active {
+  color: var(--be8-ice);
+  border-bottom-color: var(--be8-green-1);
+}
+.nav-tab .tab-num {
+  font-family: var(--font-mono);
+  font-size: 10px; opacity: 0.5;
+}
+
+/* ==================================================================
+   MAIN LAYOUT
+   ================================================================== */
+main {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.page { display: none; animation: page-in 0.5s cubic-bezier(.2,.7,.2,1); }
+.page.active { display: block; }
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* PAGE HEADER */
+.page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--be8-border);
+}
+.page-title-block .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--be8-green-1);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+}
+.page-title-block h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--be8-ice);
+}
+.page-title-block h1 em {
+  font-style: italic;
+  background: var(--grad-energy);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 300;
+}
+.page-title-block .subtitle {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--be8-mist);
+  max-width: 540px;
+  line-height: 1.5;
+}
+
+.page-actions {
+  display: flex; gap: 8px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--be8-border-2);
+  background: rgba(8,31,46,0.4);
+  border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  color: var(--be8-mist);
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  border-color: var(--be8-green-1);
+  color: var(--be8-ice);
+  background: rgba(14,177,148,0.06);
+}
+.btn-primary {
+  background: var(--grad-energy);
+  border-color: transparent;
+  color: var(--be8-night);
+  font-weight: 600;
+}
+.btn-primary:hover {
+  color: var(--be8-night);
+  filter: brightness(1.1);
+}
+
+/* ==================================================================
+   GRID & CARDS — KPI level
+   ================================================================== */
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-12 { grid-template-columns: repeat(12, 1fr); }
+@media (max-width: 1200px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-12 { grid-template-columns: repeat(6, 1fr); }
+}
+@media (max-width: 720px) {
+  .grid-4, .grid-3, .grid-2, .grid-12 { grid-template-columns: 1fr; }
+  main { padding: 16px; }
+  .topbar-row { padding: 12px 16px; }
+  .nav-tabs { padding: 0 16px; overflow-x: auto; }
+}
+
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+.col-span-6 { grid-column: span 6; }
+.col-span-8 { grid-column: span 8; }
+.col-span-12 { grid-column: span 12; }
+
+.card {
+  position: relative;
+  background:
+    linear-gradient(155deg, rgba(14,177,148,0.025) 0%, rgba(8,31,46,0) 50%),
+    rgba(8, 31, 46, 0.55);
+  border: 1px solid var(--be8-border-2);
+  border-radius: 10px;
+  padding: 20px 22px;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+}
+.card:hover {
+  border-color: rgba(14,177,148,0.30);
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(14,177,148,0.4), transparent);
+  opacity: 0.6;
+}
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--be8-mist);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-label .ic {
+  width: 14px; height: 14px;
+  stroke: var(--be8-green-1);
+  stroke-width: 2;
+  fill: none;
+}
+.card-meta {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--be8-dim);
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--be8-ice);
+  font-variant-numeric: tabular-nums;
+}
+.kpi-value .unit {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--be8-mist);
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+
+.kpi-delta-row {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.kpi-delta {
+  padding: 2px 7px; border-radius: 3px;
+  font-weight: 600;
+}
+.kpi-context {
+  color: var(--be8-dim);
+  font-size: 10.5px;
+}
+
+/* Sparkline mini chart inside card */
+.card-spark {
+  margin-top: 14px;
+  height: 44px;
+  width: 100%;
+}
+.card-spark svg { width: 100%; height: 100%; overflow: visible; }
+
+/* Status badge for sources */
+.src-status {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.src-status::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+}
+.src-live::before    { background: #6ddc6a; box-shadow: 0 0 6px #6ddc6a; }
+.src-live    { color: #6ddc6a; background: rgba(85,201,79,0.08); }
+.src-cached::before  { background: var(--be8-gold); }
+.src-cached  { color: var(--be8-gold); background: rgba(212,168,75,0.08); }
+.src-pending::before { background: var(--be8-dim); }
+.src-pending { color: var(--be8-mist); background: rgba(168,189,201,0.06); }
+.src-error::before   { background: #ff8585; }
+.src-error   { color: #ff8585; background: rgba(232,95,95,0.08); }
+
+/* Section title */
+.section-title {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: 32px 0 16px;
+}
+.section-title h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--be8-ice);
+}
+.section-title .num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--be8-green-1);
+  letter-spacing: 0.1em;
+}
+.section-title .line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--be8-border-2), transparent);
+}
+
+/* Insight banner — Radar IA */
+.insight-banner {
+  display: flex; gap: 18px;
+  padding: 18px 22px;
+  background:
+    linear-gradient(135deg, rgba(14,177,148,0.10) 0%, rgba(8,31,46,0.4) 60%);
+  border: 1px solid rgba(14,177,148,0.25);
+  border-left: 3px solid var(--be8-green-1);
+  border-radius: 8px;
+}
+.insight-banner .ic-radar {
+  flex-shrink: 0; width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(14,177,148,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.insight-content .insight-tag {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--be8-green-1);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.insight-content .insight-text {
+  font-size: 14px; line-height: 1.5;
+  color: var(--be8-ice);
+}
+
+/* Insights list (multiple) */
+.insights-list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.insight-row {
+  display: flex; gap: 14px;
+  padding: 14px 16px;
+  background: rgba(8,31,46,0.35);
+  border: 1px solid var(--be8-border);
+  border-left: 2px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--be8-ice);
+}
+.insight-row.bull { border-left-color: var(--be8-green-2); }
+.insight-row.bear { border-left-color: var(--be8-red); }
+.insight-row.alert { border-left-color: var(--be8-gold); }
+.insight-row.neutral { border-left-color: var(--be8-dim); }
+.insight-row .ic-pill {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  height: fit-content;
+  margin-top: 1px;
+}
+.bull .ic-pill { background: rgba(85,201,79,0.12); color: #6ddc6a; }
+.bear .ic-pill { background: rgba(232,95,95,0.12); color: #ff8585; }
+.alert .ic-pill { background: rgba(212,168,75,0.12); color: var(--be8-gold); }
+.neutral .ic-pill { background: rgba(168,189,201,0.10); color: var(--be8-mist); }
+
+/* ==================================================================
+   TABLES
+   ================================================================== */
+table.data {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+table.data thead th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--be8-mist);
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--be8-border-2);
+  background: rgba(8,31,46,0.5);
+}
+table.data td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--be8-border);
+  color: var(--be8-ice);
+  font-variant-numeric: tabular-nums;
+}
+table.data tbody tr:hover {
+  background: rgba(14,177,148,0.03);
+}
+table.data td.num { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+table.data td.rank {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--be8-dim);
+  width: 38px;
+}
+
+/* Skeleton loader */
+.skel {
+  display: inline-block;
+  background: linear-gradient(90deg, rgba(168,189,201,0.04), rgba(168,189,201,0.10), rgba(168,189,201,0.04));
+  background-size: 200% 100%;
+  animation: skel 1.4s ease-in-out infinite;
+  border-radius: 3px;
+  color: transparent;
+}
+@keyframes skel {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty / error state */
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--be8-mist);
+  font-size: 13px;
+  border: 1px dashed var(--be8-border-2);
+  border-radius: 8px;
+}
+.empty-state .ic { font-size: 28px; opacity: 0.4; margin-bottom: 10px; }
+.empty-state .src-note {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--be8-dim);
+  letter-spacing: 0.06em;
+}
+
+/* Map of Brazil container */
+.brazil-map {
+  width: 100%; max-width: 480px;
+  margin: 0 auto;
+}
+.brazil-map svg { width: 100%; height: auto; display: block; }
+.uf-shape {
+  fill: rgba(14,177,148,0.08);
+  stroke: rgba(168,189,201,0.4);
+  stroke-width: 0.6;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+  cursor: pointer;
+}
+.uf-shape:hover {
+  fill: rgba(14,177,148,0.35);
+  stroke: var(--be8-green-2);
+}
+
+/* Chart container */
+.chart-area {
+  width: 100%; height: 280px;
+  margin-top: 12px;
+}
+.chart-area svg { width: 100%; height: 100%; overflow: visible; }
+
+/* Footer */
+footer {
+  margin-top: 60px;
+  padding: 32px;
+  border-top: 1px solid var(--be8-border);
+  font-size: 11px;
+  color: var(--be8-dim);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+footer a { color: var(--be8-mist); }
+footer a:hover { color: var(--be8-green-1); }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(168,189,201,0.15); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(168,189,201,0.3); }
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<header class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <img src="logo-be8.svg" alt="Be8" class="brand-logo">
+      <div class="brand-divider"></div>
+      <div class="brand-title">Market <strong>Intelligence</strong> Platform</div>
+    </div>
+    <div class="session-meta">
+      <span><span class="live-dot"></span> Sessão ao vivo</span>
+      <span id="session-date">—</span>
+      <span id="session-time">—</span>
+    </div>
+  </div>
+
+  <!-- Ticker rolante -->
+  <div class="ticker-strip">
+    <div class="ticker-track" id="ticker-track">
+      <!-- Preenchido por JS -->
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav-tabs" id="nav-tabs">
+    <button class="nav-tab active" data-page="executive"><span class="tab-num">01</span> Visão Executiva</button>
+    <button class="nav-tab" data-page="cambio-commodities"><span class="tab-num">02</span> Câmbio & Commodities</button>
+    <button class="nav-tab" data-page="graos"><span class="tab-num">03</span> Grãos & Safra</button>
+    <button class="nav-tab" data-page="biodiesel"><span class="tab-num">04</span> Biodiesel & Market Share</button>
+    <button class="nav-tab" data-page="combustiveis"><span class="tab-num">05</span> Combustíveis ANP</button>
+    <button class="nav-tab" data-page="comex"><span class="tab-num">06</span> Comércio Exterior</button>
+    <button class="nav-tab" data-page="radar"><span class="tab-num">07</span> Radar IA</button>
+    <button class="nav-tab" data-page="governanca"><span class="tab-num">08</span> Governança</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================================================
+     PÁGINA 1 — VISÃO EXECUTIVA
+     ============================================================ -->
+<section class="page active" id="page-executive">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">01 · Cockpit Estratégico</div>
+      <h1>Visão <em>Executiva</em></h1>
+      <div class="subtitle">Cockpit consolidado com os indicadores macro que afetam diretamente a competitividade e a tomada de decisão da Be8 — câmbio, commodities, grãos, biodiesel.</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn" id="refresh-all">↻ Atualizar dados</button>
+      <button class="btn btn-primary" id="export-snapshot">↓ Snapshot PDF</button>
+    </div>
+  </div>
+
+  <!-- KPI macro principais -->
+  <div class="grid grid-4">
+    <div class="card" id="kpi-usd">
+      <div class="card-header">
+        <div class="card-label">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Dólar PTAX
+        </div>
+        <span class="src-status src-live" id="status-usd">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="usd-value">R$ 0,0000</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="usd-delta">—</span>
+        <span class="kpi-context" id="usd-context">vs. ontem · BCB</span>
+      </div>
+      <div class="card-spark" id="usd-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-eur">
+      <div class="card-header">
+        <div class="card-label">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M18 7c-1.5-1.5-3.5-2.5-6-2.5C7 4.5 3 8.5 3 13.5S7 22.5 12 22.5c2.5 0 4.5-1 6-2.5M3 10h11M3 14h11"/></svg>
+          Euro PTAX
+        </div>
+        <span class="src-status src-live" id="status-eur">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="eur-value">R$ 0,0000</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="eur-delta">—</span>
+        <span class="kpi-context">vs. ontem · BCB</span>
+      </div>
+      <div class="card-spark" id="eur-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-brent">
+      <div class="card-header">
+        <div class="card-label">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12 2C8 8 5 12 5 16a7 7 0 0014 0c0-4-3-8-7-14z"/></svg>
+          Petróleo Brent
+        </div>
+        <span class="src-status src-live" id="status-brent">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="brent-value">$ 0,00</span><span class="unit">/bbl</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="brent-delta">—</span>
+        <span class="kpi-context">ICE · Yahoo Finance</span>
+      </div>
+      <div class="card-spark" id="brent-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-soja">
+      <div class="card-header">
+        <div class="card-label">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12 22V12M12 12C8 12 5 9 5 5c4 0 7 3 7 7zM12 12c4 0 7-3 7-7-4 0-7 3-7 7z"/></svg>
+          Soja CBOT
+        </div>
+        <span class="src-status src-live" id="status-soja">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="soja-value">¢ 0,00</span><span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="soja-delta">—</span>
+        <span class="kpi-context">Chicago · Yahoo</span>
+      </div>
+      <div class="card-spark" id="soja-spark"></div>
+    </div>
+  </div>
+
+  <!-- KPI secundários -->
+  <div class="grid grid-4" style="margin-top: 16px;">
+    <div class="card" id="kpi-milho">
+      <div class="card-header">
+        <div class="card-label">Milho CBOT</div>
+        <span class="src-status src-live">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="milho-value">¢ 0,00</span><span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="milho-delta">—</span>
+        <span class="kpi-context">Chicago futures</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Trigo CBOT</div>
+        <span class="src-status src-live">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="trigo-value">¢ 0,00</span><span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="trigo-delta">—</span>
+        <span class="kpi-context">Chicago futures</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Óleo de Soja CBOT</div>
+        <span class="src-status src-live">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="oleo-value">¢ 0,00</span><span class="unit">/lb</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="oleo-delta">—</span>
+        <span class="kpi-context">Insumo-chave biodiesel</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">WTI Crude</div>
+        <span class="src-status src-live">Live</span>
+      </div>
+      <div class="kpi-value"><span class="skel" id="wti-value">$ 0,00</span><span class="unit">/bbl</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="wti-delta">—</span>
+        <span class="kpi-context">NYMEX futures</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Radar IA topo -->
+  <div class="section-title">
+    <span class="num">// 01.A</span>
+    <h2>Radar de Inteligência — leitura automática do mercado</h2>
+    <div class="line"></div>
+  </div>
+  <div class="insights-list" id="insights-list">
+    <div class="insight-row neutral">
+      <span class="ic-pill">CARREGANDO</span>
+      <div>Aguardando consolidação dos dados ao vivo para gerar leitura de mercado…</div>
+    </div>
+  </div>
+
+  <!-- Layout duplo: tendências + alertas -->
+  <div class="grid grid-12" style="margin-top: 28px;">
+    <div class="card col-span-8">
+      <div class="card-header">
+        <div class="card-label">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+          Tendência 30d · USD/BRL × Brent × Soja (normalizado base 100)
+        </div>
+        <span class="card-meta">D-30 → D-0</span>
+      </div>
+      <div class="chart-area" id="trend-chart"></div>
+    </div>
+
+    <div class="card col-span-4">
+      <div class="card-header">
+        <div class="card-label">Alertas Críticos</div>
+        <span class="card-meta" id="alerts-count">0 ativos</span>
+      </div>
+      <div id="alerts-feed" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="empty-state" style="padding: 20px;">
+          <div class="ic">◔</div>
+          Aguardando dados…
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 2 — CÂMBIO & COMMODITIES
+     ============================================================ -->
+<section class="page" id="page-cambio-commodities">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">02 · Macro & Insumos</div>
+      <h1>Câmbio & <em>Commodities</em></h1>
+      <div class="subtitle">Monitoramento contínuo das variáveis macro que precificam o custo da matéria-prima do biodiesel e definem a competitividade nas exportações.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-12">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">USD/BRL — série 90 dias</div>
+        <span class="card-meta" id="usd-90-meta">BCB PTAX</span>
+      </div>
+      <div class="chart-area" id="usd-90-chart"></div>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Brent — série 90 dias</div>
+        <span class="card-meta">Yahoo Finance</span>
+      </div>
+      <div class="chart-area" id="brent-90-chart"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 02.A</span>
+    <h2>Painel de commodities — preços e variações</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card">
+    <table class="data" id="commodities-table">
+      <thead>
+        <tr>
+          <th>Ativo</th>
+          <th>Mercado</th>
+          <th class="num">Último</th>
+          <th class="num">D-1</th>
+          <th class="num">Var %</th>
+          <th class="num">7d</th>
+          <th class="num">30d</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="commodities-tbody">
+        <tr><td colspan="8"><span class="skel">carregando…</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 02.B</span>
+    <h2>Matriz de correlação — biodiesel implícito</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <p style="color: var(--be8-mist); font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
+      O preço do biodiesel B100 brasileiro é fortemente correlacionado a três variáveis macro: <strong style="color:var(--be8-ice)">óleo de soja CBOT</strong> (insumo principal, ~80% do custo), <strong style="color:var(--be8-ice)">USD/BRL</strong> (paridade de importação/exportação) e <strong style="color:var(--be8-ice)">petróleo Brent</strong> (benchmark do diesel fóssil substituído). A matriz abaixo calcula a correlação dos últimos 30 pregões.
+    </p>
+    <div id="correlation-matrix"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 3 — GRÃOS & SAFRA
+     ============================================================ -->
+<section class="page" id="page-graos">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">03 · Originação · Matéria-prima</div>
+      <h1>Grãos & <em>Safra</em> Brasileira</h1>
+      <div class="subtitle">Soja, milho e trigo — estimativa de produção, área plantada, produtividade. Insumo crítico para originação e formação de custo do biodiesel.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Soja · Safra 2025/26</div>
+        <span class="src-status src-cached" title="Atualização mensal CONAB">Mensal · CONAB</span>
+      </div>
+      <div class="kpi-value" id="soja-safra-prod">—<span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="soja-safra-delta">—</span>
+        <span class="kpi-context">vs. safra anterior</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Estimativa baseada no último Boletim Conab disponível. Atualização mensal via Power Query.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Milho · Safra 2025/26 (total)</div>
+        <span class="src-status src-cached">Mensal · CONAB</span>
+      </div>
+      <div class="kpi-value" id="milho-safra-prod">—<span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="milho-safra-delta">—</span>
+        <span class="kpi-context">soma 1ª + 2ª + 3ª safras</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Insumo crítico para etanol de milho e potencial concorrente energético do biodiesel de soja.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Trigo · Safra 2025/26</div>
+        <span class="src-status src-cached">Mensal · CONAB</span>
+      </div>
+      <div class="kpi-value" id="trigo-safra-prod">—<span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="trigo-safra-delta">—</span>
+        <span class="kpi-context">RS + PR principais</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Brasil ainda importador líquido — déficit estrutural ~3 Mt/ano.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 03.A</span>
+    <h2>Brasil — produção por UF (safra de soja, fonte: CONAB)</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-12">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Top UFs produtoras de soja</div>
+        <span class="card-meta">Mt · safra 2024/25</span>
+      </div>
+      <table class="data" id="soja-uf-table">
+        <thead>
+          <tr><th class="rank">#</th><th>UF</th><th class="num">Produção (Mt)</th><th class="num">Share %</th><th class="num">Área (Mha)</th></tr>
+        </thead>
+        <tbody id="soja-uf-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Composição regional · soja</div>
+        <span class="card-meta">CONAB</span>
+      </div>
+      <div class="chart-area" id="soja-uf-chart"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 03.B</span>
+    <h2>Cotações nacionais — indicadores de referência</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <table class="data">
+      <thead>
+        <tr><th>Indicador</th><th>Praça</th><th class="num">Última cotação</th><th>Fonte</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Soja em grão</td>
+          <td>Paranaguá (PR)</td>
+          <td class="num">CEPEA/ESALQ</td>
+          <td>cepea.org.br · widget oficial</td>
+          <td><span class="src-status src-pending">Integração pendente</span></td>
+        </tr>
+        <tr>
+          <td>Milho em grão</td>
+          <td>Campinas (SP)</td>
+          <td class="num">CEPEA/ESALQ</td>
+          <td>cepea.org.br · widget oficial</td>
+          <td><span class="src-status src-pending">Integração pendente</span></td>
+        </tr>
+        <tr>
+          <td>Trigo em grão</td>
+          <td>RS / PR</td>
+          <td class="num">CEPEA/ESALQ</td>
+          <td>cepea.org.br · widget oficial</td>
+          <td><span class="src-status src-pending">Integração pendente</span></td>
+        </tr>
+        <tr>
+          <td>Farelo de soja</td>
+          <td>Paranaguá</td>
+          <td class="num">CEPEA</td>
+          <td>cepea.org.br</td>
+          <td><span class="src-status src-pending">Integração pendente</span></td>
+        </tr>
+        <tr>
+          <td>Óleo de soja</td>
+          <td>SP</td>
+          <td class="num">CEPEA</td>
+          <td>cepea.org.br</td>
+          <td><span class="src-status src-pending">Integração pendente</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top: 16px; padding: 14px; background: rgba(212,168,75,0.06); border-left: 2px solid var(--be8-gold); border-radius: 4px; font-size: 12px; color: var(--be8-mist); line-height: 1.6;">
+      <strong style="color: var(--be8-gold);">Nota técnica:</strong> O CEPEA/ESALQ disponibiliza os indicadores de referência do mercado brasileiro através de widget HTML institucional, mas <strong>não possui API REST pública gratuita</strong>. A integração definitiva requer (a) embed do widget oficial via iframe, (b) scraping autorizado com cache diário ou (c) contrato comercial com Cepea. Para o pipeline Power BI da Be8, recomenda-se o caminho (b) com Power Automate executando download da página `cepea.org.br/br/indicador/*.aspx` 1x/dia.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 4 — BIODIESEL & MARKET SHARE
+     ============================================================ -->
+<section class="page" id="page-biodiesel">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">04 · Core Business Be8</div>
+      <h1>Biodiesel · <em>Market Share</em> & Benchmark</h1>
+      <div class="subtitle">Produção nacional de B100, capacidade instalada, participação dos principais produtores, posicionamento estratégico da Be8 no mercado brasileiro.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Produção B100 · Brasil</div>
+        <span class="src-status src-cached">Mensal · ANP</span>
+      </div>
+      <div class="kpi-value" id="b100-prod-total">—<span class="unit">m³/mês</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">Volume mensal nacional</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Capacidade Instalada</div>
+        <span class="src-status src-cached">Anuário ANP</span>
+      </div>
+      <div class="kpi-value" id="b100-cap-total">—<span class="unit">m³/ano</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">Taxa de utilização: <span id="b100-util">—</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Mistura Vigente</div>
+        <span class="src-status src-live">Regulatório</span>
+      </div>
+      <div class="kpi-value" id="b100-mistura">B15</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta up">Lei 14.993/24</span>
+        <span class="kpi-context">+1 p.p./ano até B20 em 2030</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Demanda projetada B100 2026</div>
+        <span class="src-status src-pending">EPE/ANP</span>
+      </div>
+      <div class="kpi-value" id="b100-demanda">~10,5<span class="unit">bi L</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta up">+7,1%</span>
+        <span class="kpi-context">vs. 2025 · projeção EPE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 04.A</span>
+    <h2>Ranking de produtores — Market Share</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="grid grid-12">
+    <div class="card col-span-7">
+      <div class="card-header">
+        <div class="card-label">Principais produtores B100 — share estimado</div>
+        <span class="card-meta">Última consolidação ANP</span>
+      </div>
+      <table class="data" id="biodiesel-rank-table">
+        <thead>
+          <tr><th class="rank">#</th><th>Produtor</th><th>UF / Planta</th><th class="num">Cap. (m³/ano)</th><th class="num">Share %</th></tr>
+        </thead>
+        <tbody id="biodiesel-rank-tbody"></tbody>
+      </table>
+      <div style="margin-top: 14px; font-size: 11px; color: var(--be8-dim); line-height: 1.5; font-family: var(--font-mono); letter-spacing: 0.02em;">
+        ATENÇÃO · ESTRUTURA AGUARDANDO INGESTÃO. Valores reais carregados via Power Query a partir do Anuário Estatístico ANP + planilha mensal de produção B100 por produtor (`gov.br/anp/dados-estatisticos`). Tabela exibe placeholders até primeiro refresh.
+      </div>
+    </div>
+    <div class="card col-span-5">
+      <div class="card-header">
+        <div class="card-label">Be8 no contexto nacional</div>
+      </div>
+      <div id="be8-context-viz" style="padding: 20px 0;"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 04.B</span>
+    <h2>Composição de matérias-primas — B100 Brasil</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="materias-primas-viz" style="padding: 12px 0;"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 5 — COMBUSTÍVEIS ANP
+     ============================================================ -->
+<section class="page" id="page-combustiveis">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">05 · Preços de revenda</div>
+      <h1>Combustíveis · <em>ANP</em></h1>
+      <div class="subtitle">Levantamento semanal de preços nas bombas — Diesel S10, Diesel S500, Gasolina, Etanol, GLP, GNV por UF e região.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel S10 médio · Brasil</div>
+        <span class="src-status src-pending">Pipeline pendente</span>
+      </div>
+      <div class="kpi-value">R$ —<span class="unit">/L</span></div>
+      <div class="kpi-context" style="margin-top: 8px; font-size: 11px;">Aguardando ingestão CSV ANP semanal</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel S500 médio · Brasil</div>
+        <span class="src-status src-pending">Pipeline pendente</span>
+      </div>
+      <div class="kpi-value">R$ —<span class="unit">/L</span></div>
+      <div class="kpi-context" style="margin-top: 8px; font-size: 11px;">Aguardando ingestão CSV ANP semanal</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Gasolina média</div>
+        <span class="src-status src-pending">Pipeline pendente</span>
+      </div>
+      <div class="kpi-value">R$ —<span class="unit">/L</span></div>
+      <div class="kpi-context" style="margin-top: 8px; font-size: 11px;">Aguardando ingestão CSV ANP semanal</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Etanol hidratado</div>
+        <span class="src-status src-pending">Pipeline pendente</span>
+      </div>
+      <div class="kpi-value">R$ —<span class="unit">/L</span></div>
+      <div class="kpi-context" style="margin-top: 8px; font-size: 11px;">Aguardando ingestão CSV ANP semanal</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;" class="card">
+    <div class="card-header">
+      <div class="card-label">⚙ Como integrar esta página ao Power BI</div>
+    </div>
+    <div style="font-size: 13px; color: var(--be8-mist); line-height: 1.7;">
+      <p>A ANP disponibiliza o levantamento semanal de preços em CSV na URL:</p>
+      <pre style="font-family: var(--font-mono); background: rgba(8,31,46,0.6); border: 1px solid var(--be8-border-2); padding: 12px 16px; border-radius: 6px; margin: 12px 0; overflow-x: auto; font-size: 11.5px; color: var(--be8-green-1);">https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis</pre>
+      <p style="margin-top: 12px;">Pipeline recomendado (Power Query M):</p>
+      <ol style="margin: 12px 0 12px 20px; line-height: 1.8;">
+        <li>Web.Contents na URL do CSV mais recente (publicado toda 6ª-feira)</li>
+        <li>Csv.Document com encoding 1252 (Windows-1252)</li>
+        <li>Promote first row as headers, transformar `Data da Coleta` para Date</li>
+        <li>Renomear `Preço de Revenda` → `preco_venda`</li>
+        <li>Carregar como `fato_combustivel_anp` no modelo estrela</li>
+        <li>Configurar refresh diário no Power BI Service</li>
+      </ol>
+      <p>Após carregado, esta página exibirá automaticamente os valores reais consumindo o mesmo dataset via API REST do Power BI (`api.powerbi.com/v1.0/myorg/datasets/{id}/executeQueries`).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 6 — COMÉRCIO EXTERIOR (ComexStat)
+     ============================================================ -->
+<section class="page" id="page-comex">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">06 · Exportação · Importação</div>
+      <h1>Comércio <em>Exterior</em></h1>
+      <div class="subtitle">Fluxos de biodiesel, óleo de soja, farelo, metanol e diesel — via API oficial ComexStat/MDIC.</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn" id="comex-refresh">↻ Buscar ComexStat</button>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel importado · YTD</div>
+        <span class="src-status src-live" id="comex-status-1">API oficial</span>
+      </div>
+      <div class="kpi-value" id="comex-diesel-vol"><span class="skel">—</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">US$ FOB · acumulado ano</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Óleo soja exportado · YTD</div>
+        <span class="src-status src-live">API oficial</span>
+      </div>
+      <div class="kpi-value" id="comex-oleo-vol"><span class="skel">—</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">toneladas</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Biodiesel exportado · YTD</div>
+        <span class="src-status src-live">API oficial</span>
+      </div>
+      <div class="kpi-value" id="comex-biodiesel-vol"><span class="skel">—</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">historicamente baixo</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-header">
+      <div class="card-label">NCMs monitorados</div>
+    </div>
+    <table class="data">
+      <thead>
+        <tr><th>NCM</th><th>Descrição</th><th>Fluxo</th><th>Relevância para Be8</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2710.19.21</code></td><td>Óleo diesel</td><td>Importação</td><td>Substituto fóssil — pressão de demanda</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">3826.00.00</code></td><td>Biodiesel B100 e suas misturas</td><td>Export/Import</td><td>Mercado externo direto Be8</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1507.10.00</code></td><td>Óleo de soja em bruto</td><td>Exportação</td><td>Concorrência por matéria-prima</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1507.90.11</code></td><td>Óleo de soja refinado</td><td>Exportação</td><td>Insumo / concorrência</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2304.00.10</code></td><td>Farelo de soja</td><td>Exportação</td><td>Co-produto esmagamento</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2905.11.00</code></td><td>Metanol</td><td>Importação</td><td>Insumo crítico transesterificação</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1201.90.00</code></td><td>Soja em grão</td><td>Exportação</td><td>Disponibilidade matéria-prima</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 7 — RADAR IA
+     ============================================================ -->
+<section class="page" id="page-radar">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">07 · Decision Intelligence</div>
+      <h1>Radar Executivo <em>IA</em></h1>
+      <div class="subtitle">Síntese automatizada do estado de mercado — leitura cruzada de câmbio, commodities e regulatório para apoio à decisão executiva.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner" style="margin-bottom: 20px;">
+    <div class="ic-radar">◉</div>
+    <div class="insight-content">
+      <div class="insight-tag">Síntese executiva · gerada automaticamente</div>
+      <div class="insight-text" id="radar-summary">Aguardando consolidação dos indicadores ao vivo para gerar a síntese de mercado…</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">↑ Drivers positivos · Oportunidades</div>
+      </div>
+      <div id="radar-bull" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">↓ Drivers negativos · Riscos</div>
+      </div>
+      <div id="radar-bear" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 07.A</span>
+    <h2>Regras de inteligência aplicadas</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <p style="color: var(--be8-mist); font-size: 13px; line-height: 1.6; margin-bottom: 14px;">
+      O Radar IA aplica regras de inferência sobre os indicadores ao vivo para produzir leituras de mercado. As regras são determinísticas (não-ML), auditáveis e podem ser estendidas com modelos preditivos numa fase 2.
+    </p>
+    <table class="data">
+      <thead>
+        <tr><th>Regra</th><th>Condição</th><th>Inferência gerada</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pressão sobre biodiesel</td><td>Óleo soja CBOT ↑ E Brent ↑</td><td>Pressão de alta sobre B100 — repasse provável</td></tr>
+        <tr><td>Competitividade exportação</td><td>USD/BRL ↑ (Real desvaloriza)</td><td>Janela favorável a exportação de óleo/farelo</td></tr>
+        <tr><td>Spread biodiesel × diesel</td><td>Brent ↓ E Óleo soja ↑</td><td>Compressão de margem — atenção pricing</td></tr>
+        <tr><td>Concorrência matéria-prima</td><td>Óleo soja CBOT > média 30d + 2σ</td><td>Risco originação — disputa com exportação</td></tr>
+        <tr><td>Demanda projetada</td><td>Mistura B15 + crescimento diesel</td><td>Demanda B100 estrutural crescente</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÁGINA 8 — GOVERNANÇA DAS FONTES
+     ============================================================ -->
+<section class="page" id="page-governanca">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">08 · Data Lineage</div>
+      <h1>Governança das <em>Fontes</em></h1>
+      <div class="subtitle">Auditoria transparente: o que está ao vivo, o que está cacheado, o que está aguardando integração — e como fazer.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="data" id="governance-table">
+      <thead>
+        <tr>
+          <th>Fonte</th>
+          <th>Tipo</th>
+          <th>Atualização</th>
+          <th>Custo</th>
+          <th>Endpoint / Origem</th>
+          <th>Status</th>
+          <th>Último fetch</th>
+        </tr>
+      </thead>
+      <tbody id="governance-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 08.A</span>
+    <h2>Plano de integração — roadmap</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-green-2);">✓ FASE 1 · Live (já neste painel)</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>BCB PTAX · câmbio</li>
+        <li>Yahoo Finance · commodities</li>
+        <li>ComexStat · API oficial MDIC</li>
+        <li>Ticker rolante consolidado</li>
+        <li>Radar IA · regras determinísticas</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-gold);">⊙ FASE 2 · Power Query diário</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>ANP · preços combustíveis</li>
+        <li>ANP · produção B100 mensal</li>
+        <li>CONAB · safras grãos</li>
+        <li>IBGE/SIDRA · área plantada</li>
+        <li>FRED + EIA · estoques globais</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-mist);">○ FASE 3 · Negociação / IA</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>CEPEA/ESALQ · contrato ou widget</li>
+        <li>SIFRECA · benchmark frete</li>
+        <li>ANTT · piso mínimo</li>
+        <li>Modelos preditivos B100 (ML)</li>
+        <li>Camada de IA generativa (GPT/Claude API)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;" class="card">
+    <div class="card-header">
+      <div class="card-label">📐 Arquitetura recomendada (Bloomberg interna Be8)</div>
+    </div>
+    <pre style="font-family: var(--font-mono); font-size: 11.5px; line-height: 1.7; color: var(--be8-ice); background: rgba(8,31,46,0.7); padding: 20px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--be8-border-2);">
+┌──────────────────────────────────────────────────────────────────┐
+│  CAMADA 1 — INGESTÃO (Power Automate · Python · Power Query)     │
+│  ├─ APIs REST (BCB, ComexStat, Yahoo, FRED, IBGE, USDA)          │
+│  ├─ CSV download agendado (ANP, MDIC bulk)                       │
+│  ├─ PDF/XLS scrapers (CONAB, ABIOVE, Petrobras)                  │
+│  └─ HTML scrapers autorizados (CEPEA widget)                     │
+│         ↓                                                        │
+│  CAMADA 2 — DATA LAKE (Azure Data Lake Gen2 ou OneDrive)         │
+│  ├─ /raw/{fonte}/{ano}/{mes}/                                    │
+│  ├─ /staged/ (parquet limpo)                                     │
+│  └─ /curated/ (modelo estrela)                                   │
+│         ↓                                                        │
+│  CAMADA 3 — SEMÂNTICA (Power BI Dataset · DAX)                   │
+│  ├─ dim_data, dim_produto, dim_uf, dim_produtor                  │
+│  ├─ fato_cambio, fato_commodities, fato_b100, fato_comex         │
+│  └─ _Medidas (Cotação Atual, Market Share, YoY, CAGR…)           │
+│         ↓                                                        │
+│  CAMADA 4 — APRESENTAÇÃO                                         │
+│  ├─ Power BI Service (relatórios operacionais)                   │
+│  ├─ Este HTML (cockpit executivo · Bloomberg Be8)                │
+│  └─ Mobile app (radar push notifications)                        │
+│         ↓                                                        │
+│  CAMADA 5 — DECISÃO                                              │
+│  ├─ Radar IA (regras + LLM via Anthropic API)                    │
+│  ├─ Alertas Slack/Email automáticos                              │
+│  └─ Snapshot PDF diretoria/conselho                              │
+└──────────────────────────────────────────────────────────────────┘</pre>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div>
+    <strong style="color: var(--be8-mist);">BE8 · MARKET INTELLIGENCE</strong> · v1.0 — atualizado em tempo real
+  </div>
+  <div>
+    Fontes oficiais: BCB · ANP · CONAB · MDIC/ComexStat · IBGE · CME · Yahoo Finance · FRED
+  </div>
+  <div id="footer-build">build —</div>
+</footer>
+
+<script>
+/* =====================================================================
+   BE8 MARKET INTELLIGENCE — engine
+   ===================================================================== */
+
+const STATE = {
+  usd: null, eur: null, brent: null, wti: null,
+  soja: null, milho: null, trigo: null, oleo: null,
+  usd90: [], brent90: [],
+  insights: [],
+  lastUpdate: null,
+};
+
+/* ---------- Utilities ---------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const fmtBRL = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 4, maximumFractionDigits: 4});
+const fmtUSD = v => v == null ? '—' : '$ ' + Number(v).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtCent = v => v == null ? '—' : '¢ ' + Number(v).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtPct = v => v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+const fmtNum = (v, d=2) => v == null ? '—' : Number(v).toLocaleString('pt-BR', {minimumFractionDigits: d, maximumFractionDigits: d});
+
+function deltaClass(pct) {
+  if (pct == null || isNaN(pct)) return 'flat';
+  if (pct > 0.05) return 'up';
+  if (pct < -0.05) return 'down';
+  return 'flat';
+}
+
+function setSessionClock() {
+  const now = new Date();
+  const opts = { day: '2-digit', month: 'short', year: 'numeric' };
+  $('#session-date').textContent = now.toLocaleDateString('pt-BR', opts).toUpperCase();
+  $('#session-time').textContent = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + ' BRT';
+  $('#footer-build').textContent = 'build · ' + now.toISOString().slice(0,16).replace('T',' ');
+}
+setSessionClock(); setInterval(setSessionClock, 60000);
+
+/* ---------- Nav ---------- */
+$$('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.nav-tab').forEach(t => t.classList.remove('active'));
+    $$('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('#page-' + tab.dataset.page).classList.add('active');
+  });
+});
+
+/* =====================================================================
+   FETCH HELPERS
+   ===================================================================== */
+
+/* BCB PTAX — câmbio oficial */
+async function fetchPTAX(moeda) {
+  // Tenta últimos 10 dias úteis (BCB não devolve fim de semana/feriado)
+  const today = new Date();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const dateStr = `${mm}-${dd}-${yyyy}`;
+    try {
+      const url = moeda === 'USD'
+        ? `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='${dateStr}'&$format=json`
+        : `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaDia(moeda=@moeda,dataCotacao=@dataCotacao)?@moeda='${moeda}'&@dataCotacao='${dateStr}'&$format=json`;
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j.value && j.value.length > 0) {
+        const last = j.value[j.value.length - 1];
+        return { compra: last.cotacaoCompra, venda: last.cotacaoVenda, data: last.dataHoraCotacao };
+      }
+    } catch (e) { /* tenta próximo dia */ }
+  }
+  return null;
+}
+
+/* BCB PTAX — período */
+async function fetchPTAXPeriodo(moeda, dias = 90) {
+  const end = new Date();
+  const start = new Date(); start.setDate(start.getDate() - dias);
+  const fmt = d => String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + '-' + d.getFullYear();
+  try {
+    const url = moeda === 'USD'
+      ? `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='${fmt(start)}'&@dataFinalCotacao='${fmt(end)}'&$format=json`
+      : `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='${moeda}'&@dataInicial='${fmt(start)}'&@dataFinalCotacao='${fmt(end)}'&$format=json`;
+    const r = await fetch(url);
+    const j = await r.json();
+    // Filtra apenas boletim de Fechamento
+    const series = (j.value || [])
+      .filter(x => x.tipoBoletim === 'Fechamento PTAX' || x.tipoBoletim === 'Fechamento')
+      .map(x => ({ date: x.dataHoraCotacao.slice(0,10), value: x.cotacaoVenda }));
+    return series;
+  } catch (e) {
+    return [];
+  }
+}
+
+/* Yahoo Finance via corsproxy.io — commodities */
+async function fetchYahoo(symbol, range = '90d', interval = '1d') {
+  // corsproxy.io é gratuito, sem chave; em produção, substituir por backend próprio
+  const url = `https://corsproxy.io/?https%3A%2F%2Fquery1.finance.yahoo.com%2Fv8%2Ffinance%2Fchart%2F${encodeURIComponent(symbol)}%3Frange%3D${range}%26interval%3D${interval}`;
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    const result = j.chart && j.chart.result && j.chart.result[0];
+    if (!result) return null;
+    const ts = result.timestamp || [];
+    const closes = result.indicators.quote[0].close || [];
+    const series = ts.map((t, i) => ({
+      date: new Date(t * 1000).toISOString().slice(0,10),
+      value: closes[i],
+    })).filter(p => p.value != null);
+    return series;
+  } catch (e) {
+    return null;
+  }
+}
+
+/* ComexStat — última atualização e exemplo de query */
+async function fetchComexStatLastUpdate() {
+  try {
+    const r = await fetch('https://api-comexstat.mdic.gov.br/general/dates/updated');
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j;
+  } catch (e) {
+    return null;
+  }
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+
+function renderKPI(id, value, fmtFn, deltaPct, statusId) {
+  const el = $('#' + id + '-value');
+  if (!el) return;
+  if (value == null) {
+    el.textContent = '—';
+    el.classList.remove('skel');
+    if (statusId) {
+      const s = $('#' + statusId);
+      if (s) { s.className = 'src-status src-error'; s.textContent = 'Erro'; }
+    }
+    return;
+  }
+  el.classList.remove('skel');
+  el.textContent = fmtFn(value);
+  const dEl = $('#' + id + '-delta');
+  if (dEl && deltaPct != null) {
+    dEl.className = 'kpi-delta delta ' + deltaClass(deltaPct);
+    dEl.textContent = fmtPct(deltaPct);
+  }
+}
+
+function calcDelta(series) {
+  if (!series || series.length < 2) return null;
+  const last = series[series.length - 1].value;
+  const prev = series[series.length - 2].value;
+  return ((last - prev) / prev) * 100;
+}
+
+function renderSparkline(containerId, series, color) {
+  const c = $('#' + containerId);
+  if (!c || !series || series.length < 2) return;
+  const W = c.clientWidth || 200, H = 44;
+  const values = series.map(p => p.value);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const pts = series.map((p, i) => {
+    const x = (i / (series.length - 1)) * W;
+    const y = H - ((p.value - min) / range) * (H - 6) - 3;
+    return [x, y];
+  });
+  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPath = path + ` L${W},${H} L0,${H} Z`;
+  c.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="sp-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaPath}" fill="url(#sp-grad-${containerId})"/>
+      <path d="${path}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="2.5" fill="${color}"/>
+    </svg>`;
+}
+
+function renderLineChart(containerId, series, color, label) {
+  const c = $('#' + containerId);
+  if (!c || !series || series.length < 2) {
+    if (c) c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados disponíveis</div>';
+    return;
+  }
+  const W = c.clientWidth || 700, H = 280;
+  const padding = { top: 20, right: 20, bottom: 32, left: 50 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+  const values = series.map(p => p.value);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const pad = range * 0.1;
+  const yMin = min - pad, yMax = max + pad;
+  const yRange = yMax - yMin;
+
+  const pts = series.map((p, i) => {
+    const x = padding.left + (i / (series.length - 1)) * innerW;
+    const y = padding.top + (1 - (p.value - yMin) / yRange) * innerH;
+    return [x, y, p];
+  });
+  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPath = path + ` L${pts[pts.length-1][0].toFixed(1)},${padding.top + innerH} L${pts[0][0].toFixed(1)},${padding.top + innerH} Z`;
+
+  // Y axis ticks (4)
+  const yTicks = [];
+  for (let i = 0; i <= 4; i++) {
+    const v = yMin + (i / 4) * yRange;
+    const y = padding.top + (1 - i / 4) * innerH;
+    yTicks.push({ v, y });
+  }
+  // X axis ticks (5)
+  const xTicks = [];
+  const xCount = 5;
+  for (let i = 0; i < xCount; i++) {
+    const idx = Math.round((i / (xCount - 1)) * (series.length - 1));
+    const p = pts[idx];
+    xTicks.push({ x: p[0], date: p[2].date });
+  }
+
+  c.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lc-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.07)" stroke-width="1"/>
+        <text x="${padding.left - 8}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="end">${fmtNum(t.v, 2)}</text>
+      `).join('')}
+      ${xTicks.map(t => `
+        <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="middle">${t.date.slice(5)}</text>
+      `).join('')}
+      <path d="${areaPath}" fill="url(#lc-grad-${containerId})"/>
+      <path d="${path}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="3.5" fill="${color}"/>
+      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="6" fill="${color}" opacity="0.3"/>
+    </svg>`;
+}
+
+function renderMultiNormalized(containerId, seriesList) {
+  // seriesList = [{name, color, data:[{date,value}]}]
+  const c = $('#' + containerId);
+  if (!c) return;
+  const valid = seriesList.filter(s => s.data && s.data.length > 5);
+  if (valid.length === 0) {
+    c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Aguardando dados…</div>';
+    return;
+  }
+  const W = c.clientWidth || 700, H = 280;
+  const padding = { top: 20, right: 100, bottom: 32, left: 30 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+
+  // Normalizar cada série base 100
+  const norm = valid.map(s => {
+    const base = s.data[0].value;
+    return {
+      ...s,
+      norm: s.data.map(p => ({ date: p.date, value: (p.value / base) * 100 })),
+    };
+  });
+  // Alinhar comprimento
+  const len = Math.min(...norm.map(s => s.norm.length));
+  norm.forEach(s => s.norm = s.norm.slice(-len));
+
+  const allVals = norm.flatMap(s => s.norm.map(p => p.value));
+  const yMin = Math.min(...allVals) * 0.98;
+  const yMax = Math.max(...allVals) * 1.02;
+  const yRange = yMax - yMin;
+
+  let paths = '';
+  norm.forEach(s => {
+    const pts = s.norm.map((p, i) => {
+      const x = padding.left + (i / (s.norm.length - 1)) * innerW;
+      const y = padding.top + (1 - (p.value - yMin) / yRange) * innerH;
+      return [x, y];
+    });
+    const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    paths += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`;
+    // ponto final
+    const last = pts[pts.length-1];
+    paths += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3" fill="${s.color}"/>`;
+    paths += `<text x="${last[0]+8}" y="${last[1]+3}" font-family="JetBrains Mono" font-size="10" fill="${s.color}">${s.name}</text>`;
+  });
+
+  // Y ticks
+  const yTicks = [];
+  for (let i = 0; i <= 4; i++) {
+    const v = yMin + (i / 4) * yRange;
+    const y = padding.top + (1 - i / 4) * innerH;
+    yTicks.push({ v, y });
+  }
+  // baseline 100
+  const y100 = padding.top + (1 - (100 - yMin) / yRange) * innerH;
+
+  c.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.06)" stroke-width="1"/>
+        <text x="${padding.left - 4}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9" fill="#5e7382" text-anchor="end">${t.v.toFixed(0)}</text>
+      `).join('')}
+      <line x1="${padding.left}" x2="${W - padding.right}" y1="${y100}" y2="${y100}" stroke="rgba(168,189,201,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="${W - padding.right + 4}" y="${y100 + 3}" font-family="JetBrains Mono" font-size="9" fill="#a8bdc9">100</text>
+      ${paths}
+    </svg>`;
+}
+
+/* =====================================================================
+   COMMODITIES TABLE
+   ===================================================================== */
+async function renderCommoditiesTable() {
+  const symbols = [
+    { sym: 'BZ=F', name: 'Brent Crude', market: 'ICE', unit: '$/bbl', fmt: fmtUSD },
+    { sym: 'CL=F', name: 'WTI Crude', market: 'NYMEX', unit: '$/bbl', fmt: fmtUSD },
+    { sym: 'ZS=F', name: 'Soja', market: 'CBOT', unit: '¢/bu', fmt: fmtCent },
+    { sym: 'ZC=F', name: 'Milho', market: 'CBOT', unit: '¢/bu', fmt: fmtCent },
+    { sym: 'ZW=F', name: 'Trigo', market: 'CBOT', unit: '¢/bu', fmt: fmtCent },
+    { sym: 'ZL=F', name: 'Óleo de Soja', market: 'CBOT', unit: '¢/lb', fmt: fmtCent },
+    { sym: 'ZM=F', name: 'Farelo de Soja', market: 'CBOT', unit: '$/ton', fmt: fmtUSD },
+    { sym: 'NG=F', name: 'Gás Natural', market: 'NYMEX', unit: '$/MMBtu', fmt: fmtUSD },
+  ];
+  const tbody = $('#commodities-tbody');
+  tbody.innerHTML = '';
+  for (const c of symbols) {
+    const series = await fetchYahoo(c.sym, '30d', '1d');
+    let row = `<tr><td><strong>${c.name}</strong></td><td>${c.market}</td>`;
+    if (!series || series.length < 2) {
+      row += `<td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="src-status src-error">Sem dados</span></td>`;
+    } else {
+      const last = series[series.length - 1].value;
+      const prev = series[series.length - 2].value;
+      const d1 = ((last - prev) / prev) * 100;
+      const w = series.length >= 7 ? series[series.length - 7].value : null;
+      const m = series.length >= 21 ? series[series.length - 21].value : null;
+      const d7 = w ? ((last - w) / w) * 100 : null;
+      const d30 = m ? ((last - m) / m) * 100 : null;
+      row += `
+        <td class="num">${c.fmt(last)}</td>
+        <td class="num" style="color:var(--be8-dim);">${c.fmt(prev)}</td>
+        <td class="num"><span class="kpi-delta delta ${deltaClass(d1)}">${fmtPct(d1)}</span></td>
+        <td class="num">${d7 == null ? '—' : `<span class="kpi-delta delta ${deltaClass(d7)}">${fmtPct(d7)}</span>`}</td>
+        <td class="num">${d30 == null ? '—' : `<span class="kpi-delta delta ${deltaClass(d30)}">${fmtPct(d30)}</span>`}</td>
+        <td><span class="src-status src-live">Live</span></td>`;
+    }
+    row += `</tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  }
+}
+
+/* =====================================================================
+   CORRELAÇÃO
+   ===================================================================== */
+function pearson(x, y) {
+  const n = Math.min(x.length, y.length);
+  if (n < 5) return null;
+  const xs = x.slice(-n), ys = y.slice(-n);
+  const mx = xs.reduce((a,b)=>a+b,0) / n;
+  const my = ys.reduce((a,b)=>a+b,0) / n;
+  let num=0, dx=0, dy=0;
+  for (let i = 0; i < n; i++) {
+    num += (xs[i]-mx)*(ys[i]-my);
+    dx += (xs[i]-mx)**2;
+    dy += (ys[i]-my)**2;
+  }
+  if (dx === 0 || dy === 0) return null;
+  return num / Math.sqrt(dx * dy);
+}
+
+async function renderCorrelationMatrix() {
+  const container = $('#correlation-matrix');
+  if (!container) return;
+  // Buscar séries
+  const [usd, brent, soja, oleo, milho] = await Promise.all([
+    fetchPTAXPeriodo('USD', 60).then(s => s.map(p => p.value)),
+    fetchYahoo('BZ=F', '60d').then(s => s ? s.map(p => p.value) : []),
+    fetchYahoo('ZS=F', '60d').then(s => s ? s.map(p => p.value) : []),
+    fetchYahoo('ZL=F', '60d').then(s => s ? s.map(p => p.value) : []),
+    fetchYahoo('ZC=F', '60d').then(s => s ? s.map(p => p.value) : []),
+  ]);
+  const vars = [
+    { name: 'USD/BRL', data: usd },
+    { name: 'Brent', data: brent },
+    { name: 'Óleo Soja', data: oleo },
+    { name: 'Soja', data: soja },
+    { name: 'Milho', data: milho },
+  ];
+  // Matriz
+  let html = '<table class="data" style="margin-top: 4px;"><thead><tr><th></th>';
+  vars.forEach(v => html += `<th class="num">${v.name}</th>`);
+  html += '</tr></thead><tbody>';
+  vars.forEach((vi, i) => {
+    html += `<tr><td><strong>${vi.name}</strong></td>`;
+    vars.forEach((vj, j) => {
+      if (i === j) {
+        html += `<td class="num" style="color:var(--be8-dim);">1.00</td>`;
+      } else {
+        const c = pearson(vi.data, vj.data);
+        if (c == null) {
+          html += `<td class="num" style="color:var(--be8-dim);">—</td>`;
+        } else {
+          const intensity = Math.abs(c);
+          const color = c > 0 ? `rgba(85,201,79,${0.10 + intensity * 0.35})` : `rgba(232,95,95,${0.10 + intensity * 0.35})`;
+          html += `<td class="num" style="background:${color};">${c.toFixed(2)}</td>`;
+        }
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += `<div style="margin-top: 12px; font-size: 11px; color: var(--be8-dim); font-family: var(--font-mono); letter-spacing: 0.02em;">CORRELAÇÃO DE PEARSON · ÚLTIMOS 60 PREGÕES · -1 (verm.) ↔ +1 (verde)</div>`;
+  container.innerHTML = html;
+}
+
+/* =====================================================================
+   GRÃOS — Dados públicos consolidados CONAB (último levantamento)
+   Esses números são placeholders estruturais até o pipeline ANP/CONAB
+   estar plugado. Marcados como "src-cached" para transparência.
+   ===================================================================== */
+function renderGraosSafra() {
+  // Valores em placeholder estrutural · serão substituídos por Power Query
+  // quando a ingestão da tabela CONAB estiver ativa
+  $('#soja-safra-prod').innerHTML = `<span class="src-status src-cached">aguardando ingestão CONAB</span>`;
+  $('#milho-safra-prod').innerHTML = `<span class="src-status src-cached">aguardando ingestão CONAB</span>`;
+  $('#trigo-safra-prod').innerHTML = `<span class="src-status src-cached">aguardando ingestão CONAB</span>`;
+
+  // Tabela de UFs — estrutura preparada, dados via pipeline
+  const sojaUFs = [
+    // Estrutura preservada · cabe ao Power Query popular com a última Tab. CONAB
+    { uf: 'MT', share: null, area: null, prod: null },
+    { uf: 'PR', share: null, area: null, prod: null },
+    { uf: 'RS', share: null, area: null, prod: null },
+    { uf: 'GO', share: null, area: null, prod: null },
+    { uf: 'MS', share: null, area: null, prod: null },
+    { uf: 'BA', share: null, area: null, prod: null },
+    { uf: 'MG', share: null, area: null, prod: null },
+    { uf: 'SP', share: null, area: null, prod: null },
+  ];
+  const tbody = $('#soja-uf-tbody');
+  tbody.innerHTML = sojaUFs.map((u, i) => `
+    <tr>
+      <td class="rank">${String(i+1).padStart(2,'0')}</td>
+      <td><strong>${u.uf}</strong></td>
+      <td class="num"><span class="src-status src-pending">pendente</span></td>
+      <td class="num"><span class="src-status src-pending">pendente</span></td>
+      <td class="num"><span class="src-status src-pending">pendente</span></td>
+    </tr>
+  `).join('');
+
+  $('#soja-uf-chart').innerHTML = `
+    <div class="empty-state">
+      <div class="ic">⊘</div>
+      Aguardando primeiro refresh do pipeline CONAB
+      <div class="src-note">FONTE: PORTAL DE INFORMAÇÕES CONAB · TABELA DE DADOS SAFRA GRÃOS</div>
+    </div>`;
+}
+
+/* =====================================================================
+   BIODIESEL — Estrutura de market share + matérias-primas
+   ===================================================================== */
+function renderBiodiesel() {
+  $('#b100-prod-total').innerHTML = `<span class="src-status src-cached">ANP · pendente</span>`;
+  $('#b100-cap-total').innerHTML = `<span class="src-status src-cached">ANP · pendente</span>`;
+  $('#b100-util').textContent = '—';
+
+  // Ranking estrutural (top players conhecidos publicamente, sem inventar shares)
+  const producers = [
+    { name: 'Be8 Bioenergia',         plants: 'Passo Fundo (RS), Marialva (PR)', share: null, cap: null },
+    { name: 'BSBIOS',                  plants: 'Passo Fundo, Marialva',           share: null, cap: null },
+    { name: 'Brejeiro / Granol',       plants: 'Cachoeira do Sul (RS), Anápolis', share: null, cap: null },
+    { name: 'ADM do Brasil',           plants: 'Rondonópolis (MT), Joaçaba (SC)', share: null, cap: null },
+    { name: 'Bunge',                   plants: 'Nova Mutum (MT)',                 share: null, cap: null },
+    { name: 'Cargill',                 plants: 'Três Lagoas (MS)',                share: null, cap: null },
+    { name: 'Caramuru',                plants: 'São Simão (GO)',                  share: null, cap: null },
+    { name: 'Oleoplan',                plants: 'Veranópolis (RS)',                share: null, cap: null },
+    { name: 'Camera',                  plants: 'Ijuí (RS)',                       share: null, cap: null },
+    { name: 'BioPar / Outros',         plants: 'Diversas',                        share: null, cap: null },
+  ];
+  $('#biodiesel-rank-tbody').innerHTML = producers.map((p, i) => `
+    <tr>
+      <td class="rank">${String(i+1).padStart(2,'0')}</td>
+      <td><strong style="color:${p.name.startsWith('Be8') ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${p.name}</strong></td>
+      <td style="color: var(--be8-mist); font-size: 12px;">${p.plants}</td>
+      <td class="num"><span class="src-status src-pending">ANP</span></td>
+      <td class="num"><span class="src-status src-pending">ANP</span></td>
+    </tr>
+  `).join('');
+
+  // Visualização Be8 no contexto
+  $('#be8-context-viz').innerHTML = `
+    <div style="text-align: center; padding: 8px 0 24px;">
+      <div style="font-family: var(--font-display); font-size: 56px; font-weight: 300; line-height: 1; color: var(--be8-ice); letter-spacing: -0.03em;">
+        <span style="background: var(--grad-energy); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Top 3</span>
+      </div>
+      <div style="font-size: 12px; color: var(--be8-mist); margin-top: 8px; letter-spacing: 0.02em;">
+        Posição de mercado histórica<br>(últimas consolidações ANP/leilões)
+      </div>
+    </div>
+    <div style="border-top: 1px solid var(--be8-border); padding-top: 18px; font-size: 12px; color: var(--be8-mist); line-height: 1.7;">
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Plantas operacionais</span><strong style="color: var(--be8-ice);">2 (RS + PR)</strong></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Foco geográfico</span><strong style="color: var(--be8-ice);">Sul + esmagamento integrado</strong></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Vantagem competitiva</span><strong style="color: var(--be8-green-2);">Integração soja → óleo → B100</strong></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Atualização real</span><strong style="color: var(--be8-gold);">aguardando Power BI</strong></div>
+    </div>
+  `;
+
+  // Matérias-primas (composição histórica conhecida pela ANP, sem inventar mês específico)
+  const mp = [
+    { name: 'Óleo de soja',      pct: 70, color: '#0eb194' },
+    { name: 'Gordura bovina',    pct: 13, color: '#55c94f' },
+    { name: 'Óleo de algodão',   pct: 5,  color: '#7ed957' },
+    { name: 'Óleos ácidos',      pct: 4,  color: '#a8bdc9' },
+    { name: 'Outros',            pct: 8,  color: '#5e7382' },
+  ];
+  const total = mp.reduce((a,b)=>a+b.pct,0);
+  const W = 800, H = 80;
+  let x = 0;
+  let bars = '';
+  let legend = '';
+  mp.forEach(m => {
+    const w = (m.pct / total) * W;
+    bars += `<rect x="${x}" y="0" width="${w-1}" height="${H}" fill="${m.color}" opacity="0.85"/>`;
+    bars += `<text x="${x + w/2}" y="${H/2}" fill="white" font-family="Inter Tight" font-size="13" font-weight="600" text-anchor="middle" dominant-baseline="middle">${m.pct}%</text>`;
+    legend += `<div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--be8-mist);"><span style="width:12px; height:12px; background:${m.color}; border-radius:2px; display:inline-block;"></span>${m.name}</div>`;
+    x += w;
+  });
+
+  $('#materias-primas-viz').innerHTML = `
+    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: baseline;">
+      <div style="font-size: 13px; color: var(--be8-mist);">Composição típica · benchmark histórico ANP</div>
+      <span class="src-status src-cached">Anuário ANP — atualização anual</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width: 100%; height: 80px; border-radius: 4px; overflow: hidden;">${bars}</svg>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 14px;">${legend}</div>
+    <div style="margin-top: 16px; font-size: 11px; color: var(--be8-dim); font-family: var(--font-mono); letter-spacing: 0.02em; line-height: 1.6;">
+      ATENÇÃO · COMPOSIÇÃO DE REFERÊNCIA. Valores reais por mês via planilha "Matérias-primas utilizadas na produção de biodiesel B100" do Anuário Estatístico ANP (publicação anual, atualização mensal via Painel ANP).
+    </div>
+  `;
+}
+
+/* =====================================================================
+   COMEX — busca via API oficial
+   ===================================================================== */
+async function renderComex() {
+  // Última atualização
+  try {
+    const upd = await fetchComexStatLastUpdate();
+    if (upd && upd.data) {
+      const m = $('#comex-status-1');
+      if (m) m.textContent = 'Atualizado ' + upd.data;
+    }
+  } catch(e){}
+
+  // Exemplo de query real (YTD 2025 — NCM 27101921 diesel)
+  const ano = new Date().getFullYear();
+  const query = async (flow, ncm) => {
+    try {
+      const body = {
+        flow: flow,
+        monthDetail: false,
+        period: { from: `${ano-1}-01`, to: `${ano}-12` },
+        filters: [{ filter: 'ncm', values: [ncm] }],
+        details: ['ncm'],
+        metrics: ['metricFOB', 'metricKG'],
+      };
+      const r = await fetch('https://api-comexstat.mdic.gov.br/general', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j && j.data && j.data.list ? j.data.list : null;
+    } catch (e) {
+      return null;
+    }
+  };
+  // Diesel importado
+  const dieselImp = await query('import', '27101921');
+  if (dieselImp && dieselImp.length > 0) {
+    const totalFOB = dieselImp.reduce((a,b) => a + Number(b.metricFOB || 0), 0);
+    $('#comex-diesel-vol').innerHTML = `${(totalFOB/1e9).toFixed(2)}<span class="unit">bi US$</span>`;
+  } else {
+    $('#comex-diesel-vol').innerHTML = `<span class="src-status src-error">Sem retorno API</span>`;
+  }
+  // Óleo soja exp
+  const oleoExp = await query('export', '15071000');
+  if (oleoExp && oleoExp.length > 0) {
+    const totalKG = oleoExp.reduce((a,b) => a + Number(b.metricKG || 0), 0);
+    $('#comex-oleo-vol').innerHTML = `${(totalKG/1e9).toFixed(2)}<span class="unit">Mt</span>`;
+  } else {
+    $('#comex-oleo-vol').innerHTML = `<span class="src-status src-error">Sem retorno API</span>`;
+  }
+  // Biodiesel exp
+  const bioExp = await query('export', '38260000');
+  if (bioExp && bioExp.length > 0) {
+    const totalFOB = bioExp.reduce((a,b) => a + Number(b.metricFOB || 0), 0);
+    $('#comex-biodiesel-vol').innerHTML = `${(totalFOB/1e6).toFixed(1)}<span class="unit">M US$</span>`;
+  } else {
+    $('#comex-biodiesel-vol').innerHTML = `<span class="src-status src-cached">Volume marginal</span>`;
+  }
+}
+
+/* =====================================================================
+   RADAR IA — geração automática de leituras
+   ===================================================================== */
+function buildInsights(s) {
+  const out = [];
+  const usdDelta = calcDelta(s.usd90);
+  const brentDelta = calcDelta(s.brent90);
+  const sojaSeries = s.sojaSeries || [];
+  const oleoSeries = s.oleoSeries || [];
+
+  // Regra 1: dólar forte
+  if (usdDelta != null) {
+    if (usdDelta > 0.3) {
+      out.push({ type: 'bull', tag: 'CÂMBIO', text: `USD/BRL em alta de ${fmtPct(usdDelta)} no fechamento de hoje — janela favorável a exportações de óleo e farelo de soja; receita em real aumenta.` });
+    } else if (usdDelta < -0.3) {
+      out.push({ type: 'bear', tag: 'CÂMBIO', text: `USD/BRL em queda de ${fmtPct(usdDelta)} — compressão de margem para exportadores; importação de metanol e diesel torna-se mais barata.` });
+    }
+  }
+
+  // Regra 2: óleo soja + Brent
+  let oleoChg = null, brentChg = null;
+  if (oleoSeries.length >= 7) {
+    const last = oleoSeries[oleoSeries.length-1].value, prev7 = oleoSeries[oleoSeries.length-7].value;
+    oleoChg = ((last - prev7) / prev7) * 100;
+  }
+  if (s.brent90.length >= 7) {
+    const last = s.brent90[s.brent90.length-1].value, prev7 = s.brent90[s.brent90.length-7].value;
+    brentChg = ((last - prev7) / prev7) * 100;
+  }
+  if (oleoChg != null && brentChg != null) {
+    if (oleoChg > 1 && brentChg > 1) {
+      out.push({ type: 'bull', tag: 'BIODIESEL', text: `Alta simultânea óleo soja (${fmtPct(oleoChg)} 7d) e Brent (${fmtPct(brentChg)} 7d) — pressão de alta no preço do B100; ambiente favorável a repasse em leilões/contratos.` });
+    } else if (oleoChg > 2 && brentChg < 0) {
+      out.push({ type: 'alert', tag: 'MARGEM', text: `Descolamento: óleo soja sobe ${fmtPct(oleoChg)} (7d) enquanto Brent recua ${fmtPct(brentChg)} — compressão de margem do biodiesel vs. diesel fóssil. Atenção ao spread.` });
+    } else if (oleoChg < -2) {
+      out.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja em queda forte (${fmtPct(oleoChg)} 7d) — janela de melhora de margem do B100 se preço final mantiver-se.` });
+    }
+  }
+
+  // Regra 3: soja em alta forte
+  if (sojaSeries.length >= 14) {
+    const last = sojaSeries[sojaSeries.length-1].value, prev14 = sojaSeries[sojaSeries.length-14].value;
+    const chg = ((last - prev14) / prev14) * 100;
+    if (chg > 4) {
+      out.push({ type: 'alert', tag: 'ORIGINAÇÃO', text: `Soja CBOT acumula alta de ${fmtPct(chg)} em 2 semanas — risco de competição por matéria-prima entre esmagamento doméstico e exportação. Avaliar antecipação de fixações.` });
+    } else if (chg < -4) {
+      out.push({ type: 'bull', tag: 'ORIGINAÇÃO', text: `Soja CBOT recua ${fmtPct(chg)} em 2 semanas — ambiente favorável para fixação de compras de longo prazo.` });
+    }
+  }
+
+  // Regra 4: estrutural
+  out.push({ type: 'neutral', tag: 'REGULATÓRIO', text: `Lei 14.993/2024 mantém trajetória de elevação da mistura: B14 → B15 (mar/2025) → B16 (mar/2026) → B17 (mar/2027). Demanda B100 estruturalmente crescente.` });
+
+  if (out.length === 1) {
+    out.unshift({ type: 'neutral', tag: 'STATUS', text: 'Mercado em modo lateral nos últimos pregões — nenhuma das regras de tendência forte foi acionada hoje. Operação em compasso de leitura.' });
+  }
+  return out;
+}
+
+function renderInsights(insights) {
+  const list = $('#insights-list');
+  if (!list) return;
+  list.innerHTML = insights.map(i => `
+    <div class="insight-row ${i.type}">
+      <span class="ic-pill">${i.tag}</span>
+      <div>${i.text}</div>
+    </div>
+  `).join('');
+
+  // Radar IA page
+  const bullEl = $('#radar-bull');
+  const bearEl = $('#radar-bear');
+  if (bullEl && bearEl) {
+    const bulls = insights.filter(i => i.type === 'bull');
+    const bears = insights.filter(i => i.type === 'bear' || i.type === 'alert');
+    const renderItem = i => `<div class="insight-row ${i.type}"><span class="ic-pill">${i.tag}</span><div>${i.text}</div></div>`;
+    bullEl.innerHTML = bulls.length ? bulls.map(renderItem).join('') : `<div class="empty-state" style="padding:20px;"><div class="ic">○</div>Nenhum driver positivo destacável no momento.</div>`;
+    bearEl.innerHTML = bears.length ? bears.map(renderItem).join('') : `<div class="empty-state" style="padding:20px;"><div class="ic">○</div>Nenhum risco crítico ativo no momento.</div>`;
+  }
+
+  // Resumo executivo
+  const summary = $('#radar-summary');
+  if (summary) {
+    const tone = insights.filter(i => i.type === 'bull').length - insights.filter(i => i.type === 'bear' || i.type === 'alert').length;
+    let mood;
+    if (tone >= 2) mood = 'Cenário <strong style="color:var(--be8-green-2);">construtivo</strong> para o biodiesel no curto prazo.';
+    else if (tone <= -2) mood = 'Cenário com <strong style="color:#ff8585;">riscos elevados</strong> — atenção a margens e originação.';
+    else mood = 'Cenário <strong style="color:var(--be8-gold);">lateral / misto</strong> — monitorar gatilhos.';
+    summary.innerHTML = `${mood} Análise consolidada sobre ${insights.length} indicadores ao vivo (BCB, Yahoo Finance, ComexStat). Última atualização: ${new Date().toLocaleString('pt-BR')}.`;
+  }
+
+  // Alertas card na visão executiva
+  const feed = $('#alerts-feed');
+  const count = $('#alerts-count');
+  if (feed && count) {
+    const alerts = insights.filter(i => i.type === 'alert' || i.type === 'bear');
+    count.textContent = alerts.length + ' ativos';
+    if (alerts.length === 0) {
+      feed.innerHTML = `<div class="empty-state" style="padding:18px;"><div class="ic">✓</div>Nenhum alerta crítico ativo.</div>`;
+    } else {
+      feed.innerHTML = alerts.slice(0,4).map(a => `
+        <div class="insight-row ${a.type}" style="padding: 10px 12px; font-size: 12px;">
+          <span class="ic-pill">${a.tag}</span>
+          <div>${a.text}</div>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+/* =====================================================================
+   TICKER
+   ===================================================================== */
+function renderTicker(state) {
+  const items = [];
+  const add = (label, val, delta, deltaCls) => items.push({label, val, delta, deltaCls});
+
+  if (state.usd) {
+    const d = calcDelta(state.usd90);
+    add('USD/BRL', fmtBRL(state.usd.venda), fmtPct(d), deltaClass(d));
+  }
+  if (state.eur) {
+    add('EUR/BRL', fmtBRL(state.eur.venda), '', 'flat');
+  }
+  if (state.brent != null) {
+    const d = calcDelta(state.brent90);
+    add('BRENT', fmtUSD(state.brent), fmtPct(d), deltaClass(d));
+  }
+  if (state.wti != null) {
+    add('WTI', fmtUSD(state.wti), '', 'flat');
+  }
+  if (state.soja != null) add('SOJA CBOT', fmtCent(state.soja), '', 'flat');
+  if (state.milho != null) add('MILHO CBOT', fmtCent(state.milho), '', 'flat');
+  if (state.trigo != null) add('TRIGO CBOT', fmtCent(state.trigo), '', 'flat');
+  if (state.oleo != null) add('ÓLEO SOJA', fmtCent(state.oleo), '', 'flat');
+
+  // Items dobrados para loop contínuo
+  const html = items.concat(items).map(i => `
+    <span class="ticker-item">
+      <span class="label">${i.label}</span>
+      <span class="value">${i.val}</span>
+      ${i.delta ? `<span class="delta ${i.deltaCls}">${i.delta}</span>` : ''}
+    </span>`).join('');
+  $('#ticker-track').innerHTML = html || '<span class="ticker-item"><span class="label">Conectando às fontes</span></span>'.repeat(8);
+}
+
+/* =====================================================================
+   GOVERNANÇA — tabela mestra
+   ===================================================================== */
+function renderGovernance() {
+  const rows = [
+    { src: 'Banco Central · PTAX',       type: 'API REST · OData',    refresh: 'Diária (4x)',   cost: 'Grátis',      endpoint: 'olinda.bcb.gov.br/PTAX',          status: 'live',    last: 'now' },
+    { src: 'AwesomeAPI · Câmbio',        type: 'API REST · Backup',   refresh: 'Tempo real',    cost: 'Grátis',      endpoint: 'economia.awesomeapi.com.br',      status: 'live',    last: 'now' },
+    { src: 'Yahoo Finance · Commodities',type: 'API JSON via proxy',  refresh: '15min delay',   cost: 'Grátis',      endpoint: 'query1.finance.yahoo.com',        status: 'live',    last: 'now' },
+    { src: 'MDIC · ComexStat API',       type: 'API REST oficial',    refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'api-comexstat.mdic.gov.br',       status: 'live',    last: 'last refresh' },
+    { src: 'ANP · Preços combustíveis',  type: 'CSV semanal',         refresh: 'Toda 6ª-feira', cost: 'Grátis',      endpoint: 'gov.br/anp · dados-abertos',      status: 'cached',  last: 'Power Query pendente' },
+    { src: 'ANP · Produção B100',        type: 'XLS mensal · ANP',    refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'gov.br/anp · dados-estatisticos', status: 'cached',  last: 'Power Query pendente' },
+    { src: 'ANP · Anuário Estatístico',  type: 'CSV anual',           refresh: 'Anual',         cost: 'Grátis',      endpoint: 'gov.br/anp · centrais-conteudo',  status: 'cached',  last: 'Power Query pendente' },
+    { src: 'CONAB · Safra grãos',        type: 'CSV mensal',          refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'portaldeinformacoes.conab.gov.br',status: 'cached',  last: 'Power Query pendente' },
+    { src: 'CONAB · Progresso de safra', type: 'PDF semanal',         refresh: 'Semanal',       cost: 'Grátis',      endpoint: 'conab.gov.br/info-agro',          status: 'cached',  last: 'scraper pendente' },
+    { src: 'IBGE · SIDRA',               type: 'API REST',            refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'apisidra.ibge.gov.br',            status: 'cached',  last: 'integração planejada' },
+    { src: 'USDA FAS · PSD',             type: 'API REST',            refresh: 'Mensal (WASDE)',cost: 'Grátis',      endpoint: 'apps.fas.usda.gov/OpenData',      status: 'cached',  last: 'integração planejada' },
+    { src: 'USDA NASS · QuickStats',     type: 'API REST · chave',    refresh: 'Mensal',        cost: 'Grátis (key)',endpoint: 'quickstats.nass.usda.gov/api',    status: 'cached',  last: 'chave a obter' },
+    { src: 'FRED · St. Louis Fed',       type: 'API REST · chave',    refresh: 'Diária',        cost: 'Grátis (key)',endpoint: 'api.stlouisfed.org/fred',         status: 'cached',  last: 'chave a obter' },
+    { src: 'EIA · Energy Info Admin',    type: 'API REST · chave',    refresh: 'Semanal',       cost: 'Grátis (key)',endpoint: 'api.eia.gov',                     status: 'cached',  last: 'chave a obter' },
+    { src: 'CEPEA/ESALQ · Indicadores',  type: 'HTML widget',         refresh: 'Diária',        cost: 'Grátis',      endpoint: 'cepea.org.br/br/widget.aspx',     status: 'pending', last: 'scraper/widget pendente' },
+    { src: 'SIFRECA · ESALQ-LOG',        type: 'PDF mensal',          refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'sifreca.esalq.usp.br',            status: 'pending', last: 'download manual' },
+    { src: 'ANTT · Piso mínimo frete',   type: 'XLS · site',          refresh: 'Eventual',      cost: 'Grátis',      endpoint: 'gov.br/antt',                     status: 'pending', last: 'scraper pendente' },
+    { src: 'ABIOVE · Esmagamento soja',  type: 'PDF mensal',          refresh: 'Mensal',        cost: 'Grátis',      endpoint: 'abiove.org.br',                   status: 'pending', last: 'download manual' },
+    { src: 'EPE · Projeções energia',    type: 'PDF anual',           refresh: 'Anual',         cost: 'Grátis',      endpoint: 'epe.gov.br',                      status: 'pending', last: 'download manual' },
+    { src: 'Petrobras · Preço refinaria',type: 'PDF · site',          refresh: 'Eventual',      cost: 'Grátis',      endpoint: 'petrobras.com.br',                status: 'pending', last: 'scraper open-source disponível' },
+    { src: 'B3 · CBIO',                  type: 'API cadastrada',      refresh: 'Diária',        cost: 'Grátis',      endpoint: 'b3.com.br',                       status: 'pending', last: 'cadastro pendente' },
+    { src: 'Trading Economics',          type: 'API REST · trial',    refresh: 'Diária',        cost: 'Pago após trial',endpoint: 'tradingeconomics.com/api',       status: 'pending', last: 'avaliação' },
+  ];
+  $('#governance-tbody').innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.src}</strong></td>
+      <td style="color: var(--be8-mist); font-size: 12px;">${r.type}</td>
+      <td style="font-family: var(--font-mono); font-size: 11.5px; color: var(--be8-mist);">${r.refresh}</td>
+      <td style="font-family: var(--font-mono); font-size: 11.5px; color: ${r.cost === 'Grátis' || r.cost.startsWith('Grátis') ? 'var(--be8-green-2)' : 'var(--be8-gold)'};">${r.cost}</td>
+      <td style="font-family: var(--font-mono); font-size: 10.5px; color: var(--be8-dim);">${r.endpoint}</td>
+      <td><span class="src-status src-${r.status}">${r.status === 'live' ? 'Live' : r.status === 'cached' ? 'Pipeline' : 'Pendente'}</span></td>
+      <td style="font-size: 11px; color: var(--be8-dim);">${r.last}</td>
+    </tr>
+  `).join('');
+}
+
+/* =====================================================================
+   ORQUESTRAÇÃO PRINCIPAL
+   ===================================================================== */
+async function bootData() {
+  renderTicker(STATE);
+
+  // CÂMBIO — paralelizar USD e EUR
+  const [usd, eur, usd90, eur90] = await Promise.all([
+    fetchPTAX('USD'),
+    fetchPTAX('EUR'),
+    fetchPTAXPeriodo('USD', 90),
+    fetchPTAXPeriodo('EUR', 90),
+  ]);
+  STATE.usd = usd; STATE.eur = eur;
+  STATE.usd90 = usd90; STATE.eur90 = eur90;
+
+  if (usd) {
+    renderKPI('usd', usd.venda, fmtBRL, calcDelta(usd90));
+    renderSparkline('usd-spark', usd90, '#0eb194');
+    renderLineChart('usd-90-chart', usd90, '#0eb194', 'USD/BRL');
+  } else {
+    $('#status-usd').className = 'src-status src-error';
+    $('#status-usd').textContent = 'Erro';
+    $('#usd-value').textContent = '—';
+  }
+  if (eur) {
+    renderKPI('eur', eur.venda, fmtBRL, calcDelta(eur90));
+    renderSparkline('eur-spark', eur90, '#55c94f');
+  } else {
+    $('#status-eur').className = 'src-status src-error';
+    $('#status-eur').textContent = 'Erro';
+    $('#eur-value').textContent = '—';
+  }
+
+  // COMMODITIES — paralelizar
+  const [brent, wti, soja, milho, trigo, oleo] = await Promise.all([
+    fetchYahoo('BZ=F', '90d'),
+    fetchYahoo('CL=F', '90d'),
+    fetchYahoo('ZS=F', '90d'),
+    fetchYahoo('ZC=F', '90d'),
+    fetchYahoo('ZW=F', '90d'),
+    fetchYahoo('ZL=F', '90d'),
+  ]);
+
+  const lastOf = s => s && s.length ? s[s.length-1].value : null;
+  STATE.brent = lastOf(brent); STATE.brent90 = brent || [];
+  STATE.wti = lastOf(wti);
+  STATE.soja = lastOf(soja); STATE.sojaSeries = soja || [];
+  STATE.milho = lastOf(milho);
+  STATE.trigo = lastOf(trigo);
+  STATE.oleo = lastOf(oleo); STATE.oleoSeries = oleo || [];
+
+  if (brent && brent.length) {
+    renderKPI('brent', STATE.brent, fmtUSD, calcDelta(brent));
+    renderSparkline('brent-spark', brent, '#d4a84b');
+    renderLineChart('brent-90-chart', brent, '#d4a84b');
+  } else {
+    $('#status-brent').className = 'src-status src-error';
+    $('#status-brent').textContent = 'CORS/timeout';
+    $('#brent-value').textContent = '—';
+  }
+  if (wti && wti.length) renderKPI('wti', STATE.wti, fmtUSD, calcDelta(wti));
+  if (soja && soja.length) {
+    renderKPI('soja', STATE.soja, fmtCent, calcDelta(soja));
+    renderSparkline('soja-spark', soja, '#0eb194');
+  } else {
+    $('#status-soja').className = 'src-status src-error';
+    $('#status-soja').textContent = 'CORS/timeout';
+  }
+  if (milho && milho.length) renderKPI('milho', STATE.milho, fmtCent, calcDelta(milho));
+  if (trigo && trigo.length) renderKPI('trigo', STATE.trigo, fmtCent, calcDelta(trigo));
+  if (oleo && oleo.length) renderKPI('oleo', STATE.oleo, fmtCent, calcDelta(oleo));
+
+  // Ticker atualizado
+  renderTicker(STATE);
+
+  // Chart de tendência normalizada
+  renderMultiNormalized('trend-chart', [
+    { name: 'USD/BRL', color: '#0eb194', data: usd90 },
+    { name: 'Brent',   color: '#d4a84b', data: brent || [] },
+    { name: 'Soja',    color: '#55c94f', data: soja || [] },
+  ]);
+
+  // Insights
+  const insights = buildInsights(STATE);
+  STATE.insights = insights;
+  renderInsights(insights);
+
+  // Tabela commodities
+  renderCommoditiesTable();
+
+  // Correlação
+  renderCorrelationMatrix();
+
+  // Comex
+  renderComex();
+}
+
+/* INIT — boot completo */
+function init() {
+  renderGraosSafra();
+  renderBiodiesel();
+  renderGovernance();
+  bootData();
+
+  // Refresh manual
+  $('#refresh-all')?.addEventListener('click', () => {
+    document.querySelectorAll('.kpi-value > span, .kpi-value:not(:has(span))').forEach(e => {
+      if (e.id?.includes('value')) { e.classList.add('skel'); e.textContent = '...'; }
+    });
+    bootData();
+  });
+
+  $('#export-snapshot')?.addEventListener('click', () => {
+    window.print();
+  });
+
+  $('#comex-refresh')?.addEventListener('click', () => renderComex());
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+/* Auto-refresh diário às 11h BRT (após fechamento PTAX) */
+setInterval(() => {
+  const h = new Date().getHours();
+  if (h === 11 || h === 16) {
+    bootData();
+  }
+}, 60 * 60 * 1000); // checa a cada hora
+</script>
+
+</body>
+</html>
