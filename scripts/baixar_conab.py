@@ -133,15 +133,22 @@ def parse_txt(raw: bytes) -> dict:
 
     idx_produto = find_col('produto', 'cultura')
     idx_uf      = find_col('uf', 'estado', 'unidade_da_federacao')
-    idx_safra   = find_col('safra', 'ano_safra', 'ano')
+    # ATENÇÃO: priorizar 'ano_agricola' (formato 2025/26) sobre 'dsc_safra_previsao' (1ª/2ª/única)
+    idx_safra   = find_col('ano_agricola', 'ano_safra')
+    if idx_safra < 0:
+        idx_safra = find_col('safra', 'ano')
+    # Campo opcional: tipo de plantio (1ª safra, 2ª safra, única) — usado só para log
+    idx_tipo    = find_col('dsc_safra_previsao', 'tipo_safra', 'safra_previsao')
     idx_prod    = find_col('producao', 'produção')
     idx_area    = find_col('area', 'área')
     idx_rend    = find_col('produtividade', 'rendimento')
 
+    log.info(f"CONAB · idx mapeados · produto={idx_produto} uf={idx_uf} safra/ano={idx_safra} tipo={idx_tipo} prod={idx_prod} area={idx_area}")
+
     if idx_produto < 0 or idx_uf < 0 or idx_safra < 0:
         raise RuntimeError(f"Colunas essenciais não encontradas. Header: {header}")
 
-    # Agrupa por (produto, uf) com a safra MAIS RECENTE
+    # Agrupa por (produto, uf, ano_agricola) somando TODAS as safras (1ª + 2ª + 3ª + Única)
     bucket = {}
     safras_vistas = set()
     for r in rows[1:]:
@@ -150,10 +157,10 @@ def parse_txt(raw: bytes) -> dict:
         try:
             produto = (r[idx_produto] or '').strip()
             uf = (r[idx_uf] or '').strip().upper()
-            safra = (r[idx_safra] or '').strip()
-            if not produto or len(uf) != 2 or not safra:
+            ano_agricola = (r[idx_safra] or '').strip()  # ex: '2025/26'
+            if not produto or len(uf) != 2 or not ano_agricola:
                 continue
-            safras_vistas.add(safra)
+            safras_vistas.add(ano_agricola)
             prod_val = None
             area_val = None
             rend_val = None
@@ -173,14 +180,32 @@ def parse_txt(raw: bytes) -> dict:
                     if v: rend_val = float(v)
             except: pass
 
-            key = (produto, uf, safra)
-            bucket[key] = {
-                'produto': produto, 'uf': uf, 'safra': safra,
-                'producao': prod_val, 'area': area_val, 'rendimento': rend_val,
-            }
+            # Chave SEM tipo de safra → soma 1ª + 2ª + 3ª automaticamente
+            key = (produto, uf, ano_agricola)
+            if key in bucket:
+                # Acumula (somar produção/área de várias safras do mesmo produto/uf/ano)
+                if prod_val:
+                    bucket[key]['producao'] = (bucket[key]['producao'] or 0) + prod_val
+                if area_val:
+                    bucket[key]['area'] = (bucket[key]['area'] or 0) + area_val
+                # Rendimento: média ponderada (vamos calcular depois)
+                bucket[key]['rendimento_acum'] = bucket[key].get('rendimento_acum', 0) + (rend_val or 0) * (prod_val or 0)
+                bucket[key]['rendimento_peso'] = bucket[key].get('rendimento_peso', 0) + (prod_val or 0)
+            else:
+                bucket[key] = {
+                    'produto': produto, 'uf': uf, 'safra': ano_agricola,
+                    'producao': prod_val, 'area': area_val, 'rendimento': rend_val,
+                    'rendimento_acum': (rend_val or 0) * (prod_val or 0),
+                    'rendimento_peso': prod_val or 0,
+                }
         except Exception as e:
             log.debug(f"Linha ignorada: {e}")
             continue
+
+    # Calcular rendimento médio ponderado para entradas agregadas
+    for k, b in bucket.items():
+        if b.get('rendimento_peso') and b['rendimento_peso'] > 0:
+            b['rendimento'] = b['rendimento_acum'] / b['rendimento_peso']
 
     log.info(f"CONAB · {len(bucket)} registros · {len(safras_vistas)} safras únicas")
 
@@ -210,7 +235,7 @@ def parse_txt(raw: bytes) -> dict:
 
     culturas = {}  # cultura → {uf: {producao, area, rendimento, producao_anterior}}
     for (produto, uf, safra), rec in bucket.items():
-        # Match cultura
+        # Match cultura — produto vem como "SOJA", "MILHO", "TRIGO", etc.
         pl = produto.lower().strip()
         cultura = None
         if 'soja' in pl: cultura = 'Soja'
@@ -223,25 +248,22 @@ def parse_txt(raw: bytes) -> dict:
             culturas[cultura] = {}
 
         if safra == safra_recente:
-            existing = culturas[cultura].get(uf, {})
-            # Para milho, soma 1ª + 2ª safras (se aparecerem como produtos separados)
-            if cultura == 'Milho' and existing:
-                existing['producao'] = (existing.get('producao') or 0) + (rec['producao'] or 0)
-                existing['area'] = (existing.get('area') or 0) + (rec['area'] or 0)
-            else:
-                culturas[cultura][uf] = {
-                    'producao': rec['producao'] or 0,
-                    'area': rec['area'] or 0,
-                    'rendimento': rec['rendimento'] or 0,
-                    'producao_anterior': 0,
-                }
+            # Como o bucket já soma 1ª+2ª+3ª por (produto, uf, ano), aqui é só atribuir
+            culturas[cultura][uf] = {
+                'producao': rec['producao'] or 0,
+                'area': rec['area'] or 0,
+                'rendimento': rec['rendimento'] or 0,
+                'producao_anterior': 0,
+            }
         elif safra == safra_anterior:
             if uf not in culturas[cultura]:
                 culturas[cultura][uf] = {'producao': 0, 'area': 0, 'rendimento': 0, 'producao_anterior': 0}
-            if cultura == 'Milho':
-                culturas[cultura][uf]['producao_anterior'] += rec['producao'] or 0
-            else:
-                culturas[cultura][uf]['producao_anterior'] = rec['producao'] or 0
+            culturas[cultura][uf]['producao_anterior'] = rec['producao'] or 0
+
+    # Log diagnóstico para conferir totais
+    for cult, ufs in culturas.items():
+        tot = sum(u['producao'] for u in ufs.values()) / 1000  # mil t → Mt
+        log.info(f"CONAB · {cult} safra {safra_recente}: {len(ufs)} UFs · total {tot:.1f} Mt")
 
     return {
         'safra_atual': safra_recente,

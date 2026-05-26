@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-25T23:20:17",
+  "ultima_atualizacao": "2026-05-25T23:56:34",
   "fonte": "MDIC · ComexStat (API oficial)",
   "endpoint": "https://api-comexstat.mdic.gov.br/general",
   "status": "PARCIAL",
@@ -122,28 +122,28 @@
       "descricao": "Metanol",
       "fluxo": "import",
       "categoria": "metanol",
-      "ano_corrente": {
-        "fob_usd": 169158709.0,
-        "kg": 457695696.0,
-        "toneladas": 457695.7,
-        "preco_medio_usd_ton": 369.59
-      },
-      "ano_anterior": {
-        "fob_usd": 662639294.0,
-        "kg": 1685096492.0,
-        "toneladas": 1685096.49,
-        "preco_medio_usd_ton": 393.24
-      },
-      "var_fob_pct": -74.47,
-      "var_volume_pct": -72.84,
-      "linhas": 16
+      "erro": "sem retorno"
     },
     {
       "ncm": "12010090",
       "descricao": "Soja em grão",
       "fluxo": "export",
       "categoria": "soja_grao",
-      "erro": "sem retorno"
+      "ano_corrente": {
+        "fob_usd": 0.0,
+        "kg": 0.0,
+        "toneladas": 0.0,
+        "preco_medio_usd_ton": null
+      },
+      "ano_anterior": {
+        "fob_usd": 0.0,
+        "kg": 0.0,
+        "toneladas": 0.0,
+        "preco_medio_usd_ton": null
+      },
+      "var_fob_pct": null,
+      "var_volume_pct": null,
+      "linhas": 0
     }
   ]
 }

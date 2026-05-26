@@ -837,10 +837,19 @@ function renderBiodieselANP() {
   }
   if (b.capacidade_total_m3_ano != null) {
     $('#b100-cap-total').innerHTML = fmtNum(b.capacidade_total_m3_ano/1e6, 2) + ' <span class="unit">M m³/ano</span>';
-    if (b.producao_total_m3) {
-      const util = (b.producao_total_m3 * 12) / b.capacidade_total_m3_ano * 100;
+    // Prefere taxa direto do JSON; senão calcula
+    let util = b.taxa_utilizacao_pct;
+    if (util == null && b.producao_total_m3) {
+      util = (b.producao_total_m3 * 12) / b.capacidade_total_m3_ano * 100;
+    }
+    if (util != null) {
       $('#b100-util').textContent = fmtNum(util, 1) + '%';
     }
+  }
+  // Mistura vigente e lei
+  if (b.mistura_vigente) {
+    const mistEl = $('#b100-mistura');
+    if (mistEl) mistEl.textContent = b.mistura_vigente;
   }
 
   // Ranking
@@ -942,81 +951,155 @@ function renderMateriasPrimas() {
    ===================================================================== */
 function renderANPCombustiveis() {
   const a = STATE.anp_combustiveis;
-  if (!a || a.status === 'PENDENTE' || !a.medias_brasil) {
+  if (!a || a.status === 'PENDENTE' || !a.produtos || a.produtos.length === 0) {
     setStatusBadge('anp-status', 'PENDENTE', 'ANP · aguardando');
     return;
   }
   setStatusBadge('anp-status', a.status || 'OK',
-    'ANP · ' + (a.semana_referencia || (a.ultima_atualizacao || '').slice(0,10)));
+    'ANP · ref ' + (a.data_referencia || (a.ultima_atualizacao || '').slice(0,10)));
 
-  const setProduct = (id, deltaId, key) => {
-    const v = a.medias_brasil[key];
-    if (v == null) return;
+  // Mapeia produto_id (snake_case do coletor) → produto
+  const byId = {};
+  a.produtos.forEach(p => { byId[p.produto_id] = p; });
+
+  // Helper: preencher um KPI a partir do produto
+  const setKPI = (id, deltaId, prodId) => {
+    const p = byId[prodId];
+    if (!p) return;
     const el = $('#' + id);
-    if (el) el.innerHTML = fmtBRL2(v.preco) + ' <span class="unit">/L</span>';
-    if (v.var_pct != null) {
+    if (el) el.innerHTML = fmtBRL2(p.preco_medio_brasil) + ' <span class="unit">/L</span>';
+    if (p.variacao_semanal_pct != null) {
       const dEl = $('#' + deltaId);
-      dEl.className = 'kpi-delta delta ' + deltaClass(v.var_pct);
-      dEl.textContent = fmtPct(v.var_pct);
+      if (dEl) {
+        dEl.className = 'kpi-delta delta ' + deltaClass(p.variacao_semanal_pct);
+        dEl.textContent = fmtPct(p.variacao_semanal_pct);
+      }
     }
   };
-  setProduct('anp-s10', 'anp-s10-delta', 'diesel_s10');
-  setProduct('anp-s500', 'anp-s500-delta', 'diesel_s500');
-  setProduct('anp-gasolina', 'anp-gasolina-delta', 'gasolina');
-  setProduct('anp-etanol', 'anp-etanol-delta', 'etanol');
-
-  // Rankings UF
-  const renderUFTable = (tbodyId, ufs, brMedia) => {
-    const tb = $('#' + tbodyId);
-    if (!tb) return;
-    if (!ufs || ufs.length === 0) {
-      tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--be8-dim); padding:24px;">Sem dados</td></tr>';
-      return;
+  // O coletor pode usar diferentes ids — tentar variações comuns
+  // ANP nomes possíveis: 'OLEO DIESEL', 'OLEO DIESEL S10', 'GASOLINA COMUM', 'ETANOL HIDRATADO'
+  // O coletor mapeia para keys; vamos descobrir por busca
+  const findByPattern = (...patterns) => {
+    for (const k of Object.keys(byId)) {
+      const ku = k.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      for (const p of patterns) {
+        const pu = p.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (ku.includes(pu)) return byId[k];
+      }
     }
-    tb.innerHTML = ufs.slice(0, 8).map((u, i) => {
-      const d = brMedia ? ((u.preco - brMedia) / brMedia) * 100 : null;
-      return `<tr>
-        <td class="rank">${String(i+1).padStart(2,'0')}</td>
-        <td><strong>${u.uf}</strong></td>
-        <td style="color:var(--be8-mist); font-size:12px;">${u.regiao || '—'}</td>
-        <td class="num">${fmtBRL2(u.preco)}</td>
-        <td class="num">${d == null ? '—' : `<span class="kpi-delta delta ${deltaClass(d)}">${fmtPct(d)}</span>`}</td>
-      </tr>`;
-    }).join('');
+    return null;
   };
-  if (a.ranking_s10_caras) renderUFTable('anp-s10-caras-tbody', a.ranking_s10_caras, a.medias_brasil?.diesel_s10?.preco);
-  if (a.ranking_s10_baratas) renderUFTable('anp-s10-baratas-tbody', a.ranking_s10_baratas, a.medias_brasil?.diesel_s10?.preco);
+  // Também tentar pelo "produto" textual (fallback)
+  const findByLabel = (...patterns) => {
+    for (const p of a.produtos) {
+      const lab = (p.produto || '').toUpperCase();
+      for (const pat of patterns) {
+        if (lab.includes(pat.toUpperCase())) return p;
+      }
+    }
+    return null;
+  };
 
-  // Regiões viz
-  if (a.medias_regiao) renderANPRegioes(a.medias_regiao);
+  const s10  = findByPattern('s10', 'diesel_s10') || findByLabel('DIESEL S10', 'S-10', 'S 10');
+  const s500 = findByPattern('s500', 'diesel_s500', 'oleo_diesel') || findByLabel('DIESEL S500', 'S500', 'ÓLEO DIESEL');
+  const gas  = findByPattern('gasolina') || findByLabel('GASOLINA COMUM', 'GASOLINA');
+  const eta  = findByPattern('etanol') || findByLabel('ETANOL HIDRATADO', 'ETANOL');
+
+  const applyKPI = (id, deltaId, p) => {
+    if (!p) return;
+    const el = $('#' + id);
+    if (el) el.innerHTML = fmtBRL2(p.preco_medio_brasil) + ' <span class="unit">/L</span>';
+    if (p.variacao_semanal_pct != null) {
+      const dEl = $('#' + deltaId);
+      if (dEl) {
+        dEl.className = 'kpi-delta delta ' + deltaClass(p.variacao_semanal_pct);
+        dEl.textContent = fmtPct(p.variacao_semanal_pct);
+      }
+    }
+  };
+  applyKPI('anp-s10',       'anp-s10-delta',       s10);
+  applyKPI('anp-s500',      'anp-s500-delta',      s500);
+  applyKPI('anp-gasolina',  'anp-gasolina-delta',  gas);
+  applyKPI('anp-etanol',    'anp-etanol-delta',    eta);
+
+  // Mapa UF → região (para mostrar coluna região no ranking)
+  const UF_REG = {
+    'AC':'N','AM':'N','AP':'N','PA':'N','RO':'N','RR':'N','TO':'N',
+    'AL':'NE','BA':'NE','CE':'NE','MA':'NE','PB':'NE','PE':'NE','PI':'NE','RN':'NE','SE':'NE',
+    'DF':'CO','GO':'CO','MT':'CO','MS':'CO',
+    'ES':'SE','MG':'SE','RJ':'SE','SP':'SE',
+    'PR':'S','RS':'S','SC':'S',
+  };
+  const REG_LABEL = { 'N':'Norte','NE':'Nordeste','CO':'Centro-Oeste','SE':'Sudeste','S':'Sul' };
+
+  // Ranking UFs (mais caras e mais baratas) com base no Diesel S10
+  if (s10 && s10.por_uf && s10.por_uf.length) {
+    const ufs = s10.por_uf.slice().filter(u => u.preco_medio != null);
+    ufs.sort((a, b) => b.preco_medio - a.preco_medio);
+    const caras = ufs.slice(0, 8);
+    const baratas = ufs.slice().reverse().slice(0, 8);
+    const brMedia = s10.preco_medio_brasil;
+
+    const renderUFs = (tbodyId, list) => {
+      const tb = $('#' + tbodyId);
+      if (!tb) return;
+      if (!list.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--be8-dim); padding:24px;">Sem dados</td></tr>'; return; }
+      tb.innerHTML = list.map((u, i) => {
+        const d = brMedia ? ((u.preco_medio - brMedia) / brMedia) * 100 : null;
+        return `<tr>
+          <td class="rank">${String(i+1).padStart(2,'0')}</td>
+          <td><strong>${u.uf}</strong></td>
+          <td style="color:var(--be8-mist); font-size:12px;">${REG_LABEL[UF_REG[u.uf]] || '—'}</td>
+          <td class="num">${fmtBRL2(u.preco_medio)}</td>
+          <td class="num">${d == null ? '—' : `<span class="kpi-delta delta ${deltaClass(d)}">${fmtPct(d)}</span>`}</td>
+        </tr>`;
+      }).join('');
+    };
+    renderUFs('anp-s10-caras-tbody', caras);
+    renderUFs('anp-s10-baratas-tbody', baratas);
+  }
+
+  // Por região — usa s10.por_regiao [{regiao, preco_medio, n_postos}]
+  if (s10 && s10.por_regiao && s10.por_regiao.length) {
+    renderANPRegioes(s10.por_regiao);
+  }
 }
 
 function renderANPRegioes(regioes) {
+  // regioes = [{regiao, preco_medio, n_postos}]
   const el = $('#anp-regioes-viz');
   if (!el) return;
-  const entries = Object.entries(regioes);
-  if (entries.length === 0) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados</div>'; return; }
-  // Encontrar min/max para escala
-  const values = entries.map(([_, v]) => v.diesel_s10 || 0).filter(v => v > 0);
-  if (values.length === 0) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados de Diesel S10 por região</div>'; return; }
+  if (!regioes.length) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados</div>'; return; }
+  const valid = regioes.filter(r => r.preco_medio != null && r.preco_medio > 0);
+  if (!valid.length) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados de Diesel S10 por região</div>'; return; }
+  const values = valid.map(r => r.preco_medio);
   const min = Math.min(...values), max = Math.max(...values);
-  const labels = { 'CO': 'Centro-Oeste', 'S': 'Sul', 'SE': 'Sudeste', 'NE': 'Nordeste', 'N': 'Norte' };
-  const colors = { 'CO': '#0eb194', 'S': '#55c94f', 'SE': '#d4a84b', 'NE': '#7a9bbf', 'N': '#a8bdc9' };
+  // Mapeia variantes de label
+  const labelMap = {
+    'CO': '#0eb194', 'S': '#55c94f', 'SE': '#d4a84b', 'NE': '#7a9bbf', 'N': '#a8bdc9',
+    'CENTRO-OESTE': '#0eb194', 'SUL': '#55c94f', 'SUDESTE': '#d4a84b',
+    'NORDESTE': '#7a9bbf', 'NORTE': '#a8bdc9'
+  };
+  const getColor = reg => labelMap[String(reg||'').toUpperCase()] || '#5e7382';
+
+  // ordena por preço desc
+  valid.sort((a, b) => b.preco_medio - a.preco_medio);
+
   el.innerHTML = `
-    <div style="font-size: 13px; color: var(--be8-mist); margin-bottom: 14px;">Preço médio do Diesel S10 por região (R$/L)</div>
+    <div style="font-size: 13px; color: var(--be8-mist); margin-bottom: 14px;">Preço médio do Diesel S10 por região (R$/L) · ordenação: mais caro → mais barato</div>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      ${entries.map(([reg, v]) => {
-        const val = v.diesel_s10 || 0;
-        const pct = val ? ((val - min) / (max - min)) * 100 : 0;
-        const c = colors[reg] || '#5e7382';
+      ${valid.map(v => {
+        const val = v.preco_medio;
+        const pct = max > min ? ((val - min) / (max - min)) * 100 : 50;
+        const c = getColor(v.regiao);
         return `
           <div>
             <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
-              <span style="color:var(--be8-ice);">${labels[reg] || reg}</span>
+              <span style="color:var(--be8-ice);">${v.regiao || '—'}${v.n_postos ? ` <span style="color:var(--be8-dim); font-size:10.5px;">(${v.n_postos} postos)</span>` : ''}</span>
               <span style="font-family:var(--font-mono); color:var(--be8-mist);">${fmtBRL2(val)}</span>
             </div>
-            <div style="height:8px; background:rgba(168,189,201,0.08); border-radius:4px; overflow:hidden;">
-              <div style="height:100%; width:${pct}%; background:${c}; border-radius:4px;"></div>
+            <div style="height:10px; background:rgba(168,189,201,0.08); border-radius:5px; overflow:hidden;">
+              <div style="height:100%; width:${Math.max(pct, 5)}%; background:${c}; border-radius:5px; transition:width 0.4s;"></div>
             </div>
           </div>`;
       }).join('')}
@@ -1028,39 +1111,73 @@ function renderANPRegioes(regioes) {
    ===================================================================== */
 function renderComex() {
   const c = STATE.comex;
-  if (!c || c.status === 'PENDENTE' || !c.fluxos) {
+  if (!c || c.status === 'PENDENTE' || !c.fluxos || c.fluxos.length === 0) {
     setStatusBadge('comex-status', 'PENDENTE', 'ComexStat · aguardando');
     return;
   }
   setStatusBadge('comex-status', c.status || 'OK',
     'ComexStat · ' + (c.ultima_atualizacao || '').slice(0,10));
 
-  const fmtComex = (item, tipo) => {
-    if (!item || item.status === 'ERRO') {
-      return '<span class="src-status src-error">Sem dados</span>';
-    }
-    if (tipo === 'fob') {
-      const fob = item.total_fob_usd || 0;
-      if (fob >= 1e9) return fmtNum(fob/1e9, 2) + ' <span class="unit">bi US$</span>';
-      if (fob >= 1e6) return fmtNum(fob/1e6, 1) + ' <span class="unit">M US$</span>';
-      return fmtNum(fob/1e3, 0) + ' <span class="unit">k US$</span>';
-    } else {
-      const kg = item.total_kg || 0;
-      if (kg >= 1e9) return fmtNum(kg/1e9, 2) + ' <span class="unit">Mt</span>';
-      if (kg >= 1e6) return fmtNum(kg/1e6, 1) + ' <span class="unit">kt</span>';
-      return fmtNum(kg/1e3, 0) + ' <span class="unit">t</span>';
-    }
+  // O JSON real traz fluxos como ARRAY de { ncm, descricao, fluxo, categoria, ano_corrente: {fob_usd, kg, ...}, var_fob_pct, var_volume_pct }
+  // Mapeamos cada par (categoria, fluxo) para um card específico.
+  const map = {};
+  c.fluxos.forEach(f => {
+    const key = `${f.categoria}_${f.fluxo}`;  // ex: "biodiesel_export", "metanol_import"
+    map[key] = f;
+  });
+
+  // Formatador inteligente baseado em magnitude
+  const fmtFob = (fob) => {
+    if (!fob || fob === 0) return '<span style="color:var(--be8-dim);">US$ 0</span>';
+    if (fob >= 1e9) return fmtNum(fob/1e9, 2) + ' <span class="unit">bi US$</span>';
+    if (fob >= 1e6) return fmtNum(fob/1e6, 1) + ' <span class="unit">M US$</span>';
+    return fmtNum(fob/1e3, 0) + ' <span class="unit">k US$</span>';
+  };
+  const fmtKg = (kg) => {
+    if (!kg || kg === 0) return '<span style="color:var(--be8-dim);">0 t</span>';
+    if (kg >= 1e9) return fmtNum(kg/1e9, 2) + ' <span class="unit">Mt</span>';
+    if (kg >= 1e6) return fmtNum(kg/1e6, 1) + ' <span class="unit">kt</span>';
+    return fmtNum(kg/1e3, 0) + ' <span class="unit">t</span>';
   };
 
-  const f = c.fluxos;
-  const setIfExists = (id, html) => { const el = $('#' + id); if (el) el.innerHTML = html; };
+  // Renderiza um card completo: valor principal + variação YoY + preço médio
+  const renderCard = (id, item, primaryKind = 'fob') => {
+    const el = $('#' + id);
+    if (!el) return;
+    if (!item || item.erro) {
+      el.innerHTML = '<span class="src-status src-error">Sem dados</span>';
+      return;
+    }
+    const cur = item.ano_corrente || {};
+    const fob = cur.fob_usd || 0;
+    const kg = cur.kg || 0;
+    const tons = cur.toneladas || 0;
+    const precoTon = cur.preco_medio_usd_ton;
+    const varFob = item.var_fob_pct;
+    const varVol = item.var_volume_pct;
 
-  setIfExists('comex-diesel-vol',    fmtComex(f.diesel_imp, 'fob'));
-  setIfExists('comex-oleo-vol',      fmtComex(f.oleo_soja_exp, 'kg'));
-  setIfExists('comex-biodiesel-vol', fmtComex(f.biodiesel_exp, 'fob'));
-  setIfExists('comex-farelo-vol',    fmtComex(f.farelo_soja_exp, 'kg'));
-  setIfExists('comex-soja-vol',      fmtComex(f.soja_grao_exp, 'kg'));
-  setIfExists('comex-metanol-vol',   fmtComex(f.metanol_imp, 'kg'));
+    const principalHtml = primaryKind === 'fob' ? fmtFob(fob) : fmtKg(kg);
+    const secundarioLabel = primaryKind === 'fob' ? `${fmtNum(tons, 0)} t` : `US$ ${fmtNum(fob/1e6, 1)} M`;
+    const varPrincipal = primaryKind === 'fob' ? varFob : varVol;
+    const varSecundaria = primaryKind === 'fob' ? varVol : varFob;
+    const varLabel = primaryKind === 'fob' ? 'volume' : 'FOB';
+
+    el.innerHTML = `
+      <div style="font-size:24px; font-family:var(--font-display); color:var(--be8-ice); line-height:1.05;">${principalHtml}</div>
+      <div style="margin-top:6px; display:flex; gap:8px; align-items:center; font-size:11px;">
+        ${varPrincipal != null ? `<span class="kpi-delta delta ${deltaClass(varPrincipal)}">${fmtPct(varPrincipal)} YoY</span>` : '<span style="color:var(--be8-dim);">— YoY</span>'}
+        <span style="color:var(--be8-mist);">${secundarioLabel}${varSecundaria != null ? ` (${fmtPct(varSecundaria)} ${varLabel})` : ''}</span>
+      </div>
+      ${precoTon ? `<div style="margin-top:6px; font-size:10.5px; font-family:var(--font-mono); color:var(--be8-mist); letter-spacing:0.04em;">Preço médio implícito: <strong style="color:var(--be8-ice);">US$ ${fmtNum(precoTon, 0)}/t</strong></div>` : ''}
+    `;
+  };
+
+  renderCard('comex-diesel-vol',    map['combustivel_import'],  'fob');
+  renderCard('comex-oleo-vol',      map['oleo_soja_export'],    'kg');
+  renderCard('comex-biodiesel-vol', map['biodiesel_export'],    'fob');
+  renderCard('comex-farelo-vol',    map['farelo_export'],       'kg');
+  renderCard('comex-soja-vol',      map['soja_grao_export'],    'kg');
+  renderCard('comex-metanol-vol',   map['metanol_import'],      'kg');
 }
 
 /* =====================================================================
@@ -1569,6 +1686,70 @@ function renderBe8Profile() {
   // Fontes
   if (p.fontes_referencia) {
     $('#profile-fontes').innerHTML = p.fontes_referencia.map(url => `<li><a href="${url}" target="_blank" rel="noopener" style="color:var(--be8-green-1);">${url}</a></li>`).join('');
+  }
+
+  // === NOVAS SEÇÕES ENRIQUECIDAS ===
+
+  // Indicadores Públicos (tabela com fontes auditáveis)
+  const indEl = $('#profile-indicadores');
+  if (indEl && p.indicadores_publicos && p.indicadores_publicos.length) {
+    indEl.innerHTML = `
+      <table class="data">
+        <thead><tr><th>Indicador</th><th>Valor</th><th>Fonte</th><th>Observação</th></tr></thead>
+        <tbody>
+          ${p.indicadores_publicos.map(i => `
+            <tr>
+              <td><strong>${i.indicador || '—'}</strong></td>
+              <td class="num" style="font-family:var(--font-mono); color:var(--be8-green-1); font-weight:600;">${i.valor || '—'}</td>
+              <td style="font-size:11.5px; color:var(--be8-mist);">${i.fonte || '—'}</td>
+              <td style="font-size:11.5px; color:var(--be8-dim);">${i.observacao || ''}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Papel estratégico (parágrafo)
+  const papelEl = $('#profile-papel');
+  if (papelEl && p.papel_estrategico) {
+    papelEl.innerHTML = `
+      <div style="padding: 18px 20px; background: linear-gradient(135deg, rgba(14,177,148,0.06) 0%, rgba(8,31,46,0.3) 100%); border-left: 3px solid var(--be8-green-1); border-radius: 0 8px 8px 0; font-size: 14px; line-height: 1.7; color: var(--be8-ice);">
+        ${p.papel_estrategico}
+      </div>`;
+  }
+
+  // Portfólio de produtos
+  const prodEl = $('#profile-produtos');
+  if (prodEl && p.produtos && p.produtos.length) {
+    prodEl.innerHTML = p.produtos.map(prod => `
+      <div style="padding:14px; background:rgba(8,31,46,0.4); border:1px solid var(--be8-border); border-radius:8px;">
+        <div style="font-family:var(--font-display); font-size:15px; color:var(--be8-green-2); font-weight:500; margin-bottom:4px;">${prod.produto}</div>
+        <div style="font-size:12px; color:var(--be8-mist); line-height:1.5;">${prod.descricao}</div>
+      </div>`).join('');
+  }
+
+  // Presença geográfica
+  const presEl = $('#profile-presenca');
+  if (presEl && p.presenca_geografica && p.presenca_geografica.length) {
+    presEl.innerHTML = p.presenca_geografica.map(loc => `
+      <div style="display:flex; gap:12px; align-items:flex-start; padding:12px 14px; background:rgba(14,177,148,0.04); border-left:2px solid var(--be8-green-1); border-radius:0 6px 6px 0; margin-bottom:8px;">
+        <div style="color:var(--be8-green-1); font-size:18px; line-height:1;">◉</div>
+        <div style="flex:1;">
+          <div style="font-size:13px; color:var(--be8-ice); font-weight:500;">${loc.localidade}</div>
+          <div style="margin-top:3px; font-size:11px; color:var(--be8-mist); font-family:var(--font-mono); letter-spacing:0.03em;">${loc.tipo}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Frentes de atuação (missão)
+  const missaoEl = $('#profile-missao');
+  if (missaoEl && p.missao_atuacao && p.missao_atuacao.length) {
+    missaoEl.innerHTML = `
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        ${p.missao_atuacao.map(m => `
+          <span style="padding:8px 14px; background:rgba(85,201,79,0.08); border:1px solid rgba(85,201,79,0.25); border-radius:20px; font-size:12px; color:var(--be8-green-2); font-weight:500;">${m}</span>
+        `).join('')}
+      </div>`;
   }
 }
 

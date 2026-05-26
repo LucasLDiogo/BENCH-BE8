@@ -1,28 +1,28 @@
 {
-  "ultima_atualizacao": "2026-05-25T23:20:14",
+  "ultima_atualizacao": "2026-05-25T23:56:31",
   "fonte": "CONAB · Série Histórica de Grãos (TXT)",
   "endpoint": "https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.txt",
   "status": "OK",
-  "safra_atual": "1ª SAFRA",
-  "safra_anterior": "UNICA",
+  "safra_atual": "2025/26",
+  "safra_anterior": "2025",
   "safras": [
     {
       "cultura": "Milho",
       "uf": "AC",
       "regiao": "N",
-      "producao_mt": 0.978,
+      "producao_mt": 1.471,
       "producao_mt_anterior": null,
-      "area_mha": 0.311,
-      "produtividade_kg_ha": 31.0
+      "area_mha": 0.424,
+      "produtividade_kg_ha": 35.0
     },
     {
       "cultura": "Milho",
       "uf": "AL",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 1.664,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 0.359,
+      "produtividade_kg_ha": 46.0
     },
     {
       "cultura": "Milho",
@@ -37,136 +37,136 @@
       "cultura": "Milho",
       "uf": "AP",
       "regiao": "N",
-      "producao_mt": null,
+      "producao_mt": 0.002,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 0.002,
+      "produtividade_kg_ha": 1.0
     },
     {
       "cultura": "Milho",
       "uf": "BA",
       "regiao": "NE",
-      "producao_mt": 15.035,
+      "producao_mt": 32.582,
       "producao_mt_anterior": null,
-      "area_mha": 3.517,
-      "produtividade_kg_ha": 43.0
+      "area_mha": 3.934,
+      "produtividade_kg_ha": 45.0
     },
     {
       "cultura": "Milho",
       "uf": "CE",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 6.109,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 5.715,
+      "produtividade_kg_ha": 11.0
     },
     {
       "cultura": "Milho",
       "uf": "DF",
       "regiao": "CO",
-      "producao_mt": 1.358,
+      "producao_mt": 3.985,
       "producao_mt_anterior": null,
-      "area_mha": 0.145,
-      "produtividade_kg_ha": 94.0
+      "area_mha": 0.186,
+      "produtividade_kg_ha": 74.0
     },
     {
       "cultura": "Milho",
       "uf": "ES",
       "regiao": "SE",
-      "producao_mt": 0.444,
+      "producao_mt": 0.58,
       "producao_mt_anterior": null,
-      "area_mha": 0.135,
-      "produtividade_kg_ha": 33.0
+      "area_mha": 0.138,
+      "produtividade_kg_ha": 36.0
     },
     {
       "cultura": "Milho",
       "uf": "GO",
       "regiao": "CO",
-      "producao_mt": 15.487,
+      "producao_mt": 118.843,
       "producao_mt_anterior": null,
-      "area_mha": 0.149,
-      "produtividade_kg_ha": 104.0
+      "area_mha": 17.658,
+      "produtividade_kg_ha": 65.0
     },
     {
       "cultura": "Milho",
       "uf": "MA",
       "regiao": "NE",
-      "producao_mt": 17.435,
+      "producao_mt": 18.761,
       "producao_mt_anterior": null,
-      "area_mha": 3.142,
+      "area_mha": 5.546,
       "produtividade_kg_ha": 55.0
     },
     {
       "cultura": "Milho",
       "uf": "MG",
       "regiao": "SE",
-      "producao_mt": 47.417,
+      "producao_mt": 71.931,
       "producao_mt_anterior": null,
-      "area_mha": 6.722,
-      "produtividade_kg_ha": 71.0
+      "area_mha": 11.127,
+      "produtividade_kg_ha": 66.0
     },
     {
       "cultura": "Milho",
       "uf": "MS",
       "regiao": "CO",
-      "producao_mt": 1.729,
+      "producao_mt": 125.921,
       "producao_mt_anterior": null,
-      "area_mha": 0.155,
-      "produtividade_kg_ha": 112.0
+      "area_mha": 21.428,
+      "produtividade_kg_ha": 59.0
     },
     {
       "cultura": "Milho",
       "uf": "MT",
       "regiao": "CO",
-      "producao_mt": 6.108,
+      "producao_mt": 545.992,
       "producao_mt_anterior": null,
-      "area_mha": 0.727,
-      "produtividade_kg_ha": 84.0
+      "area_mha": 76.193,
+      "produtividade_kg_ha": 72.0
     },
     {
       "cultura": "Milho",
       "uf": "PA",
       "regiao": "N",
-      "producao_mt": 7.898,
+      "producao_mt": 24.64,
       "producao_mt_anterior": null,
-      "area_mha": 2.338,
-      "produtividade_kg_ha": 34.0
+      "area_mha": 5.714,
+      "produtividade_kg_ha": 14.0
     },
     {
       "cultura": "Milho",
       "uf": "PB",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 0.719,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 1.115,
+      "produtividade_kg_ha": 6.0
     },
     {
       "cultura": "Milho",
       "uf": "PE",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 2.243,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 1.944,
+      "produtividade_kg_ha": 14.0
     },
     {
       "cultura": "Milho",
       "uf": "PI",
       "regiao": "NE",
-      "producao_mt": 17.213,
+      "producao_mt": 22.397,
       "producao_mt_anterior": null,
-      "area_mha": 3.742,
-      "produtividade_kg_ha": 46.0
+      "area_mha": 4.74,
+      "produtividade_kg_ha": 47.0
     },
     {
       "cultura": "Milho",
       "uf": "PR",
       "regiao": "S",
-      "producao_mt": 3.87,
+      "producao_mt": 176.027,
       "producao_mt_anterior": null,
-      "area_mha": 3.474,
-      "produtividade_kg_ha": 111.0
+      "area_mha": 32.311,
+      "produtividade_kg_ha": 8.0
     },
     {
       "cultura": "Milho",
@@ -181,28 +181,28 @@
       "cultura": "Milho",
       "uf": "RN",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 0.319,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 0.061,
+      "produtividade_kg_ha": 5.0
     },
     {
       "cultura": "Milho",
       "uf": "RO",
       "regiao": "N",
-      "producao_mt": 0.031,
+      "producao_mt": 22.93,
       "producao_mt_anterior": null,
-      "area_mha": 0.082,
-      "produtividade_kg_ha": 38.0
+      "area_mha": 4.587,
+      "produtividade_kg_ha": 51.0
     },
     {
       "cultura": "Milho",
       "uf": "RR",
       "regiao": "N",
-      "producao_mt": null,
+      "producao_mt": 0.12,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 0.02,
+      "produtividade_kg_ha": 6.0
     },
     {
       "cultura": "Milho",
@@ -226,91 +226,91 @@
       "cultura": "Milho",
       "uf": "SE",
       "regiao": "NE",
-      "producao_mt": null,
+      "producao_mt": 11.088,
       "producao_mt_anterior": null,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "area_mha": 1.861,
+      "produtividade_kg_ha": 6.0
     },
     {
       "cultura": "Milho",
       "uf": "SP",
       "regiao": "SE",
-      "producao_mt": 18.116,
+      "producao_mt": 44.16,
       "producao_mt_anterior": null,
-      "area_mha": 2.787,
-      "produtividade_kg_ha": 65.0
+      "area_mha": 3.281,
+      "produtividade_kg_ha": 58.0
     },
     {
       "cultura": "Milho",
       "uf": "TO",
       "regiao": "N",
-      "producao_mt": 0.507,
+      "producao_mt": 2.802,
       "producao_mt_anterior": null,
-      "area_mha": 0.077,
-      "produtividade_kg_ha": 66.0
+      "area_mha": 4.493,
+      "produtividade_kg_ha": 55.0
     },
     {
       "cultura": "Soja",
       "uf": "AC",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.832,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.832,
+      "producao_mt_anterior": null,
+      "area_mha": 0.022,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
       "uf": "AL",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.257,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.257,
+      "producao_mt_anterior": null,
+      "area_mha": 0.075,
+      "produtividade_kg_ha": 34.0
     },
     {
       "cultura": "Soja",
       "uf": "AM",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.542,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.542,
+      "producao_mt_anterior": null,
+      "area_mha": 0.177,
+      "produtividade_kg_ha": 31.0
     },
     {
       "cultura": "Soja",
       "uf": "AP",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.318,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.318,
+      "producao_mt_anterior": null,
+      "area_mha": 0.012,
+      "produtividade_kg_ha": 26.0
     },
     {
       "cultura": "Soja",
       "uf": "BA",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 95.321,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 95.321,
+      "producao_mt_anterior": null,
+      "area_mha": 23.363,
+      "produtividade_kg_ha": 41.0
     },
     {
       "cultura": "Soja",
       "uf": "CE",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.015,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.015,
+      "producao_mt_anterior": null,
+      "area_mha": 0.004,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
       "uf": "DF",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 3.624,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 3.624,
+      "producao_mt_anterior": null,
+      "area_mha": 0.897,
+      "produtividade_kg_ha": 4.0
     },
     {
       "cultura": "Soja",
@@ -325,55 +325,55 @@
       "cultura": "Soja",
       "uf": "GO",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 201.478,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 201.478,
+      "producao_mt_anterior": null,
+      "area_mha": 51.529,
+      "produtividade_kg_ha": 39.0
     },
     {
       "cultura": "Soja",
       "uf": "MA",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 5.467,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 5.467,
+      "producao_mt_anterior": null,
+      "area_mha": 15.496,
+      "produtividade_kg_ha": 35.0
     },
     {
       "cultura": "Soja",
       "uf": "MG",
       "regiao": "SE",
-      "producao_mt": null,
-      "producao_mt_anterior": 91.588,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 91.588,
+      "producao_mt_anterior": null,
+      "area_mha": 23.424,
+      "produtividade_kg_ha": 39.0
     },
     {
       "cultura": "Soja",
       "uf": "MS",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 157.541,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 157.541,
+      "producao_mt_anterior": null,
+      "area_mha": 43.725,
+      "produtividade_kg_ha": 36.0
     },
     {
       "cultura": "Soja",
       "uf": "MT",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 516.216,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 516.216,
+      "producao_mt_anterior": null,
+      "area_mha": 130.062,
+      "produtividade_kg_ha": 4.0
     },
     {
       "cultura": "Soja",
       "uf": "PA",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 53.951,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 53.951,
+      "producao_mt_anterior": null,
+      "area_mha": 14.254,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
@@ -388,28 +388,28 @@
       "cultura": "Soja",
       "uf": "PE",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.024,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.024,
+      "producao_mt_anterior": null,
+      "area_mha": 0.008,
+      "produtividade_kg_ha": 3.0
     },
     {
       "cultura": "Soja",
       "uf": "PI",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 43.995,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 43.995,
+      "producao_mt_anterior": null,
+      "area_mha": 11.484,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
       "uf": "PR",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 215.488,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 215.488,
+      "producao_mt_anterior": null,
+      "area_mha": 57.387,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
@@ -433,37 +433,37 @@
       "cultura": "Soja",
       "uf": "RO",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 28.032,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 28.032,
+      "producao_mt_anterior": null,
+      "area_mha": 7.197,
+      "produtividade_kg_ha": 39.0
     },
     {
       "cultura": "Soja",
       "uf": "RR",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 4.794,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 4.794,
+      "producao_mt_anterior": null,
+      "area_mha": 1.455,
+      "produtividade_kg_ha": 33.0
     },
     {
       "cultura": "Soja",
       "uf": "RS",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 186.343,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 186.343,
+      "producao_mt_anterior": null,
+      "area_mha": 67.296,
+      "produtividade_kg_ha": 28.0
     },
     {
       "cultura": "Soja",
       "uf": "SC",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 31.306,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 31.306,
+      "producao_mt_anterior": null,
+      "area_mha": 8.206,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
@@ -478,19 +478,19 @@
       "cultura": "Soja",
       "uf": "SP",
       "regiao": "SE",
-      "producao_mt": null,
-      "producao_mt_anterior": 53.688,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 53.688,
+      "producao_mt_anterior": null,
+      "area_mha": 13.963,
+      "produtividade_kg_ha": 38.0
     },
     {
       "cultura": "Soja",
       "uf": "TO",
       "regiao": "N",
-      "producao_mt": null,
-      "producao_mt_anterior": 61.138,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 61.138,
+      "producao_mt_anterior": null,
+      "area_mha": 16.787,
+      "produtividade_kg_ha": 36.0
     },
     {
       "cultura": "Trigo",
