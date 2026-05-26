@@ -48,6 +48,8 @@
     <button class="nav-tab" data-page="governanca"><span class="tab-num">08</span> Governança</button>
     <button class="nav-tab" data-page="newsletter"><span class="tab-num">09</span> Newsletter</button>
     <button class="nav-tab" data-page="be8-profile"><span class="tab-num">10</span> Be8 Profile</button>
+    <button class="nav-tab" data-page="vendas-mapa"><span class="tab-num">11</span> Vendas &amp; Mapa</button>
+    <button class="nav-tab" data-page="benchmark-global"><span class="tab-num">12</span> Benchmark Global</button>
   </nav>
 </header>
 
@@ -1041,6 +1043,147 @@
   <div class="section-title"><span class="num">// 10.H</span><h2>Fontes públicas consultadas</h2><div class="line"></div></div>
   <div class="card">
     <ul id="profile-fontes" style="margin-left: 20px; font-size: 12.5px; line-height: 1.9; color: var(--be8-mist);"></ul>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 11 · VENDAS & MAPA DO BRASIL
+     ========================================================================= -->
+<section class="page" id="page-vendas-mapa">
+  <div class="page-header">
+    <div class="page-eyebrow">11 · DISTRIBUIÇÃO · GEOGRÁFICO</div>
+    <h1 class="page-title">Vendas <em>&amp; Mapa</em></h1>
+    <p class="page-sub">Vendas de combustíveis por UF · Diesel B (com mistura biodiesel) · Gasolina · Etanol · mapa choropleth interativo do Brasil.</p>
+    <span class="status-pill" id="vendas-status">⊘ Aguardando</span>
+  </div>
+
+  <!-- KPIs principais -->
+  <div class="grid grid-3">
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">DIESEL B · BRASIL · ANUAL</div>
+        <span class="card-meta">ANP · vendas</span>
+      </div>
+      <div class="kpi-value" id="vendas-diesel-total">— <span class="unit">m³</span></div>
+      <div class="kpi-context">Produto crítico para Be8 · contém B15 obrigatório</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">GASOLINA C · BRASIL · ANUAL</div>
+        <span class="card-meta">ANP · vendas</span>
+      </div>
+      <div class="kpi-value" id="vendas-gasolina-total">— <span class="unit">m³</span></div>
+      <div class="kpi-context">Combustível alternativo · pressão concorrencial</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">ETANOL HIDRATADO · BRASIL · ANUAL</div>
+        <span class="card-meta">ANP · vendas</span>
+      </div>
+      <div class="kpi-value" id="vendas-etanol-total">— <span class="unit">m³</span></div>
+      <div class="kpi-context">Concorrente direto na matriz renovável</div>
+    </div>
+  </div>
+
+  <!-- Mapa do Brasil + Controles -->
+  <div class="section-title"><span class="num">// 11.A</span><h2>Mapa do Brasil — volume por UF</h2><div class="line"></div></div>
+
+  <div class="card">
+    <!-- Filtro de produto -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:14px;">
+      <div style="display:flex; gap:8px;">
+        <button class="vendas-filter active" data-prod="diesel_b">Diesel B</button>
+        <button class="vendas-filter" data-prod="gasolina_c">Gasolina C</button>
+        <button class="vendas-filter" data-prod="etanol_hidratado">Etanol Hidratado</button>
+      </div>
+      <div style="display:flex; gap:14px; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--be8-mist);">
+        <span id="mapa-titulo">Diesel B · volume médio mensal (m³)</span>
+      </div>
+    </div>
+
+    <!-- Container do mapa Leaflet (carregado dinamicamente via CDN) -->
+    <div id="brasil-mapa" style="position:relative; min-height: 560px; border-radius:8px; overflow:hidden;"></div>
+  </div>
+
+  <!-- Ranking por UF + Composição regional -->
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-label">📊 Ranking UFs · top 10</div><span class="card-meta" id="vendas-rank-meta"></span></div>
+      <table class="data" style="margin-top:12px;">
+        <thead><tr><th>#</th><th>UF</th><th>REGIÃO</th><th class="num">VOLUME MENSAL (m³)</th><th class="num">SHARE</th></tr></thead>
+        <tbody id="vendas-rank-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">🌎 Composição regional</div></div>
+      <div id="vendas-regional-viz"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 12 · BENCHMARK GLOBAL (USDA WASDE)
+     ========================================================================= -->
+<section class="page" id="page-benchmark-global">
+  <div class="page-header">
+    <div class="page-eyebrow">12 · MERCADO MUNDIAL · WASDE</div>
+    <h1 class="page-title">Benchmark <em>Global</em></h1>
+    <p class="page-sub">Posição do Brasil na produção mundial de soja e biodiesel · estoques globais · demanda projetada — base USDA WASDE.</p>
+    <span class="status-pill" id="usda-status">⊘ Aguardando</span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-4">
+    <div class="kpi-card">
+      <div class="card-header"><div class="card-label">PRODUÇÃO MUNDIAL · SOJA</div><span class="card-meta">USDA WASDE</span></div>
+      <div class="kpi-value" id="usda-soja-mundo">— <span class="unit">Mt</span></div>
+      <div class="kpi-context">Safra <span id="usda-safra-ref">2025/26</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header"><div class="card-label">BRASIL · SHARE SOJA</div><span class="card-meta">USDA</span></div>
+      <div class="kpi-value" id="usda-brasil-soja">— <span class="unit">%</span></div>
+      <div class="kpi-context" id="usda-brasil-soja-ctx">— maior produtor mundial</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header"><div class="card-label">PRODUÇÃO MUNDIAL · BIODIESEL</div><span class="card-meta">USDA + IEA</span></div>
+      <div class="kpi-value" id="usda-biod-mundo">— <span class="unit">bi L</span></div>
+      <div class="kpi-context">Demanda projetada +6,4% CAGR 5 anos</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header"><div class="card-label">BRASIL · POSIÇÃO BIODIESEL</div><span class="card-meta">USDA</span></div>
+      <div class="kpi-value" id="usda-brasil-biod">— <span class="unit">o lugar</span></div>
+      <div class="kpi-context" id="usda-brasil-biod-ctx">— share mundial</div>
+    </div>
+  </div>
+
+  <!-- Rankings: Soja e Biodiesel lado a lado -->
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-label">🌱 Top produtores mundiais · SOJA</div><span class="card-meta">Mt · safra 2025/26</span></div>
+      <table class="data" style="margin-top:12px;">
+        <thead><tr><th>#</th><th>PAÍS</th><th class="num">PRODUÇÃO (Mt)</th><th class="num">SHARE</th></tr></thead>
+        <tbody id="usda-rank-soja-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">⛽ Top produtores mundiais · BIODIESEL</div><span class="card-meta">bi L · 2024</span></div>
+      <table class="data" style="margin-top:12px;">
+        <thead><tr><th>#</th><th>PAÍS</th><th class="num">PRODUÇÃO (bi L)</th><th class="num">SHARE</th></tr></thead>
+        <tbody id="usda-rank-biod-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Estoques globais + Preço Chicago -->
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-label">📈 Estoques globais de soja</div><span class="card-meta">USDA · Mt</span></div>
+      <div id="usda-estoques-viz" style="margin-top:14px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">💵 Preço soja CBOT Chicago</div><span class="card-meta">USDA · USD/bushel</span></div>
+      <div id="usda-preco-viz" style="margin-top:14px;"></div>
+    </div>
   </div>
 </section>
 

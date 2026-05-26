@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-25T23:56:17",
+  "ultima_atualizacao": "2026-05-26T00:50:57",
   "fonte": "Banco Central do Brasil · PTAX",
   "endpoint": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata",
   "status": "OK",
@@ -12,10 +12,6 @@
       "variacao_pct": -0.13562026326286675,
       "data_referencia": "2026-05-25 13:06:31.065",
       "serie_90d": [
-        {
-          "data": "2026-02-24",
-          "valor": 5.1682
-        },
         {
           "data": "2026-02-25",
           "valor": 5.144
@@ -270,10 +266,6 @@
       "variacao_pct": 0.20968684472861002,
       "data_referencia": "2026-05-25 13:06:31.065",
       "serie_90d": [
-        {
-          "data": "2026-02-24",
-          "valor": 6.0845
-        },
         {
           "data": "2026-02-25",
           "valor": 6.0709

@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-25T23:56:31",
+  "ultima_atualizacao": "2026-05-26T00:51:16",
   "fonte": "CONAB · Série Histórica de Grãos (TXT)",
   "endpoint": "https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.txt",
   "status": "OK",
@@ -532,10 +532,10 @@
       "cultura": "Trigo",
       "uf": "BA",
       "regiao": "NE",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.03,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.03,
+      "producao_mt_anterior": null,
+      "area_mha": 0.005,
+      "produtividade_kg_ha": 6.0
     },
     {
       "cultura": "Trigo",
@@ -550,10 +550,10 @@
       "cultura": "Trigo",
       "uf": "DF",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.329,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.329,
+      "producao_mt_anterior": null,
+      "area_mha": 0.079,
+      "produtividade_kg_ha": 42.0
     },
     {
       "cultura": "Trigo",
@@ -568,10 +568,10 @@
       "cultura": "Trigo",
       "uf": "GO",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 1.875,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 1.875,
+      "producao_mt_anterior": null,
+      "area_mha": 0.045,
+      "produtividade_kg_ha": 42.0
     },
     {
       "cultura": "Trigo",
@@ -586,19 +586,19 @@
       "cultura": "Trigo",
       "uf": "MG",
       "regiao": "SE",
-      "producao_mt": null,
-      "producao_mt_anterior": 4.223,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 4.223,
+      "producao_mt_anterior": null,
+      "area_mha": 1.577,
+      "produtividade_kg_ha": 27.0
     },
     {
       "cultura": "Trigo",
       "uf": "MS",
       "regiao": "CO",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.475,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.475,
+      "producao_mt_anterior": null,
+      "area_mha": 0.206,
+      "produtividade_kg_ha": 23.0
     },
     {
       "cultura": "Trigo",
@@ -649,10 +649,10 @@
       "cultura": "Trigo",
       "uf": "PR",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 22.356,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 22.356,
+      "producao_mt_anterior": null,
+      "area_mha": 7.535,
+      "produtividade_kg_ha": 3.0
     },
     {
       "cultura": "Trigo",
@@ -694,19 +694,19 @@
       "cultura": "Trigo",
       "uf": "RS",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 27.062,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 27.062,
+      "producao_mt_anterior": null,
+      "area_mha": 9.255,
+      "produtividade_kg_ha": 29.0
     },
     {
       "cultura": "Trigo",
       "uf": "SC",
       "regiao": "S",
-      "producao_mt": null,
-      "producao_mt_anterior": 0.375,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 0.375,
+      "producao_mt_anterior": null,
+      "area_mha": 1.101,
+      "produtividade_kg_ha": 34.0
     },
     {
       "cultura": "Trigo",
@@ -721,10 +721,10 @@
       "cultura": "Trigo",
       "uf": "SP",
       "regiao": "SE",
-      "producao_mt": null,
-      "producao_mt_anterior": 3.511,
-      "area_mha": null,
-      "produtividade_kg_ha": null
+      "producao_mt": 3.511,
+      "producao_mt_anterior": null,
+      "area_mha": 0.115,
+      "produtividade_kg_ha": 31.0
     },
     {
       "cultura": "Trigo",

@@ -16,10 +16,12 @@ COLETORES = [
     ("baixar_commodities",        "Yahoo Finance · Commodities"),
     ("baixar_anp_combustiveis",   "ANP · Preços combustíveis"),
     ("baixar_anp_b100",           "ANP · Biodiesel B100"),
+    ("baixar_anp_vendas",         "ANP · Vendas por UF/distribuidora"),
     ("baixar_conab",              "CONAB · Safras"),
     ("baixar_ibge_sidra",         "IBGE SIDRA · LSPA"),
     ("baixar_comex",              "ComexStat · Comércio exterior"),
     ("baixar_fred_eia",           "FRED + EIA · Macro/Energia"),
+    ("baixar_usda",               "USDA WASDE · Benchmark global"),
     ("gerar_noticias",            "Notícias setoriais (RSS)"),
     ("gerar_be8_profile",         "Be8 · Perfil institucional"),
 ]

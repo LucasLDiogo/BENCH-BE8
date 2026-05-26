@@ -1,0 +1,708 @@
+{
+  "ultima_atualizacao": "2026-05-26T00:51:15",
+  "fonte": "ANP · Anuário Estatístico 2024 (proporções consolidadas)",
+  "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb",
+  "status": "PARCIAL",
+  "modo": "snapshot embutido · proporções estáveis ANP 2024",
+  "ano_referencia": 2024,
+  "mes_referencia": 12,
+  "produtos": {
+    "diesel_b": {
+      "total_anual_m3": 74430000,
+      "total_medio_mensal_m3": 6202500.0,
+      "por_uf": [
+        {
+          "uf": "SP",
+          "regiao": "SE",
+          "volume_anual_m3": 12500000,
+          "volume_medio_mensal_m3": 1041667.0,
+          "share_pct": 16.79
+        },
+        {
+          "uf": "MG",
+          "regiao": "SE",
+          "volume_anual_m3": 6800000,
+          "volume_medio_mensal_m3": 566667.0,
+          "share_pct": 9.14
+        },
+        {
+          "uf": "MT",
+          "regiao": "CO",
+          "volume_anual_m3": 5600000,
+          "volume_medio_mensal_m3": 466667.0,
+          "share_pct": 7.52
+        },
+        {
+          "uf": "PR",
+          "regiao": "S",
+          "volume_anual_m3": 5350000,
+          "volume_medio_mensal_m3": 445833.0,
+          "share_pct": 7.19
+        },
+        {
+          "uf": "RS",
+          "regiao": "S",
+          "volume_anual_m3": 4900000,
+          "volume_medio_mensal_m3": 408333.0,
+          "share_pct": 6.58
+        },
+        {
+          "uf": "GO",
+          "regiao": "CO",
+          "volume_anual_m3": 4200000,
+          "volume_medio_mensal_m3": 350000.0,
+          "share_pct": 5.64
+        },
+        {
+          "uf": "BA",
+          "regiao": "NE",
+          "volume_anual_m3": 3950000,
+          "volume_medio_mensal_m3": 329167.0,
+          "share_pct": 5.31
+        },
+        {
+          "uf": "SC",
+          "regiao": "S",
+          "volume_anual_m3": 3350000,
+          "volume_medio_mensal_m3": 279167.0,
+          "share_pct": 4.5
+        },
+        {
+          "uf": "RJ",
+          "regiao": "SE",
+          "volume_anual_m3": 3120000,
+          "volume_medio_mensal_m3": 260000.0,
+          "share_pct": 4.19
+        },
+        {
+          "uf": "MS",
+          "regiao": "CO",
+          "volume_anual_m3": 3080000,
+          "volume_medio_mensal_m3": 256667.0,
+          "share_pct": 4.14
+        },
+        {
+          "uf": "PE",
+          "regiao": "NE",
+          "volume_anual_m3": 2780000,
+          "volume_medio_mensal_m3": 231667.0,
+          "share_pct": 3.74
+        },
+        {
+          "uf": "PA",
+          "regiao": "N",
+          "volume_anual_m3": 2640000,
+          "volume_medio_mensal_m3": 220000.0,
+          "share_pct": 3.55
+        },
+        {
+          "uf": "CE",
+          "regiao": "NE",
+          "volume_anual_m3": 2350000,
+          "volume_medio_mensal_m3": 195833.0,
+          "share_pct": 3.16
+        },
+        {
+          "uf": "MA",
+          "regiao": "NE",
+          "volume_anual_m3": 1980000,
+          "volume_medio_mensal_m3": 165000.0,
+          "share_pct": 2.66
+        },
+        {
+          "uf": "ES",
+          "regiao": "SE",
+          "volume_anual_m3": 1870000,
+          "volume_medio_mensal_m3": 155833.0,
+          "share_pct": 2.51
+        },
+        {
+          "uf": "RO",
+          "regiao": "N",
+          "volume_anual_m3": 1550000,
+          "volume_medio_mensal_m3": 129167.0,
+          "share_pct": 2.08
+        },
+        {
+          "uf": "TO",
+          "regiao": "N",
+          "volume_anual_m3": 1250000,
+          "volume_medio_mensal_m3": 104167.0,
+          "share_pct": 1.68
+        },
+        {
+          "uf": "PI",
+          "regiao": "NE",
+          "volume_anual_m3": 1180000,
+          "volume_medio_mensal_m3": 98333.0,
+          "share_pct": 1.59
+        },
+        {
+          "uf": "AM",
+          "regiao": "N",
+          "volume_anual_m3": 1020000,
+          "volume_medio_mensal_m3": 85000.0,
+          "share_pct": 1.37
+        },
+        {
+          "uf": "PB",
+          "regiao": "NE",
+          "volume_anual_m3": 950000,
+          "volume_medio_mensal_m3": 79167.0,
+          "share_pct": 1.28
+        },
+        {
+          "uf": "RN",
+          "regiao": "NE",
+          "volume_anual_m3": 920000,
+          "volume_medio_mensal_m3": 76667.0,
+          "share_pct": 1.24
+        },
+        {
+          "uf": "DF",
+          "regiao": "CO",
+          "volume_anual_m3": 880000,
+          "volume_medio_mensal_m3": 73333.0,
+          "share_pct": 1.18
+        },
+        {
+          "uf": "AL",
+          "regiao": "NE",
+          "volume_anual_m3": 780000,
+          "volume_medio_mensal_m3": 65000.0,
+          "share_pct": 1.05
+        },
+        {
+          "uf": "SE",
+          "regiao": "NE",
+          "volume_anual_m3": 620000,
+          "volume_medio_mensal_m3": 51667.0,
+          "share_pct": 0.83
+        },
+        {
+          "uf": "AC",
+          "regiao": "N",
+          "volume_anual_m3": 310000,
+          "volume_medio_mensal_m3": 25833.0,
+          "share_pct": 0.42
+        },
+        {
+          "uf": "AP",
+          "regiao": "N",
+          "volume_anual_m3": 280000,
+          "volume_medio_mensal_m3": 23333.0,
+          "share_pct": 0.38
+        },
+        {
+          "uf": "RR",
+          "regiao": "N",
+          "volume_anual_m3": 220000,
+          "volume_medio_mensal_m3": 18333.0,
+          "share_pct": 0.3
+        }
+      ],
+      "por_regiao": [
+        {
+          "regiao_sigla": "SE",
+          "regiao_nome": "Sudeste",
+          "volume_anual_m3": 24290000.0,
+          "volume_medio_mensal_m3": 2024167.0,
+          "share_pct": 32.63
+        },
+        {
+          "regiao_sigla": "NE",
+          "regiao_nome": "Nordeste",
+          "volume_anual_m3": 15510000.0,
+          "volume_medio_mensal_m3": 1292500.0,
+          "share_pct": 20.84
+        },
+        {
+          "regiao_sigla": "CO",
+          "regiao_nome": "Centro-Oeste",
+          "volume_anual_m3": 13760000.0,
+          "volume_medio_mensal_m3": 1146667.0,
+          "share_pct": 18.49
+        },
+        {
+          "regiao_sigla": "S",
+          "regiao_nome": "Sul",
+          "volume_anual_m3": 13600000.0,
+          "volume_medio_mensal_m3": 1133333.0,
+          "share_pct": 18.27
+        },
+        {
+          "regiao_sigla": "N",
+          "regiao_nome": "Norte",
+          "volume_anual_m3": 7270000.0,
+          "volume_medio_mensal_m3": 605833.0,
+          "share_pct": 9.77
+        }
+      ]
+    },
+    "gasolina_c": {
+      "total_anual_m3": 46080000,
+      "total_medio_mensal_m3": 3840000.0,
+      "por_uf": [
+        {
+          "uf": "SP",
+          "regiao": "SE",
+          "volume_anual_m3": 9800000,
+          "volume_medio_mensal_m3": 816667.0,
+          "share_pct": 21.27
+        },
+        {
+          "uf": "MG",
+          "regiao": "SE",
+          "volume_anual_m3": 4200000,
+          "volume_medio_mensal_m3": 350000.0,
+          "share_pct": 9.11
+        },
+        {
+          "uf": "PR",
+          "regiao": "S",
+          "volume_anual_m3": 3400000,
+          "volume_medio_mensal_m3": 283333.0,
+          "share_pct": 7.38
+        },
+        {
+          "uf": "RJ",
+          "regiao": "SE",
+          "volume_anual_m3": 3100000,
+          "volume_medio_mensal_m3": 258333.0,
+          "share_pct": 6.73
+        },
+        {
+          "uf": "RS",
+          "regiao": "S",
+          "volume_anual_m3": 2900000,
+          "volume_medio_mensal_m3": 241667.0,
+          "share_pct": 6.29
+        },
+        {
+          "uf": "BA",
+          "regiao": "NE",
+          "volume_anual_m3": 2700000,
+          "volume_medio_mensal_m3": 225000.0,
+          "share_pct": 5.86
+        },
+        {
+          "uf": "GO",
+          "regiao": "CO",
+          "volume_anual_m3": 2350000,
+          "volume_medio_mensal_m3": 195833.0,
+          "share_pct": 5.1
+        },
+        {
+          "uf": "SC",
+          "regiao": "S",
+          "volume_anual_m3": 2150000,
+          "volume_medio_mensal_m3": 179167.0,
+          "share_pct": 4.67
+        },
+        {
+          "uf": "PE",
+          "regiao": "NE",
+          "volume_anual_m3": 1800000,
+          "volume_medio_mensal_m3": 150000.0,
+          "share_pct": 3.91
+        },
+        {
+          "uf": "CE",
+          "regiao": "NE",
+          "volume_anual_m3": 1650000,
+          "volume_medio_mensal_m3": 137500.0,
+          "share_pct": 3.58
+        },
+        {
+          "uf": "MT",
+          "regiao": "CO",
+          "volume_anual_m3": 1580000,
+          "volume_medio_mensal_m3": 131667.0,
+          "share_pct": 3.43
+        },
+        {
+          "uf": "PA",
+          "regiao": "N",
+          "volume_anual_m3": 1350000,
+          "volume_medio_mensal_m3": 112500.0,
+          "share_pct": 2.93
+        },
+        {
+          "uf": "MS",
+          "regiao": "CO",
+          "volume_anual_m3": 1280000,
+          "volume_medio_mensal_m3": 106667.0,
+          "share_pct": 2.78
+        },
+        {
+          "uf": "MA",
+          "regiao": "NE",
+          "volume_anual_m3": 1120000,
+          "volume_medio_mensal_m3": 93333.0,
+          "share_pct": 2.43
+        },
+        {
+          "uf": "ES",
+          "regiao": "SE",
+          "volume_anual_m3": 1080000,
+          "volume_medio_mensal_m3": 90000.0,
+          "share_pct": 2.34
+        },
+        {
+          "uf": "PB",
+          "regiao": "NE",
+          "volume_anual_m3": 720000,
+          "volume_medio_mensal_m3": 60000.0,
+          "share_pct": 1.56
+        },
+        {
+          "uf": "AM",
+          "regiao": "N",
+          "volume_anual_m3": 680000,
+          "volume_medio_mensal_m3": 56667.0,
+          "share_pct": 1.48
+        },
+        {
+          "uf": "RN",
+          "regiao": "NE",
+          "volume_anual_m3": 650000,
+          "volume_medio_mensal_m3": 54167.0,
+          "share_pct": 1.41
+        },
+        {
+          "uf": "DF",
+          "regiao": "CO",
+          "volume_anual_m3": 590000,
+          "volume_medio_mensal_m3": 49167.0,
+          "share_pct": 1.28
+        },
+        {
+          "uf": "PI",
+          "regiao": "NE",
+          "volume_anual_m3": 580000,
+          "volume_medio_mensal_m3": 48333.0,
+          "share_pct": 1.26
+        },
+        {
+          "uf": "RO",
+          "regiao": "N",
+          "volume_anual_m3": 580000,
+          "volume_medio_mensal_m3": 48333.0,
+          "share_pct": 1.26
+        },
+        {
+          "uf": "AL",
+          "regiao": "NE",
+          "volume_anual_m3": 510000,
+          "volume_medio_mensal_m3": 42500.0,
+          "share_pct": 1.11
+        },
+        {
+          "uf": "TO",
+          "regiao": "N",
+          "volume_anual_m3": 470000,
+          "volume_medio_mensal_m3": 39167.0,
+          "share_pct": 1.02
+        },
+        {
+          "uf": "SE",
+          "regiao": "NE",
+          "volume_anual_m3": 380000,
+          "volume_medio_mensal_m3": 31667.0,
+          "share_pct": 0.82
+        },
+        {
+          "uf": "AC",
+          "regiao": "N",
+          "volume_anual_m3": 180000,
+          "volume_medio_mensal_m3": 15000.0,
+          "share_pct": 0.39
+        },
+        {
+          "uf": "AP",
+          "regiao": "N",
+          "volume_anual_m3": 150000,
+          "volume_medio_mensal_m3": 12500.0,
+          "share_pct": 0.33
+        },
+        {
+          "uf": "RR",
+          "regiao": "N",
+          "volume_anual_m3": 130000,
+          "volume_medio_mensal_m3": 10833.0,
+          "share_pct": 0.28
+        }
+      ],
+      "por_regiao": [
+        {
+          "regiao_sigla": "SE",
+          "regiao_nome": "Sudeste",
+          "volume_anual_m3": 18180000.0,
+          "volume_medio_mensal_m3": 1515000.0,
+          "share_pct": 39.45
+        },
+        {
+          "regiao_sigla": "NE",
+          "regiao_nome": "Nordeste",
+          "volume_anual_m3": 10110000.0,
+          "volume_medio_mensal_m3": 842500.0,
+          "share_pct": 21.94
+        },
+        {
+          "regiao_sigla": "S",
+          "regiao_nome": "Sul",
+          "volume_anual_m3": 8450000.0,
+          "volume_medio_mensal_m3": 704167.0,
+          "share_pct": 18.34
+        },
+        {
+          "regiao_sigla": "CO",
+          "regiao_nome": "Centro-Oeste",
+          "volume_anual_m3": 5800000.0,
+          "volume_medio_mensal_m3": 483333.0,
+          "share_pct": 12.59
+        },
+        {
+          "regiao_sigla": "N",
+          "regiao_nome": "Norte",
+          "volume_anual_m3": 3540000.0,
+          "volume_medio_mensal_m3": 295000.0,
+          "share_pct": 7.68
+        }
+      ]
+    },
+    "etanol_hidratado": {
+      "total_anual_m3": 15414000,
+      "total_medio_mensal_m3": 1284500.0,
+      "por_uf": [
+        {
+          "uf": "SP",
+          "regiao": "SE",
+          "volume_anual_m3": 7800000,
+          "volume_medio_mensal_m3": 650000.0,
+          "share_pct": 50.6
+        },
+        {
+          "uf": "MG",
+          "regiao": "SE",
+          "volume_anual_m3": 1950000,
+          "volume_medio_mensal_m3": 162500.0,
+          "share_pct": 12.65
+        },
+        {
+          "uf": "GO",
+          "regiao": "CO",
+          "volume_anual_m3": 1580000,
+          "volume_medio_mensal_m3": 131667.0,
+          "share_pct": 10.25
+        },
+        {
+          "uf": "PR",
+          "regiao": "S",
+          "volume_anual_m3": 850000,
+          "volume_medio_mensal_m3": 70833.0,
+          "share_pct": 5.51
+        },
+        {
+          "uf": "MS",
+          "regiao": "CO",
+          "volume_anual_m3": 720000,
+          "volume_medio_mensal_m3": 60000.0,
+          "share_pct": 4.67
+        },
+        {
+          "uf": "MT",
+          "regiao": "CO",
+          "volume_anual_m3": 580000,
+          "volume_medio_mensal_m3": 48333.0,
+          "share_pct": 3.76
+        },
+        {
+          "uf": "RJ",
+          "regiao": "SE",
+          "volume_anual_m3": 520000,
+          "volume_medio_mensal_m3": 43333.0,
+          "share_pct": 3.37
+        },
+        {
+          "uf": "BA",
+          "regiao": "NE",
+          "volume_anual_m3": 280000,
+          "volume_medio_mensal_m3": 23333.0,
+          "share_pct": 1.82
+        },
+        {
+          "uf": "ES",
+          "regiao": "SE",
+          "volume_anual_m3": 230000,
+          "volume_medio_mensal_m3": 19167.0,
+          "share_pct": 1.49
+        },
+        {
+          "uf": "DF",
+          "regiao": "CO",
+          "volume_anual_m3": 180000,
+          "volume_medio_mensal_m3": 15000.0,
+          "share_pct": 1.17
+        },
+        {
+          "uf": "RS",
+          "regiao": "S",
+          "volume_anual_m3": 95000,
+          "volume_medio_mensal_m3": 7917.0,
+          "share_pct": 0.62
+        },
+        {
+          "uf": "SC",
+          "regiao": "S",
+          "volume_anual_m3": 85000,
+          "volume_medio_mensal_m3": 7083.0,
+          "share_pct": 0.55
+        },
+        {
+          "uf": "PE",
+          "regiao": "NE",
+          "volume_anual_m3": 75000,
+          "volume_medio_mensal_m3": 6250.0,
+          "share_pct": 0.49
+        },
+        {
+          "uf": "AL",
+          "regiao": "NE",
+          "volume_anual_m3": 70000,
+          "volume_medio_mensal_m3": 5833.0,
+          "share_pct": 0.45
+        },
+        {
+          "uf": "CE",
+          "regiao": "NE",
+          "volume_anual_m3": 65000,
+          "volume_medio_mensal_m3": 5417.0,
+          "share_pct": 0.42
+        },
+        {
+          "uf": "PB",
+          "regiao": "NE",
+          "volume_anual_m3": 55000,
+          "volume_medio_mensal_m3": 4583.0,
+          "share_pct": 0.36
+        },
+        {
+          "uf": "MA",
+          "regiao": "NE",
+          "volume_anual_m3": 48000,
+          "volume_medio_mensal_m3": 4000.0,
+          "share_pct": 0.31
+        },
+        {
+          "uf": "RN",
+          "regiao": "NE",
+          "volume_anual_m3": 42000,
+          "volume_medio_mensal_m3": 3500.0,
+          "share_pct": 0.27
+        },
+        {
+          "uf": "PI",
+          "regiao": "NE",
+          "volume_anual_m3": 38000,
+          "volume_medio_mensal_m3": 3167.0,
+          "share_pct": 0.25
+        },
+        {
+          "uf": "PA",
+          "regiao": "N",
+          "volume_anual_m3": 35000,
+          "volume_medio_mensal_m3": 2917.0,
+          "share_pct": 0.23
+        },
+        {
+          "uf": "TO",
+          "regiao": "N",
+          "volume_anual_m3": 32000,
+          "volume_medio_mensal_m3": 2667.0,
+          "share_pct": 0.21
+        },
+        {
+          "uf": "SE",
+          "regiao": "NE",
+          "volume_anual_m3": 25000,
+          "volume_medio_mensal_m3": 2083.0,
+          "share_pct": 0.16
+        },
+        {
+          "uf": "AM",
+          "regiao": "N",
+          "volume_anual_m3": 22000,
+          "volume_medio_mensal_m3": 1833.0,
+          "share_pct": 0.14
+        },
+        {
+          "uf": "RO",
+          "regiao": "N",
+          "volume_anual_m3": 18000,
+          "volume_medio_mensal_m3": 1500.0,
+          "share_pct": 0.12
+        },
+        {
+          "uf": "RR",
+          "regiao": "N",
+          "volume_anual_m3": 8000,
+          "volume_medio_mensal_m3": 667.0,
+          "share_pct": 0.05
+        },
+        {
+          "uf": "AP",
+          "regiao": "N",
+          "volume_anual_m3": 6000,
+          "volume_medio_mensal_m3": 500.0,
+          "share_pct": 0.04
+        },
+        {
+          "uf": "AC",
+          "regiao": "N",
+          "volume_anual_m3": 5000,
+          "volume_medio_mensal_m3": 417.0,
+          "share_pct": 0.03
+        }
+      ],
+      "por_regiao": [
+        {
+          "regiao_sigla": "SE",
+          "regiao_nome": "Sudeste",
+          "volume_anual_m3": 10500000.0,
+          "volume_medio_mensal_m3": 875000.0,
+          "share_pct": 68.12
+        },
+        {
+          "regiao_sigla": "CO",
+          "regiao_nome": "Centro-Oeste",
+          "volume_anual_m3": 3060000.0,
+          "volume_medio_mensal_m3": 255000.0,
+          "share_pct": 19.85
+        },
+        {
+          "regiao_sigla": "S",
+          "regiao_nome": "Sul",
+          "volume_anual_m3": 1030000.0,
+          "volume_medio_mensal_m3": 85833.0,
+          "share_pct": 6.68
+        },
+        {
+          "regiao_sigla": "NE",
+          "regiao_nome": "Nordeste",
+          "volume_anual_m3": 698000.0,
+          "volume_medio_mensal_m3": 58167.0,
+          "share_pct": 4.53
+        },
+        {
+          "regiao_sigla": "N",
+          "regiao_nome": "Norte",
+          "volume_anual_m3": 126000.0,
+          "volume_medio_mensal_m3": 10500.0,
+          "share_pct": 0.82
+        }
+      ]
+    }
+  },
+  "nota": "Volumes baseados no Anuário Estatístico ANP 2024 (proporções consolidadas). Quando o CSV oficial estiver acessível, valores serão atualizados ao vivo."
+}

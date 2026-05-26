@@ -10,11 +10,14 @@ const STATE = {
   conab: null,
   anp_combustiveis: null,
   anp_b100: null,
+  anp_vendas: null,
   comex: null,
   noticias: null,
   be8_profile: null,
   status_fontes: null,
+  usda: null,
   insights: [],
+  vendas_produto_ativo: 'diesel_b',
 };
 
 const $ = sel => document.querySelector(sel);
@@ -1947,26 +1950,30 @@ async function reloadAllData() {
   const btn = $('#refresh-all');
   if (btn) { btn.disabled = true; btn.textContent = '↻ atualizando…'; }
   try {
-    const [cambio, commodities, conab, anpComb, anpB100, comex, noticias, profile, status] = await Promise.all([
+    const [cambio, commodities, conab, anpComb, anpB100, anpVendas, comex, noticias, profile, status, usda] = await Promise.all([
       loadJSON('data/cambio.json'),
       loadJSON('data/commodities.json'),
       loadJSON('data/conab_graos.json'),
       loadJSON('data/anp_combustiveis.json'),
       loadJSON('data/anp_b100.json'),
+      loadJSON('data/anp_vendas.json'),
       loadJSON('data/comex.json'),
       loadJSON('data/noticias.json'),
       loadJSON('data/be8_profile.json'),
       loadJSON('data/status_fontes.json'),
+      loadJSON('data/usda_benchmarks.json'),
     ]);
     STATE.cambio = cambio;
     STATE.commodities = commodities;
     STATE.conab = conab;
     STATE.anp_combustiveis = anpComb;
     STATE.anp_b100 = anpB100;
+    STATE.anp_vendas = anpVendas;
     STATE.comex = comex;
     STATE.noticias = noticias;
     STATE.be8_profile = profile;
     STATE.status_fontes = status;
+    STATE.usda = usda;
 
     renderCambio();
     renderCommodities();
@@ -1979,6 +1986,8 @@ async function reloadAllData() {
     renderNewsletter();
     renderBe8Profile();
     renderRadarIA();
+    renderVendasMapa();
+    renderUSDA();
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '↻ Atualizar'; }
   }
@@ -2031,6 +2040,391 @@ async function snapshotPNG() {
   }
 }
 
+/* =====================================================================
+   RENDER · MAPA DO BRASIL (página 11)
+   ===================================================================== */
+
+// Geometria simplificada do Brasil: posições x,y de cada UF num grid
+// Inspirado em "tile maps" (Bloomberg/FT). Cada UF ocupa uma célula 60x60.
+const BR_UF_GRID = {
+  // [col, row, regiao]
+  'RR': [3, 0, 'N'],  'AP': [5, 0, 'N'],
+  'AM': [2, 1, 'N'],  'PA': [4, 1, 'N'],  'MA': [5, 1, 'NE'], 'CE': [6, 1, 'NE'], 'RN': [7, 1, 'NE'],
+  'AC': [1, 2, 'N'],  'RO': [2, 2, 'N'],  'TO': [4, 2, 'N'],  'PI': [5, 2, 'NE'], 'PB': [7, 2, 'NE'], 'PE': [7, 3, 'NE'],
+  'MT': [3, 3, 'CO'], 'GO': [4, 3, 'CO'], 'BA': [6, 3, 'NE'], 'AL': [8, 3, 'NE'], 'SE': [8, 4, 'NE'],
+  'MS': [3, 4, 'CO'], 'DF': [5, 4, 'CO'], 'MG': [6, 4, 'SE'], 'ES': [7, 4, 'SE'],
+  'PR': [4, 5, 'S'],  'SP': [5, 5, 'SE'], 'RJ': [6, 5, 'SE'],
+  'SC': [4, 6, 'S'],
+  'RS': [4, 7, 'S'],
+};
+
+const UF_NOMES = {
+  AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia', CE:'Ceará',
+  DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás', MA:'Maranhão',
+  MT:'Mato Grosso', MS:'Mato Grosso do Sul', MG:'Minas Gerais', PA:'Pará',
+  PB:'Paraíba', PR:'Paraná', PE:'Pernambuco', PI:'Piauí', RJ:'Rio de Janeiro',
+  RN:'Rio Grande do Norte', RS:'Rio Grande do Sul', RO:'Rondônia', RR:'Roraima',
+  SC:'Santa Catarina', SP:'São Paulo', SE:'Sergipe', TO:'Tocantins'
+};
+
+const REG_NOMES = {N:'Norte', NE:'Nordeste', CO:'Centro-Oeste', SE:'Sudeste', S:'Sul'};
+
+function renderVendasMapa() {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos) {
+    setStatusBadge('vendas-status', 'PENDENTE', 'Vendas · aguardando');
+    return;
+  }
+  setStatusBadge('vendas-status', v.status || 'OK',
+    `ANP · ano ${v.ano_referencia || ''}`);
+
+  // KPIs globais
+  if (v.produtos.diesel_b) $('#vendas-diesel-total').innerHTML =
+    fmtNum(v.produtos.diesel_b.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
+  if (v.produtos.gasolina_c) $('#vendas-gasolina-total').innerHTML =
+    fmtNum(v.produtos.gasolina_c.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
+  if (v.produtos.etanol_hidratado) $('#vendas-etanol-total').innerHTML =
+    fmtNum(v.produtos.etanol_hidratado.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
+
+  // Mapa é assíncrono (carrega Leaflet via CDN se necessário)
+  renderMapaProduto(STATE.vendas_produto_ativo).catch(e => {
+    console.error('Erro ao renderizar mapa Leaflet:', e);
+    $('#brasil-mapa').innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Mapa Leaflet não pôde ser carregado · verifique conexão com CDN unpkg.com</div>';
+  });
+  renderRankingVendas(STATE.vendas_produto_ativo);
+  renderRegionalVendas(STATE.vendas_produto_ativo);
+}
+
+// ===== CONFIGURAÇÃO LEAFLET =====
+// Variáveis globais do mapa para permitir reuso/destruição
+let LEAFLET_MAP = null;
+let LEAFLET_LAYER = null;
+let LEAFLET_LEGEND = null;
+let LEAFLET_GEOJSON = null;  // cache do GeoJSON carregado
+
+async function loadLeafletAndGeoJSON() {
+  // Carrega Leaflet (CSS + JS) e GeoJSON do Brasil
+  if (!window.L) {
+    await new Promise((res, rej) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.crossOrigin = '';
+      script.onload = res;
+      script.onerror = rej;
+      document.head.appendChild(script);
+    });
+  }
+  if (!LEAFLET_GEOJSON) {
+    const resp = await fetch('assets/brasil-uf.geojson');
+    LEAFLET_GEOJSON = await resp.json();
+  }
+}
+
+function getColorForValue(val, max) {
+  if (!val || val <= 0) return '#1a2935';
+  const ratio = Math.min(val / max, 1);
+  // Escala de cores: cinza → verde Be8 → dourado
+  if (ratio < 0.15) return '#1f3a4a';
+  if (ratio < 0.30) return '#1f5a6a';
+  if (ratio < 0.45) return '#1d7a78';
+  if (ratio < 0.60) return '#0eb194';
+  if (ratio < 0.75) return '#55c94f';
+  if (ratio < 0.90) return '#86d44f';
+  return '#d4a84b';
+}
+
+async function renderMapaProduto(prodKey) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos || !v.produtos[prodKey]) return;
+
+  await loadLeafletAndGeoJSON();
+
+  const prod = v.produtos[prodKey];
+  const ufVol = {};
+  prod.por_uf.forEach(u => { ufVol[u.uf] = u.volume_medio_mensal_m3; });
+  const ufData = {};
+  prod.por_uf.forEach(u => { ufData[u.uf] = u; });
+
+  const maxVal = Math.max(...Object.values(ufVol));
+  const minVal = Math.min(...Object.values(ufVol));
+
+  const labels = { diesel_b: 'Diesel B', gasolina_c: 'Gasolina C', etanol_hidratado: 'Etanol Hidratado' };
+  $('#mapa-titulo').textContent = `${labels[prodKey]} · volume médio mensal por UF (m³)`;
+
+  // Limpar container e criar div para o Leaflet
+  const container = $('#brasil-mapa');
+  container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
+
+  // Destruir mapa antigo se existir
+  if (LEAFLET_MAP) {
+    LEAFLET_MAP.remove();
+    LEAFLET_MAP = null;
+  }
+
+  // Criar mapa
+  LEAFLET_MAP = L.map('leaflet-map', {
+    zoomControl: true,
+    scrollWheelZoom: false,    // evita roubar scroll da página
+    attributionControl: false,
+    minZoom: 3.5,
+    maxZoom: 7,
+  }).setView([-14.5, -54], 4);
+
+  // Sem tilelayer (mapa "limpo" no estilo dashboard) — só os polígonos UF sobre fundo escuro
+  // Se quisesse tilelayer escuro: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(LEAFLET_MAP);
+
+  // Estilo dos polígonos
+  function styleUF(feature) {
+    const sigla = feature.properties.sigla;
+    const vol = ufVol[sigla] || 0;
+    return {
+      fillColor: getColorForValue(vol, maxVal),
+      weight: 0.8,
+      opacity: 1,
+      color: '#0a1a25',
+      fillOpacity: 0.88,
+    };
+  }
+
+  // Highlight ao passar o mouse
+  function highlightFeature(e) {
+    const layer = e.target;
+    layer.setStyle({
+      weight: 2.5,
+      color: '#a8efe0',
+      fillOpacity: 1,
+    });
+    layer.bringToFront();
+  }
+
+  function resetHighlight(e) {
+    LEAFLET_LAYER.resetStyle(e.target);
+  }
+
+  // Tooltip rico
+  function onEachFeature(feature, layer) {
+    const sigla = feature.properties.sigla;
+    const name = feature.properties.name;
+    const u = ufData[sigla];
+    const tip = `
+      <div style="font-family:'Inter Tight', sans-serif; min-width:180px;">
+        <div style="font-family:'Fraunces', serif; font-size:16px; font-weight:600; color:#fff; margin-bottom:6px;">${name} <span style="color:#0eb194;">(${sigla})</span></div>
+        <div style="display:grid; grid-template-columns:auto auto; gap:4px 12px; font-size:11px;">
+          <span style="color:#a8bdc9;">Volume mensal:</span>
+          <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_medio_mensal_m3, 0) : '—'} m³</strong>
+          <span style="color:#a8bdc9;">Anual:</span>
+          <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_anual_m3/1e3, 0) : '—'}k m³</strong>
+          <span style="color:#a8bdc9;">Share BR:</span>
+          <strong style="color:#55c94f; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.share_pct, 2) : '—'}%</strong>
+          <span style="color:#a8bdc9;">Região:</span>
+          <strong style="color:#d4a84b;">${u ? (REG_NOMES[u.regiao] || '—') : '—'}</strong>
+        </div>
+      </div>`;
+    layer.bindTooltip(tip, {
+      sticky: true,
+      direction: 'top',
+      className: 'be8-map-tooltip',
+      opacity: 1,
+    });
+    layer.on({
+      mouseover: highlightFeature,
+      mouseout: resetHighlight,
+    });
+  }
+
+  LEAFLET_LAYER = L.geoJSON(LEAFLET_GEOJSON, {
+    style: styleUF,
+    onEachFeature: onEachFeature,
+  }).addTo(LEAFLET_MAP);
+
+  // Ajustar visualização à área dos polígonos
+  try {
+    LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] });
+  } catch (e) {}
+
+  // Adicionar legenda customizada
+  if (LEAFLET_LEGEND) {
+    LEAFLET_LEGEND.remove();
+  }
+  LEAFLET_LEGEND = L.control({ position: 'bottomright' });
+  LEAFLET_LEGEND.onAdd = () => {
+    const div = L.DomUtil.create('div', 'be8-map-legend');
+    const stops = [0.05, 0.20, 0.35, 0.50, 0.65, 0.80, 1.0];
+    let html = `<div style="background:rgba(5,15,23,0.92); border:1px solid #1f3a4a; border-radius:6px; padding:10px 12px; font-family:'JetBrains Mono', monospace; font-size:10px; color:#a8bdc9;">
+      <div style="margin-bottom:6px; color:#fff; font-weight:600; letter-spacing:0.06em;">VOLUME MENSAL (m³)</div>`;
+    stops.forEach(s => {
+      const val = s * maxVal;
+      const c = getColorForValue(val, maxVal);
+      html += `<div style="display:flex; align-items:center; gap:8px; margin:2px 0;">
+        <span style="display:inline-block; width:18px; height:12px; background:${c}; border-radius:2px;"></span>
+        <span>${fmtNum(val/1000, 0)}k</span>
+      </div>`;
+    });
+    html += '</div>';
+    div.innerHTML = html;
+    return div;
+  };
+  LEAFLET_LEGEND.addTo(LEAFLET_MAP);
+}
+
+function renderRankingVendas(prodKey) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos[prodKey]) return;
+  const prod = v.produtos[prodKey];
+  const tb = $('#vendas-rank-tbody');
+  if (!tb) return;
+  tb.innerHTML = prod.por_uf.slice(0, 10).map((u, i) => `
+    <tr>
+      <td class="rank">${String(i+1).padStart(2,'0')}</td>
+      <td><strong>${u.uf}</strong></td>
+      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
+      <td class="num">${fmtNum(u.volume_medio_mensal_m3, 0)}</td>
+      <td class="num">${fmtNum(u.share_pct, 1)}%</td>
+    </tr>`).join('');
+  $('#vendas-rank-meta').textContent = `Total: ${fmtNum(prod.total_medio_mensal_m3/1e3, 0)}k m³/mês`;
+}
+
+function renderRegionalVendas(prodKey) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos[prodKey]) return;
+  const prod = v.produtos[prodKey];
+  const el = $('#vendas-regional-viz');
+  if (!el || !prod.por_regiao) return;
+
+  const max = Math.max(...prod.por_regiao.map(r => r.volume_anual_m3));
+  const colors = { N: '#a8bdc9', NE: '#7a9bbf', CO: '#0eb194', SE: '#d4a84b', S: '#55c94f' };
+
+  el.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+      ${prod.por_regiao.map(r => {
+        const pct = (r.volume_anual_m3 / max) * 100;
+        const c = colors[r.regiao_sigla] || '#5e7382';
+        return `
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;">
+              <span style="color:var(--be8-ice);"><strong>${r.regiao_nome}</strong> (${r.share_pct}%)</span>
+              <span style="font-family:var(--font-mono); color:var(--be8-mist);">${fmtNum(r.volume_anual_m3/1e6, 2)} M m³/ano</span>
+            </div>
+            <div style="height:10px; background:rgba(168,189,201,0.08); border-radius:5px; overflow:hidden;">
+              <div style="height:100%; width:${pct}%; background:${c}; border-radius:5px; transition:width 0.4s;"></div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function bindVendasFilters() {
+  $$('.vendas-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.vendas-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      STATE.vendas_produto_ativo = btn.getAttribute('data-prod');
+      renderMapaProduto(STATE.vendas_produto_ativo);
+      renderRankingVendas(STATE.vendas_produto_ativo);
+      renderRegionalVendas(STATE.vendas_produto_ativo);
+    });
+  });
+}
+
+/* =====================================================================
+   RENDER · BENCHMARK GLOBAL USDA (página 12)
+   ===================================================================== */
+function renderUSDA() {
+  const u = STATE.usda;
+  if (!u || !u.soja_mundial) {
+    setStatusBadge('usda-status', 'PENDENTE', 'USDA · aguardando');
+    return;
+  }
+  setStatusBadge('usda-status', u.status || 'OK',
+    'USDA · ' + (u.release || u.safra_referencia || ''));
+
+  const sm = u.soja_mundial;
+  const bm = u.biodiesel_mundial;
+
+  $('#usda-soja-mundo').innerHTML = fmtNum(sm.producao_total_mt, 1) + ' <span class="unit">Mt</span>';
+  $('#usda-brasil-soja').innerHTML = fmtNum(sm.brasil_share_pct, 1) + ' <span class="unit">%</span>';
+  $('#usda-brasil-soja-ctx').textContent = sm.brasil_lideranca ? 'Líder mundial · 1º lugar' : 'Vice-líder mundial';
+
+  $('#usda-biod-mundo').innerHTML = fmtNum(bm.producao_total_bilhoes_l, 1) + ' <span class="unit">bi L</span>';
+  $('#usda-brasil-biod').innerHTML = (bm.brasil_posicao || '—') + 'º <span class="unit">lugar</span>';
+  $('#usda-brasil-biod-ctx').textContent = `${bm.brasil_share_pct}% share mundial`;
+
+  $('#usda-safra-ref').textContent = u.safra_referencia || '2025/26';
+
+  // Tabela soja
+  const tbSoja = $('#usda-rank-soja-tbody');
+  if (tbSoja) {
+    tbSoja.innerHTML = sm.ranking.map((r, i) => `
+      <tr>
+        <td class="rank">${String(i+1).padStart(2,'0')}</td>
+        <td><strong style="color:${r.destaque ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${r.pais}</strong></td>
+        <td class="num">${fmtNum(r.producao_mt, 1)}</td>
+        <td class="num">${fmtNum(r.share_pct, 1)}%</td>
+      </tr>`).join('');
+  }
+
+  // Tabela biodiesel
+  const tbBiod = $('#usda-rank-biod-tbody');
+  if (tbBiod) {
+    tbBiod.innerHTML = bm.ranking.map((r, i) => `
+      <tr>
+        <td class="rank">${String(i+1).padStart(2,'0')}</td>
+        <td><strong style="color:${r.destaque ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${r.pais}</strong></td>
+        <td class="num">${fmtNum(r.producao_bilhoes_l, 2)}</td>
+        <td class="num">${fmtNum(r.share_pct, 1)}%</td>
+      </tr>`).join('');
+  }
+
+  // Estoques globais (gráfico de barras horizontais)
+  const estEl = $('#usda-estoques-viz');
+  if (estEl && u.estoques_globais_soja_mt) {
+    const entries = Object.entries(u.estoques_globais_soja_mt);
+    const max = Math.max(...entries.map(([_, v]) => v));
+    estEl.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${entries.map(([safra, vol]) => `
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
+              <span style="color:var(--be8-ice);">Safra ${safra}</span>
+              <span style="font-family:var(--font-mono); color:var(--be8-green-1); font-weight:600;">${fmtNum(vol, 1)} Mt</span>
+            </div>
+            <div style="height:18px; background:rgba(168,189,201,0.06); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:${(vol/max)*100}%; background:linear-gradient(90deg, var(--be8-green-1), var(--be8-green-2)); border-radius:3px;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  // Preço Chicago
+  const precoEl = $('#usda-preco-viz');
+  if (precoEl && u.preco_soja_chicago) {
+    const p = u.preco_soja_chicago;
+    precoEl.innerHTML = `
+      <div style="text-align:center; padding:14px 0;">
+        <div style="font-family:var(--font-display); font-size:48px; color:var(--be8-green-2); font-weight:300;">$${fmtNum(p.atual, 2)}</div>
+        <div style="margin-top:4px; font-family:var(--font-mono); font-size:12px; color:var(--be8-mist);">USD por bushel</div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:14px;">
+        <div style="padding:10px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
+          <div style="font-size:10.5px; color:var(--be8-mist); text-transform:uppercase; letter-spacing:0.06em;">vs. mês anterior</div>
+          <div style="margin-top:4px; font-family:var(--font-mono); font-size:15px; color:${p.vs_mes_anterior_pct >= 0 ? 'var(--be8-green-2)' : 'var(--be8-red)'};"><strong>${fmtPct(p.vs_mes_anterior_pct)}</strong></div>
+        </div>
+        <div style="padding:10px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
+          <div style="font-size:10.5px; color:var(--be8-mist); text-transform:uppercase; letter-spacing:0.06em;">vs. ano anterior</div>
+          <div style="margin-top:4px; font-family:var(--font-mono); font-size:15px; color:${p.vs_ano_anterior_pct >= 0 ? 'var(--be8-green-2)' : 'var(--be8-red)'};"><strong>${fmtPct(p.vs_ano_anterior_pct)}</strong></div>
+        </div>
+      </div>`;
+  }
+}
+
+
 async function boot() {
   setSessionClock();
   setInterval(setSessionClock, 1000);
@@ -2040,6 +2434,7 @@ async function boot() {
 
   // Bind controles
   bindTVControls();
+  bindVendasFilters();
   $('#refresh-all')?.addEventListener('click', reloadAllData);
   $('#export-snapshot')?.addEventListener('click', snapshotPNG);
 }

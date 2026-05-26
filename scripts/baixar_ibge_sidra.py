@@ -24,11 +24,13 @@ SIDRA_BASE = "https://apisidra.ibge.gov.br/values"
 
 # Tabela 1612 - PAM lavoura temporária
 TABELA = "1612"
-# Variável 214 = quantidade produzida (toneladas)
-# Variável 216 = área plantada (hectares)
-# Variável 112 = área plantada — versão antiga
-# Variável 215 = rendimento médio (kg/ha)
+# Variáveis:
+#   214 = quantidade produzida (toneladas)
+#   216 = área plantada (hectares)
+#   112 = área plantada — versão antiga
+#   215 = rendimento médio (kg/ha)
 VAR_PROD = "214"
+VAR_AREA = "216"
 
 CULTURAS_C81 = {
     "Soja":  "2713",
@@ -58,13 +60,14 @@ FALLBACK_PAM_2024 = {
 }
 
 
-def fetch_lspa_uf(cod_c81: str) -> list[dict]:
-    """Busca produção por UF para uma cultura na tabela 1612."""
-    url = f"{SIDRA_BASE}/t/{TABELA}/n3/all/v/{VAR_PROD}/p/last%201/c81/{cod_c81}"
+def fetch_lspa_uf(cod_c81: str, variavel: str = None) -> list[dict]:
+    """Busca produção (default) ou outra variável por UF para uma cultura na tabela 1612."""
+    var = variavel or VAR_PROD
+    url = f"{SIDRA_BASE}/t/{TABELA}/n3/all/v/{var}/p/last%201/c81/{cod_c81}"
     try:
         data = http_get_json(url, timeout=30)
     except Exception as e:
-        log.warning(f"SIDRA c81={cod_c81}: {e}")
+        log.warning(f"SIDRA c81={cod_c81} var={var}: {e}")
         return []
     if not data or len(data) < 2:
         return []
@@ -128,10 +131,10 @@ def run() -> None:
     raw_culturas = {}
     falhas = []
 
+    # --- PASSAGEM 1: PRODUÇÃO (variável 214) ---
     for label, cod in CULTURAS_C81.items():
-        registros = fetch_lspa_uf(cod)
+        registros = fetch_lspa_uf(cod, VAR_PROD)
         if registros:
-            # Agregar Milho_1 + Milho_2 sob "Milho"
             cultura_nome = label.split("_")[0]
             if cultura_nome not in raw_culturas:
                 raw_culturas[cultura_nome] = {}
@@ -140,12 +143,29 @@ def run() -> None:
                 if uf == "BR" or len(uf) != 2:
                     continue
                 if uf not in raw_culturas[cultura_nome]:
-                    raw_culturas[cultura_nome][uf] = {"uf": uf, "valor_t": 0, "periodo": r["periodo"]}
+                    raw_culturas[cultura_nome][uf] = {"uf": uf, "valor_t": 0, "area_ha": 0, "periodo": r["periodo"]}
                 if r["valor_t"]:
                     raw_culturas[cultura_nome][uf]["valor_t"] += r["valor_t"]
-            log.info(f"SIDRA {label}: {len(registros)} UFs")
+            log.info(f"SIDRA produção {label}: {len(registros)} UFs")
         else:
-            falhas.append(label)
+            falhas.append(f"prod-{label}")
+
+    # --- PASSAGEM 2: ÁREA PLANTADA (variável 216) ---
+    for label, cod in CULTURAS_C81.items():
+        registros = fetch_lspa_uf(cod, VAR_AREA)
+        if registros:
+            cultura_nome = label.split("_")[0]
+            if cultura_nome not in raw_culturas:
+                continue  # cultura não veio na passagem 1
+            for r in registros:
+                uf = r["uf"]
+                if uf == "BR" or len(uf) != 2:
+                    continue
+                if uf not in raw_culturas[cultura_nome]:
+                    continue
+                if r["valor_t"]:  # field se chama valor_t por padrão, mas é hectares aqui
+                    raw_culturas[cultura_nome][uf]["area_ha"] = (raw_culturas[cultura_nome][uf].get("area_ha") or 0) + r["valor_t"]
+            log.info(f"SIDRA área plantada {label}: {len(registros)} UFs")
 
     if not raw_culturas or len(falhas) >= len(CULTURAS_C81):
         log.warning(f"SIDRA · todas as culturas falharam · usando fallback embutido")
@@ -162,20 +182,27 @@ def run() -> None:
     for cultura, ufs_dict in raw_culturas.items():
         ufs_list = sorted([v for v in ufs_dict.values() if v["valor_t"]],
                           key=lambda x: -x["valor_t"])
-        total = sum(u["valor_t"] for u in ufs_list)
+        total_prod = sum(u["valor_t"] for u in ufs_list)
+        total_area = sum((u.get("area_ha") or 0) for u in ufs_list)
         for u in ufs_list:
-            u["share_pct"] = round(u["valor_t"] / total * 100, 2) if total else None
+            u["share_pct"] = round(u["valor_t"] / total_prod * 100, 2) if total_prod else None
+            # Produtividade calculada (t/ha)
+            if u.get("area_ha") and u["area_ha"] > 0:
+                u["produtividade_t_ha"] = round(u["valor_t"] / u["area_ha"], 3)
         culturas[cultura] = {
             "ufs": ufs_list,
-            "total_t": total,
-            "total_mt": round(total / 1_000_000, 2),
+            "total_t": total_prod,
+            "total_mt": round(total_prod / 1_000_000, 2),
+            "total_area_ha": total_area,
+            "total_area_mha": round(total_area / 1_000_000, 2) if total_area else None,
+            "produtividade_media_t_ha": round(total_prod / total_area, 3) if total_area else None,
             "periodo": ufs_list[0]["periodo"] if ufs_list else None,
         }
 
     status = "OK" if not falhas else "PARCIAL"
     out = {
         "ultima_atualizacao": now_iso(),
-        "fonte": "IBGE · SIDRA · Tabela 1612 (PAM)",
+        "fonte": "IBGE · SIDRA · Tabela 1612 (PAM) — Produção + Área plantada",
         "endpoint": SIDRA_BASE,
         "status": status,
         "culturas": culturas,
@@ -186,7 +213,7 @@ def run() -> None:
     total_rows = sum(len(c["ufs"]) for c in culturas.values())
     if status == "OK":
         mark_source_ok("ibge_sidra", rows=total_rows,
-                       note=f"{len(culturas)} culturas · {total_rows} UFs · PAM 1612",
+                       note=f"{len(culturas)} culturas · {total_rows} UFs · PAM 1612 (prod+área)",
                        endpoint=SIDRA_BASE)
     else:
         mark_source_partial("ibge_sidra",
