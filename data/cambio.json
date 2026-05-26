@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T09:24:43",
+  "ultima_atualizacao": "2026-05-26T13:18:44",
   "fonte": "Banco Central do Brasil · PTAX",
   "endpoint": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata",
   "status": "OK",
@@ -7,10 +7,10 @@
     "USD": {
       "codigo": "USD",
       "nome": "Dólar Americano",
-      "cotacao_atual": 5.0072,
-      "cotacao_anterior": 5.014,
-      "variacao_pct": -0.13562026326286675,
-      "data_referencia": "2026-05-25 13:06:31.065",
+      "cotacao_atual": 5.0211,
+      "cotacao_anterior": 5.0072,
+      "variacao_pct": 0.2776002556318817,
+      "data_referencia": "2026-05-26 13:07:25.808",
       "serie_90d": [
         {
           "data": "2026-02-25",
@@ -255,16 +255,20 @@
         {
           "data": "2026-05-25",
           "valor": 5.0072
+        },
+        {
+          "data": "2026-05-26",
+          "valor": 5.0211
         }
       ]
     },
     "EUR": {
       "codigo": "EUR",
       "nome": "Euro",
-      "cotacao_atual": 5.8304,
-      "cotacao_anterior": 5.8182,
-      "variacao_pct": 0.20968684472861002,
-      "data_referencia": "2026-05-25 13:06:31.065",
+      "cotacao_atual": 5.835,
+      "cotacao_anterior": 5.8304,
+      "variacao_pct": 0.07889681668496051,
+      "data_referencia": "2026-05-26 13:07:25.808",
       "serie_90d": [
         {
           "data": "2026-02-25",
@@ -509,6 +513,10 @@
         {
           "data": "2026-05-25",
           "valor": 5.8304
+        },
+        {
+          "data": "2026-05-26",
+          "valor": 5.835
         }
       ]
     }

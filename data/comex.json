@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T09:25:10",
+  "ultima_atualizacao": "2026-05-26T13:19:14",
   "fonte": "MDIC · ComexStat (API oficial)",
   "endpoint": "https://api-comexstat.mdic.gov.br/general",
   "status": "PARCIAL",
@@ -73,63 +73,21 @@
       "descricao": "Óleo de soja bruto",
       "fluxo": "export",
       "categoria": "oleo_soja",
-      "ano_corrente": {
-        "fob_usd": 799069250.0,
-        "kg": 700682620.0,
-        "toneladas": 700682.62,
-        "preco_medio_usd_ton": 1140.42
-      },
-      "ano_anterior": {
-        "fob_usd": 1339716730.0,
-        "kg": 1285483764.0,
-        "toneladas": 1285483.76,
-        "preco_medio_usd_ton": 1042.19
-      },
-      "var_fob_pct": -40.36,
-      "var_volume_pct": -45.49,
-      "linhas": 16
+      "erro": "sem retorno"
     },
     {
       "ncm": "15079011",
       "descricao": "Óleo de soja refinado",
       "fluxo": "export",
       "categoria": "oleo_soja",
-      "ano_corrente": {
-        "fob_usd": 33848303.0,
-        "kg": 23224924.0,
-        "toneladas": 23224.92,
-        "preco_medio_usd_ton": 1457.41
-      },
-      "ano_anterior": {
-        "fob_usd": 104259737.0,
-        "kg": 74679077.0,
-        "toneladas": 74679.08,
-        "preco_medio_usd_ton": 1396.1
-      },
-      "var_fob_pct": -67.53,
-      "var_volume_pct": -68.9,
-      "linhas": 16
+      "erro": "sem retorno"
     },
     {
       "ncm": "23040010",
       "descricao": "Farelo de soja",
       "fluxo": "export",
       "categoria": "farelo",
-      "ano_corrente": {
-        "fob_usd": 590160291.0,
-        "kg": 1522457502.0,
-        "toneladas": 1522457.5,
-        "preco_medio_usd_ton": 387.64
-      },
-      "ano_anterior": {
-        "fob_usd": 1911055899.0,
-        "kg": 5176719262.0,
-        "toneladas": 5176719.26,
-        "preco_medio_usd_ton": 369.16
-      },
-      "var_fob_pct": -69.12,
-      "var_volume_pct": -70.59,
-      "linhas": 16
+      "erro": "sem retorno"
     },
     {
       "ncm": "29051100",

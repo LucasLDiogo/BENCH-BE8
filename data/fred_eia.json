@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T09:25:33",
+  "ultima_atualizacao": "2026-05-26T13:20:00",
   "fonte": "FRED (St. Louis Fed) + EIA (Energy Info)",
   "endpoint_fred": "https://api.stlouisfed.org/fred/series/observations",
   "endpoint_eia": "https://api.eia.gov/v2/seriesid",
