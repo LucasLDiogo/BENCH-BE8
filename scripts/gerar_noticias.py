@@ -195,7 +195,39 @@ def run() -> None:
 
     out["noticias"] = unicas
     if unicas:
-        out["manchete_dia"] = unicas[0]
+        # Cria manchete principal (prioridade: tag oportunidade > risco > primeiro com impacto alto)
+        ranked = sorted(
+            unicas,
+            key=lambda n: (
+                -(2 if n.get("impacto_nivel") == "alto" else 1 if n.get("impacto_nivel") == "médio" else 0),
+                -(1 if n.get("tag") in ("core", "regulatorio") else 0),
+                n.get("data", "")
+            )
+        )
+        manchete = ranked[0]
+        out["manchete"] = manchete
+        out["manchete_dia"] = manchete  # compat retroativa
+        out["top5"] = ranked[:5]
+
+        # Impacto consolidado e ação recomendada (heurística baseada na mistura de tags)
+        alto = sum(1 for n in unicas if n.get("impacto_nivel") == "alto")
+        opo  = sum(1 for n in unicas if n.get("tag") == "core")
+        reg  = sum(1 for n in unicas if n.get("tag") == "regulatorio")
+        out["impacto_consolidado_be8"] = (
+            f"A edição de hoje traz {len(unicas)} manchetes setoriais, sendo {alto} de "
+            f"alto impacto para a Be8. Destaque para {opo} notícias diretamente relacionadas ao "
+            f"biodiesel/B100 e {reg} no eixo regulatório. O fluxo informacional do dia mantém o "
+            f"foco em commodities agrícolas, combustíveis e marco normativo — variáveis que "
+            f"impactam diretamente custo da matéria-prima, preço de leilão B100 e "
+            f"posicionamento competitivo."
+        )
+        out["acao_recomendada"] = (
+            "Monitorar especialmente as manchetes do eixo regulatório (resoluções CNPE/ANP "
+            "podem alterar cronograma B15→B20) e acompanhar movimentos da soja CBOT, que "
+            "definem a curva de custo do óleo nos próximos 30-60 dias. Considerar antecipar "
+            "fixação de compras se houver sinal de alta sustentada."
+        )
+
     # Radares por categoria
     by_cat = {}
     for n in unicas:

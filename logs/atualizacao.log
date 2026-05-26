@@ -19,112 +19,37 @@
 2026-05-26 01:02:50 [be8] WARNING · HTTP retry 2/2 em 2s · https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(da… · HTTP Error 403: Forbidden
 2026-05-26 01:02:52 [be8] WARNING · HTTP retry 1/2 em 1s · https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(da… · HTTP Error 403: Forbidden
 2026-05-26 01:02:53 [be8] WARNING · HTTP retry 2/2 em 2s · https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(da… · HTTP Error 403: Forbidden
-2026-05-25 22:14:25 [be8] INFO · ======================================================================
-2026-05-25 22:14:25 [be8] INFO · INICIANDO ATUALIZAÇÃO · 2026-05-25T22:14:25
-2026-05-25 22:14:25 [be8] INFO · ======================================================================
-2026-05-25 22:14:26 [be8] INFO · BCB USD: 5.0072 (Δ=-0.13562026326286675) · 62 pontos
-2026-05-25 22:14:27 [be8] INFO · BCB EUR: 5.8304 (Δ=0.20968684472861002) · 62 pontos
-2026-05-25 22:14:27 [be8] INFO · ✓ BCB · Câmbio PTAX OK em 1.3s
-2026-05-25 22:14:27 [be8] INFO · Yahoo brent: 95.39 · 75 pontos
-2026-05-25 22:14:28 [be8] INFO · Yahoo wti: 91.84 · 75 pontos
-2026-05-25 22:14:28 [be8] INFO · Yahoo soja: 1186.75 · 75 pontos
-2026-05-25 22:14:28 [be8] INFO · Yahoo milho: 457.50 · 75 pontos
-2026-05-25 22:14:29 [be8] INFO · Yahoo trigo: 637.25 · 75 pontos
-2026-05-25 22:14:29 [be8] INFO · Yahoo oleo_soja: 73.22 · 75 pontos
-2026-05-25 22:14:29 [be8] INFO · Yahoo farelo: 329.30 · 75 pontos
-2026-05-25 22:14:30 [be8] INFO · Yahoo gas: 3.06 · 75 pontos
-2026-05-25 22:14:30 [be8] INFO · ✓ Yahoo Finance · Commodities OK em 2.7s
-2026-05-25 22:14:31 [be8] INFO · ANP · tentando URL descoberta: https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan/2026/02-cados-abertos-preco-gasolina-etanol.csv
-2026-05-25 22:14:36 [be8] INFO · ANP · CSV salvo em C:\Be8 - Project\Be8 - Bench\BENCH-BE8\downloads\anp\precos_2026-05-25.csv (7508 KB)
-2026-05-25 22:14:36 [be8] INFO · ANP combustíveis OK · 44931 linhas · ref 28/02/2026
-2026-05-25 22:14:37 [be8] INFO · ✓ ANP · Preços combustíveis OK em 7.0s
-2026-05-25 22:14:38 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/biocombusti… · HTTP Error 404: Not Found
-2026-05-25 22:14:41 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/biocombusti… · HTTP Error 404: Not Found
-2026-05-25 22:14:43 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/biocombusti… · HTTP Error 404: Not Found
-2026-05-25 22:14:47 [be8] INFO · ANP B100 · 0 links candidatos encontrados
-2026-05-25 22:14:47 [be8] INFO · ✓ ANP · Biodiesel B100 OK em 10.5s
-2026-05-25 22:14:50 [be8] INFO · CONAB · tentando fallback https://www.conab.gov.br/info-agro/safras/graos/boletim-da-safra-de-graos/SerieHistoricaGraos.xlsx
-2026-05-25 22:14:51 [be8] INFO · CONAB · raw salvo: SerieHistoricaGraos_2026-05-25.xlsx
-2026-05-25 22:14:51 [be8] ERROR · CONAB · parser falhou
-Traceback (most recent call last):
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\scripts\baixar_conab.py", line 81, in parse_serie_historica_xlsx
-    wb = openpyxl.load_workbook(BytesIO(raw), data_only=True)
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\.venv\Lib\site-packages\openpyxl\reader\excel.py", line 346, in load_workbook
-    reader = ExcelReader(filename, read_only, keep_vba,
-                         data_only, keep_links, rich_text)
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\.venv\Lib\site-packages\openpyxl\reader\excel.py", line 123, in __init__
-    self.archive = _validate_archive(fn)
-                   ~~~~~~~~~~~~~~~~~^^^^
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\.venv\Lib\site-packages\openpyxl\reader\excel.py", line 95, in _validate_archive
-    archive = ZipFile(filename, 'r')
-  File "C:\Users\Lucas\AppData\Local\Python\pythoncore-3.14-64\Lib\zipfile\__init__.py", line 1472, in __init__
-    self._RealGetContents()
-    ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Lucas\AppData\Local\Python\pythoncore-3.14-64\Lib\zipfile\__init__.py", line 1539, in _RealGetContents
-    raise BadZipFile("File is not a zip file")
-zipfile.BadZipFile: File is not a zip file
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\scripts\baixar_conab.py", line 188, in run
-    culturas = parse_serie_historica_xlsx(raw)
-  File "C:\Be8 - Project\Be8 - Bench\BENCH-BE8\scripts\baixar_conab.py", line 85, in parse_serie_historica_xlsx
-    raise RuntimeError(f"abertura falhou: {e}")
-RuntimeError: abertura falhou: File is not a zip file
-2026-05-25 22:14:51 [be8] INFO · ✓ CONAB · Safras OK em 3.7s
-2026-05-25 22:14:51 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:14:52 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:14:55 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:14:59 [be8] WARNING · SIDRA cultura 2713: HTTP falhou após 3 tentativas: HTTP Error 400: Bad Request
-2026-05-25 22:14:59 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:00 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:03 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:07 [be8] WARNING · SIDRA cultura 2711: HTTP falhou após 3 tentativas: HTTP Error 400: Bad Request
-2026-05-25 22:15:07 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:08 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:10 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/6588/n3/all/v/112,35,215/p/last%201/c81/27… · HTTP Error 400: Bad Request
-2026-05-25 22:15:14 [be8] WARNING · SIDRA cultura 2716: HTTP falhou após 3 tentativas: HTTP Error 400: Bad Request
-2026-05-25 22:15:14 [be8] INFO · ✓ IBGE SIDRA · LSPA OK em 23.6s
-2026-05-25 22:15:15 [be8] INFO · Comex import NCM 27101921 · YTD FOB US$ 3194389720
-2026-05-25 22:15:16 [be8] INFO · Comex export NCM 38260000 · YTD FOB US$ 54295775
-2026-05-25 22:15:16 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:17 [be8] INFO · Comex import NCM 38260000 · YTD FOB US$ 20394
-2026-05-25 22:15:18 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:19 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:22 [be8] INFO · Comex export NCM 15071000 · YTD FOB US$ 799069250
-2026-05-25 22:15:22 [be8] INFO · Comex export NCM 15079011 · YTD FOB US$ 33848303
-2026-05-25 22:15:23 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:24 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:26 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:30 [be8] WARNING · ComexStat export NCM 23040010: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
-2026-05-25 22:15:30 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:32 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:34 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:38 [be8] WARNING · ComexStat import NCM 29051100: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
-2026-05-25 22:15:38 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:40 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-25 22:15:42 [be8] INFO · Comex export NCM 12010090 · YTD FOB US$ 0
-2026-05-25 22:15:42 [be8] INFO · ✓ ComexStat · Comércio exterior OK em 27.8s
-2026-05-25 22:15:42 [be8] WARNING · FRED_API_KEY ausente · pulando FRED
-2026-05-25 22:15:42 [be8] WARNING · EIA_API_KEY ausente · pulando EIA
-2026-05-25 22:15:42 [be8] INFO · ✓ FRED + EIA · Macro/Energia OK em 0.0s
-2026-05-25 22:15:43 [be8] INFO · RSS agencia_brasil_economia: 5 relevantes / 10 itens
-2026-05-25 22:15:43 [be8] INFO · RSS agencia_brasil_geral: 7 relevantes / 10 itens
-2026-05-25 22:15:48 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
-2026-05-25 22:15:49 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
-2026-05-25 22:15:51 [be8] WARNING · RSS noticias_agricolas falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
-2026-05-25 22:15:53 [be8] INFO · RSS canal_rural: 1 relevantes / 10 itens
-2026-05-25 22:16:12 [be8] WARNING · HTTP retry 1/2 em 1s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
-2026-05-25 22:16:33 [be8] WARNING · HTTP retry 2/2 em 2s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
-2026-05-25 22:16:35 [be8] WARNING · RSS epbr_biocombustiveis falhou: HTTP falhou após 2 tentativas: HTTP Error 522: <none>
-2026-05-25 22:16:37 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
-2026-05-25 22:16:41 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
-2026-05-25 22:16:43 [be8] WARNING · RSS gov_anp falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
-2026-05-25 22:16:43 [be8] INFO · Notícias OK · 13 únicas de 13 capturadas
-2026-05-25 22:16:43 [be8] INFO · ✓ Notícias setoriais (RSS) OK em 60.7s
-2026-05-25 22:16:43 [be8] INFO · Perfil Be8 atualizado
-2026-05-25 22:16:43 [be8] INFO · ✓ Be8 · Perfil institucional OK em 0.0s
-2026-05-25 22:16:43 [be8] INFO · ======================================================================
-2026-05-25 22:16:43 [be8] INFO · FIM · 10 OK · 0 ERROS · 137.5s
-2026-05-25 22:16:43 [be8] INFO · ======================================================================
+2026-05-26 02:01:45 [be8] INFO · Perfil Be8 atualizado
+2026-05-26 02:01:51 [be8] WARNING · HTTP retry 1/3 em 1s · https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.… · HTTP Error 403: Forbidden
+2026-05-26 02:01:52 [be8] WARNING · HTTP retry 2/3 em 2s · https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.… · HTTP Error 403: Forbidden
+2026-05-26 02:01:54 [be8] WARNING · HTTP retry 3/3 em 4s · https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.… · HTTP Error 403: Forbidden
+2026-05-26 02:01:58 [be8] WARNING · CONAB · download falhou: HTTP falhou após 3 tentativas: HTTP Error 403: Forbidden
+2026-05-26 02:01:58 [be8] INFO · CONAB · fallback embutido aplicado · 32 registros
+2026-05-26 02:02:06 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:07 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:09 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:13 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:14 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:16 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos… · HTTP Error 403: Forbidden
+2026-05-26 02:02:20 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/assuntos/producao-e-fornecimento-de-biocombustiveis… · HTTP Error 403: Forbidden
+2026-05-26 02:02:21 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/assuntos/producao-e-fornecimento-de-biocombustiveis… · HTTP Error 403: Forbidden
+2026-05-26 02:02:23 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/assuntos/producao-e-fornecimento-de-biocombustiveis… · HTTP Error 403: Forbidden
+2026-05-26 02:02:27 [be8] INFO · ANP B100 · nenhuma planilha mensal descoberta
+2026-05-26 02:02:27 [be8] INFO · ANP B100 · snapshot aplicado · 13 produtores
+2026-05-26 02:02:27 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2713… · HTTP Error 403: Forbidden
+2026-05-26 02:02:28 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2713… · HTTP Error 403: Forbidden
+2026-05-26 02:02:30 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2713… · HTTP Error 403: Forbidden
+2026-05-26 02:02:34 [be8] WARNING · SIDRA c81=2713: HTTP falhou após 3 tentativas: HTTP Error 403: Forbidden
+2026-05-26 02:02:34 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2711… · HTTP Error 403: Forbidden
+2026-05-26 02:02:35 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2711… · HTTP Error 403: Forbidden
+2026-05-26 02:02:37 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2711… · HTTP Error 403: Forbidden
+2026-05-26 02:02:41 [be8] WARNING · SIDRA c81=2711: HTTP falhou após 3 tentativas: HTTP Error 403: Forbidden
+2026-05-26 02:02:41 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/109276… · HTTP Error 403: Forbidden
+2026-05-26 02:02:42 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/109276… · HTTP Error 403: Forbidden
+2026-05-26 02:02:44 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/109276… · HTTP Error 403: Forbidden
+2026-05-26 02:02:48 [be8] WARNING · SIDRA c81=109276: HTTP falhou após 3 tentativas: HTTP Error 403: Forbidden
+2026-05-26 02:02:48 [be8] WARNING · HTTP retry 1/3 em 1s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2716… · HTTP Error 403: Forbidden
+2026-05-26 02:02:50 [be8] WARNING · HTTP retry 2/3 em 2s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2716… · HTTP Error 403: Forbidden
+2026-05-26 02:02:52 [be8] WARNING · HTTP retry 3/3 em 4s · https://apisidra.ibge.gov.br/values/t/1612/n3/all/v/214/p/last%201/c81/2716… · HTTP Error 403: Forbidden
+2026-05-26 02:02:56 [be8] WARNING · SIDRA c81=2716: HTTP falhou após 3 tentativas: HTTP Error 403: Forbidden
+2026-05-26 02:02:56 [be8] WARNING · SIDRA · todas as culturas falharam · usando fallback embutido

@@ -142,6 +142,22 @@ PROFILE = {
         {"etapa": "Logística & Distribuição", "descricao": "Atende leilões ANP + distribuidoras + exportação"},
         {"etapa": "Trading Internacional", "descricao": "Be8 Switzerland · exportações EUA, Europa"},
     ],
+    # Versão "lista de strings" para o frontend (cards numerados)
+    "cadeia_valor": [
+        "Originação · soja contratada com cooperativas",
+        "Esmagamento · >1 milhão t soja/ano (Passo Fundo)",
+        "Refino · óleo de soja para alimentação humana e B100",
+        "Transesterificação · óleo + metanol → biodiesel B100",
+        "Co-produtos · farelo, glicerina, ácidos graxos",
+        "Logística · leilões ANP + distribuidoras nacionais",
+        "Trading internacional · Be8 Switzerland",
+        "Exportação · biodiesel para EUA + óleo/farelo global",
+        "Renovabio · emissão e venda de CBIOs",
+        "Sustentabilidade · ciclo de vida e ESG",
+    ],
+    # Caminho da imagem oficial Cadeia de Valor (hero da página Be8 Profile)
+    "cadeia_valor_imagem": "assets/cadeia-valor-be8.png",
+    "cadeia_valor_legenda": "Visão consolidada da cadeia de valor Be8 — Processos Estratégicos, Principais (transporte e logística no centro) e de Suporte, sustentados por Control Tower e Supply Chain Intelligence. Fonte: Be8 · 2026.",
     "posicionamento_competitivo": {
         "vantagens": [
             "Integração vertical: originação → esmagamento → biodiesel",
@@ -157,6 +173,27 @@ PROFILE = {
             "Mistura crescente B15→B20 amplia mercado nacional",
         ],
     },
+    # Lista única consolidada (formato esperado pelo frontend)
+    "posicionamento_competitivo_lista": [
+        "Integração vertical originação → esmagamento → B100",
+        "Liderança histórica de market share no Brasil (10,9% em 2023)",
+        "Acreditação ISO/IEC 17025 dos laboratórios — reconhecida pela ANP",
+        "Capacidade entre as maiores do país (1.080 milhões L/ano)",
+        "Operação internacional via Be8 Switzerland (mercado EUA, Europa)",
+        "Posicionamento geográfico estratégico (RS + PR) próximo à matéria-prima",
+        "Cinco linhas de receita: B100, óleo, farelo, glicerina, CBIOs",
+        "Concorrentes diretos: ADM, Bunge, Cargill, Granol, Oleoplan, Caramuru",
+    ],
+    "sustentabilidade_inovacao": [
+        "Biodiesel B100 substitui diesel fóssil · redução de CO₂ no ciclo de vida",
+        "Renovabio · emissão de CBIOs por planta certificada",
+        "Programa Nacional de Produção e Uso de Biodiesel (PNPB)",
+        "Programa Selo Combustível Social — inclusão da agricultura familiar",
+        "Laboratórios acreditados ISO/IEC 17025 (rastreabilidade de qualidade)",
+        "Investimento em tecnologia e IA (Supply Chain Intelligence)",
+        "Foco em eficiência energética e economia circular",
+        "Compromisso ESG explícito · ver be8energy.com/sustentabilidade",
+    ],
     "sustentabilidade": {
         "destaques": [
             "Biodiesel substitui diesel fóssil · redução de CO2 ciclo de vida",

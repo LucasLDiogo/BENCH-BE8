@@ -128,10 +128,18 @@ def run() -> None:
                 falhas += 1
 
     if not fred_key and not eia_key:
-        out["status"] = "PENDENTE"
-        out["nota"] = "Chaves FRED_API_KEY e EIA_API_KEY não configuradas. Cadastro gratuito em fred.stlouisfed.org e eia.gov."
+        out["status"] = "PARCIAL"
+        out["modo"] = "chaves_ausentes"
+        out["nota"] = (
+            "Chaves FRED_API_KEY e EIA_API_KEY não configuradas (opcionais e gratuitas). "
+            "1) FRED: criar em https://fred.stlouisfed.org/docs/api/api_key.html (2 min) "
+            "2) EIA: criar em https://www.eia.gov/opendata/register.php (1 min) "
+            "3) Adicionar como secrets no GitHub Actions ou no arquivo .env local."
+        )
+        out["fred"] = [{**s, "status": "AGUARDANDO_CHAVE"} for s in FRED_SERIES]
+        out["eia"]  = [{**s, "status": "AGUARDANDO_CHAVE"} for s in EIA_SERIES]
         save_json(DATA_DIR / "fred_eia.json", out)
-        mark_source_partial("fred_eia", "Chaves de API não configuradas",
+        mark_source_partial("fred_eia", "Aguardando configuração de chaves (opcional)",
                             rows=0, endpoint="fred.stlouisfed.org + api.eia.gov")
         return
 

@@ -87,12 +87,14 @@ function renderSparkline(containerId, series, color = '#0eb194') {
   const pts = series.map((p, i) => {
     const x = (i / (series.length - 1)) * W;
     const y = H - ((p.valor - min) / range) * (H - 6) - 3;
-    return [x, y];
+    return [x, y, p];
   });
   const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
   const areaPath = path + ` L${W},${H} L0,${H} Z`;
+  const last = pts[pts.length-1];
+  const first = pts[0];
   c.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="overflow:visible;">
       <defs>
         <linearGradient id="sp-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stop-color="${color}" stop-opacity="0.4"/>
@@ -101,70 +103,189 @@ function renderSparkline(containerId, series, color = '#0eb194') {
       </defs>
       <path d="${areaPath}" fill="url(#sp-grad-${containerId})"/>
       <path d="${path}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="2.5" fill="${color}"/>
+      <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="${color}"/>
+      <title>Série de ${series.length} pontos · ${first[2].data || 'início'} → ${last[2].data || 'fim'} · último valor ${fmtNum(last[2].valor, 2)}</title>
     </svg>`;
 }
 
-function renderLineChart(containerId, series, color = '#0eb194') {
+function renderLineChart(containerId, series, color = '#0eb194', opts = {}) {
   const c = $('#' + containerId);
   if (!c) return;
   if (!series || series.length < 2) {
     c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados disponíveis ainda — agente Python precisa rodar.</div>';
     return;
   }
-  const W = c.clientWidth || 700, H = 280;
-  const padding = { top: 20, right: 20, bottom: 32, left: 50 };
+  // opts: { decimals, prefix, suffix }
+  const decimals = opts.decimals != null ? opts.decimals : 2;
+  const prefix = opts.prefix || '';
+  const suffix = opts.suffix || '';
+  const fmtV = v => prefix + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:decimals, maximumFractionDigits:decimals}) + suffix;
+
+  const W = c.clientWidth || 700, H = 300;
+  const padding = { top: 24, right: 70, bottom: 38, left: 64 };
   const innerW = W - padding.left - padding.right;
   const innerH = H - padding.top - padding.bottom;
   const values = series.map(p => p.valor);
   const min = Math.min(...values), max = Math.max(...values);
   const range = max - min || 1;
-  const pad = range * 0.1;
+  const pad = range * 0.12;
   const yMin = min - pad, yMax = max + pad;
   const yRange = yMax - yMin;
 
+  // Pontos com coords + dados originais
   const pts = series.map((p, i) => {
     const x = padding.left + (i / (series.length - 1)) * innerW;
     const y = padding.top + (1 - (p.valor - yMin) / yRange) * innerH;
-    return [x, y, p];
+    return { x, y, data: p.data, valor: p.valor };
   });
-  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  const areaPath = path + ` L${pts[pts.length-1][0].toFixed(1)},${padding.top + innerH} L${pts[0][0].toFixed(1)},${padding.top + innerH} Z`;
+  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+  const areaPath = path + ` L${pts[pts.length-1].x.toFixed(1)},${padding.top + innerH} L${pts[0].x.toFixed(1)},${padding.top + innerH} Z`;
 
+  // Y-ticks (6 níveis)
   const yTicks = [];
-  for (let i = 0; i <= 4; i++) {
-    const v = yMin + (i / 4) * yRange;
-    const y = padding.top + (1 - i / 4) * innerH;
+  for (let i = 0; i <= 6; i++) {
+    const v = yMin + (i / 6) * yRange;
+    const y = padding.top + (1 - i / 6) * innerH;
     yTicks.push({ v, y });
   }
+  // X-ticks (6 datas)
   const xTicks = [];
-  const xCount = 5;
+  const xCount = 6;
   for (let i = 0; i < xCount; i++) {
     const idx = Math.round((i / (xCount - 1)) * (series.length - 1));
     const p = pts[idx];
-    xTicks.push({ x: p[0], date: p[2].data });
+    xTicks.push({ x: p.x, date: p.data });
   }
 
+  // Pontos circulares: mostrar todos como bolinhas pequenas se série <= 30, senão somente cada N
+  const showDots = pts.length <= 30;
+  const dotEvery = pts.length <= 30 ? 1 : Math.ceil(pts.length / 30);
+
+  const first = pts[0];
+  const last = pts[pts.length - 1];
+  const variacao = ((last.valor - first.valor) / first.valor) * 100;
+  const variacaoStr = (variacao >= 0 ? '+' : '') + variacao.toFixed(2) + '%';
+  const variacaoCor = variacao >= 0 ? '#55c94f' : '#ff8585';
+
   c.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="lc-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${yTicks.map(t => `
-        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.07)" stroke-width="1"/>
-        <text x="${padding.left - 8}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="end">${fmtNum(t.v, 2)}</text>
-      `).join('')}
-      ${xTicks.map(t => `
-        <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="middle">${(t.date||'').slice(5)}</text>
-      `).join('')}
-      <path d="${areaPath}" fill="url(#lc-grad-${containerId})"/>
-      <path d="${path}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
-      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="3.5" fill="${color}"/>
-      <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="6" fill="${color}" opacity="0.3"/>
-    </svg>`;
+    <div class="line-chart-wrap" style="position:relative;">
+      <svg class="line-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block; width:100%; height:auto; cursor:crosshair;">
+        <defs>
+          <linearGradient id="lc-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Grid horizontal + labels Y -->
+        ${yTicks.map(t => `
+          <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.07)" stroke-width="1"/>
+          <text x="${padding.left - 10}" y="${t.y + 3.5}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="end">${fmtV(t.v)}</text>
+        `).join('')}
+
+        <!-- Datas X -->
+        ${xTicks.map(t => `
+          <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="middle">${(t.date||'').slice(5)}</text>
+        `).join('')}
+
+        <!-- Área e linha -->
+        <path d="${areaPath}" fill="url(#lc-grad-${containerId})"/>
+        <path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+
+        <!-- Pontos individuais (clicáveis/hover) -->
+        ${pts.map((p, i) => {
+          if (i % dotEvery !== 0 && i !== pts.length-1) return '';
+          return `<circle class="lc-pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${showDots?2.5:1.8}" fill="${color}" data-i="${i}" style="cursor:pointer;"/>`;
+        }).join('')}
+
+        <!-- Label valor inicial -->
+        <g>
+          <rect x="${first.x - 36}" y="${first.y - 22}" width="68" height="18" rx="3" fill="rgba(8,31,46,0.85)" stroke="${color}" stroke-width="1" stroke-opacity="0.5"/>
+          <text x="${first.x + 2}" y="${first.y - 9}" font-family="JetBrains Mono" font-size="10" fill="#a8bdc9" text-anchor="middle">${fmtV(first.valor)}</text>
+        </g>
+
+        <!-- Label valor final em destaque -->
+        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="7" fill="${color}" opacity="0.25"/>
+        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4" fill="${color}"/>
+        <g>
+          <rect x="${last.x + 8}" y="${last.y - 11}" width="58" height="22" rx="3" fill="${color}" opacity="0.95"/>
+          <text x="${last.x + 37}" y="${last.y + 4}" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#081f2e" text-anchor="middle">${fmtV(last.valor)}</text>
+        </g>
+
+        <!-- Crosshair vertical (escondido até hover) -->
+        <line class="lc-cross-v" x1="0" x2="0" y1="${padding.top}" y2="${H - padding.bottom}" stroke="${color}" stroke-width="1" stroke-dasharray="3,3" opacity="0" pointer-events="none"/>
+        <!-- Bolinha destacada no hover -->
+        <circle class="lc-cross-pt" cx="-100" cy="-100" r="5" fill="${color}" stroke="#081f2e" stroke-width="2" opacity="0" pointer-events="none"/>
+
+        <!-- Faixa invisível para capturar mouse -->
+        <rect class="lc-hover-area" x="${padding.left}" y="${padding.top}" width="${innerW}" height="${innerH}" fill="transparent"/>
+      </svg>
+
+      <!-- Tooltip HTML (mais bonito que <text> SVG) -->
+      <div class="lc-tooltip" style="position:absolute; pointer-events:none; opacity:0; background:rgba(5,15,23,0.95); border:1px solid ${color}; border-radius:6px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; color:var(--be8-ice); white-space:nowrap; transition:opacity 0.1s; box-shadow:0 4px 14px rgba(0,0,0,0.5); z-index:10; min-width:130px;">
+        <div class="lc-tt-date" style="color:#5e7382; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:3px;"></div>
+        <div class="lc-tt-val" style="font-size:14px; font-weight:600; color:${color};"></div>
+        <div class="lc-tt-pct" style="font-size:10px; color:#a8bdc9; margin-top:2px;"></div>
+      </div>
+
+      <!-- Footer com primeiro/último/variação -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:11px; font-family:var(--font-mono); color:var(--be8-mist);">
+        <div><span style="color:#5e7382;">DESDE ${(first.data||'').slice(5)}:</span> ${fmtV(first.valor)}</div>
+        <div><span style="color:#5e7382;">VARIAÇÃO 90D:</span> <strong style="color:${variacaoCor};">${variacaoStr}</strong></div>
+        <div><span style="color:#5e7382;">ATUAL:</span> <strong style="color:var(--be8-ice);">${fmtV(last.valor)}</strong></div>
+      </div>
+    </div>`;
+
+  // Bind interatividade
+  const svg = c.querySelector('.line-chart-svg');
+  const tooltip = c.querySelector('.lc-tooltip');
+  const crossV = c.querySelector('.lc-cross-v');
+  const crossPt = c.querySelector('.lc-cross-pt');
+  const wrap = c.querySelector('.line-chart-wrap');
+
+  svg.addEventListener('mousemove', (ev) => {
+    const rect = svg.getBoundingClientRect();
+    // converter clientX para viewBox X
+    const xView = ((ev.clientX - rect.left) / rect.width) * W;
+    if (xView < padding.left || xView > W - padding.right) {
+      tooltip.style.opacity = 0;
+      crossV.setAttribute('opacity', 0);
+      crossPt.setAttribute('opacity', 0);
+      return;
+    }
+    // achar ponto mais próximo
+    let nearest = pts[0], minDist = Infinity;
+    for (const p of pts) {
+      const d = Math.abs(p.x - xView);
+      if (d < minDist) { minDist = d; nearest = p; }
+    }
+    // posicionar tooltip (precisa converter viewBox para pixel real do wrap)
+    const scale = rect.width / W;
+    const px = nearest.x * scale;
+    const py = nearest.y * scale;
+    const ttW = tooltip.offsetWidth, wrapW = wrap.offsetWidth;
+    const ttX = px + 12 + ttW > wrapW ? px - ttW - 12 : px + 12;
+    const ttY = py - 30;
+    tooltip.style.left = ttX + 'px';
+    tooltip.style.top = Math.max(0, ttY) + 'px';
+    tooltip.style.opacity = 1;
+    const pct = ((nearest.valor - first.valor) / first.valor) * 100;
+    const pctStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% desde o início';
+    c.querySelector('.lc-tt-date').textContent = nearest.data || '';
+    c.querySelector('.lc-tt-val').textContent = fmtV(nearest.valor);
+    c.querySelector('.lc-tt-pct').textContent = pctStr;
+    crossV.setAttribute('x1', nearest.x);
+    crossV.setAttribute('x2', nearest.x);
+    crossV.setAttribute('opacity', 0.5);
+    crossPt.setAttribute('cx', nearest.x);
+    crossPt.setAttribute('cy', nearest.y);
+    crossPt.setAttribute('opacity', 1);
+  });
+  svg.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = 0;
+    crossV.setAttribute('opacity', 0);
+    crossPt.setAttribute('opacity', 0);
+  });
 }
 
 function renderMultiNormalized(containerId, seriesList) {
@@ -175,8 +296,8 @@ function renderMultiNormalized(containerId, seriesList) {
     c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Aguardando dados…</div>';
     return;
   }
-  const W = c.clientWidth || 700, H = 280;
-  const padding = { top: 20, right: 100, bottom: 32, left: 30 };
+  const W = c.clientWidth || 700, H = 300;
+  const padding = { top: 24, right: 110, bottom: 38, left: 44 };
   const innerW = W - padding.left - padding.right;
   const innerH = H - padding.top - padding.bottom;
 
@@ -184,49 +305,148 @@ function renderMultiNormalized(containerId, seriesList) {
     const base = s.data[0].valor;
     return {
       ...s,
-      norm: s.data.map(p => ({ data: p.data, valor: (p.valor / base) * 100 })),
+      norm: s.data.map(p => ({ data: p.data, valor: (p.valor / base) * 100, raw: p.valor })),
     };
   });
   const len = Math.min(...norm.map(s => s.norm.length));
   norm.forEach(s => s.norm = s.norm.slice(-len));
 
   const allVals = norm.flatMap(s => s.norm.map(p => p.valor));
-  const yMin = Math.min(...allVals) * 0.98;
-  const yMax = Math.max(...allVals) * 1.02;
+  const yMin = Math.min(...allVals) * 0.97;
+  const yMax = Math.max(...allVals) * 1.03;
   const yRange = yMax - yMin;
+
+  // Pontos por série
+  norm.forEach(s => {
+    s.pts = s.norm.map((p, i) => {
+      const x = padding.left + (i / (s.norm.length - 1)) * innerW;
+      const y = padding.top + (1 - (p.valor - yMin) / yRange) * innerH;
+      return { x, y, data: p.data, valor: p.valor, raw: p.raw };
+    });
+  });
 
   let paths = '';
   norm.forEach(s => {
-    const pts = s.norm.map((p, i) => {
-      const x = padding.left + (i / (s.norm.length - 1)) * innerW;
-      const y = padding.top + (1 - (p.valor - yMin) / yRange) * innerH;
-      return [x, y];
-    });
-    const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-    paths += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`;
-    const last = pts[pts.length-1];
-    paths += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3" fill="${s.color}"/>`;
-    paths += `<text x="${last[0]+8}" y="${last[1]+3}" font-family="JetBrains Mono" font-size="10" fill="${s.color}">${s.name}</text>`;
+    const pathD = s.pts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+    paths += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const last = s.pts[s.pts.length-1];
+    paths += `<circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="3.5" fill="${s.color}"/>`;
+    paths += `<rect x="${last.x + 6}" y="${last.y - 10}" width="98" height="20" rx="3" fill="${s.color}" opacity="0.92"/>`;
+    paths += `<text x="${last.x + 11}" y="${last.y + 4}" font-family="JetBrains Mono" font-size="10.5" font-weight="600" fill="#081f2e">${s.name} ${last.valor.toFixed(1)}</text>`;
   });
 
   const yTicks = [];
-  for (let i = 0; i <= 4; i++) {
-    const v = yMin + (i / 4) * yRange;
-    const y = padding.top + (1 - i / 4) * innerH;
+  for (let i = 0; i <= 5; i++) {
+    const v = yMin + (i / 5) * yRange;
+    const y = padding.top + (1 - i / 5) * innerH;
     yTicks.push({ v, y });
   }
+  // Linha do 100 (base)
   const y100 = padding.top + (1 - (100 - yMin) / yRange) * innerH;
 
+  // X-ticks (datas)
+  const refSerie = norm[0];
+  const xTicks = [];
+  const xCount = 6;
+  for (let i = 0; i < xCount; i++) {
+    const idx = Math.round((i / (xCount - 1)) * (refSerie.pts.length - 1));
+    const p = refSerie.pts[idx];
+    xTicks.push({ x: p.x, date: p.data });
+  }
+
   c.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      ${yTicks.map(t => `
-        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.06)" stroke-width="1"/>
-        <text x="${padding.left - 4}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9" fill="#5e7382" text-anchor="end">${t.v.toFixed(0)}</text>
-      `).join('')}
-      <line x1="${padding.left}" x2="${W - padding.right}" y1="${y100}" y2="${y100}" stroke="rgba(168,189,201,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
-      <text x="${W - padding.right + 4}" y="${y100 + 3}" font-family="JetBrains Mono" font-size="9" fill="#a8bdc9">100</text>
-      ${paths}
-    </svg>`;
+    <div class="multi-chart-wrap" style="position:relative;">
+      <svg class="multi-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block; width:100%; height:auto; cursor:crosshair;">
+        <!-- Grid horizontal -->
+        ${yTicks.map(t => `
+          <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.06)" stroke-width="1"/>
+          <text x="${padding.left - 6}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="end">${t.v.toFixed(0)}</text>
+        `).join('')}
+
+        <!-- Linha base 100 -->
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${y100}" y2="${y100}" stroke="rgba(168,189,201,0.30)" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="${W - padding.right + 4}" y="${y100 + 3.5}" font-family="JetBrains Mono" font-size="10" fill="#a8bdc9" font-weight="600">100</text>
+
+        <!-- X datas -->
+        ${xTicks.map(t => `
+          <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="middle">${(t.date||'').slice(5)}</text>
+        `).join('')}
+
+        <!-- Linhas das séries -->
+        ${paths}
+
+        <!-- Crosshair -->
+        <line class="mc-cross-v" x1="0" x2="0" y1="${padding.top}" y2="${H - padding.bottom}" stroke="#a8bdc9" stroke-width="1" stroke-dasharray="3,3" opacity="0" pointer-events="none"/>
+
+        <!-- Bolinhas hover por série -->
+        ${norm.map((s, idx) => `<circle class="mc-cross-pt mc-cross-${idx}" cx="-100" cy="-100" r="5" fill="${s.color}" stroke="#081f2e" stroke-width="2" opacity="0" pointer-events="none"/>`).join('')}
+
+        <rect class="mc-hover-area" x="${padding.left}" y="${padding.top}" width="${innerW}" height="${innerH}" fill="transparent"/>
+      </svg>
+
+      <!-- Tooltip multi-série -->
+      <div class="mc-tooltip" style="position:absolute; pointer-events:none; opacity:0; background:rgba(5,15,23,0.95); border:1px solid rgba(168,189,201,0.30); border-radius:6px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; color:var(--be8-ice); transition:opacity 0.1s; box-shadow:0 4px 14px rgba(0,0,0,0.5); z-index:10; min-width:180px;">
+        <div class="mc-tt-date" style="color:#5e7382; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px; padding-bottom:5px; border-bottom:1px solid rgba(168,189,201,0.10);"></div>
+        <div class="mc-tt-rows"></div>
+      </div>
+    </div>`;
+
+  const svg = c.querySelector('.multi-chart-svg');
+  const tooltip = c.querySelector('.mc-tooltip');
+  const crossV = c.querySelector('.mc-cross-v');
+  const wrap = c.querySelector('.multi-chart-wrap');
+  const ttDate = c.querySelector('.mc-tt-date');
+  const ttRows = c.querySelector('.mc-tt-rows');
+
+  svg.addEventListener('mousemove', (ev) => {
+    const rect = svg.getBoundingClientRect();
+    const xView = ((ev.clientX - rect.left) / rect.width) * W;
+    if (xView < padding.left || xView > W - padding.right) {
+      tooltip.style.opacity = 0;
+      crossV.setAttribute('opacity', 0);
+      norm.forEach((_, i) => c.querySelector('.mc-cross-' + i).setAttribute('opacity', 0));
+      return;
+    }
+    // Encontrar índice mais próximo (usando primeira série como referência temporal)
+    let bestIdx = 0, minDist = Infinity;
+    refSerie.pts.forEach((p, i) => {
+      const d = Math.abs(p.x - xView);
+      if (d < minDist) { minDist = d; bestIdx = i; }
+    });
+
+    const xAt = refSerie.pts[bestIdx].x;
+    crossV.setAttribute('x1', xAt);
+    crossV.setAttribute('x2', xAt);
+    crossV.setAttribute('opacity', 0.55);
+
+    // Tooltip
+    ttDate.textContent = refSerie.pts[bestIdx].data || '';
+    ttRows.innerHTML = norm.map((s, i) => {
+      const p = s.pts[bestIdx];
+      const dot = c.querySelector('.mc-cross-' + i);
+      if (dot) { dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('opacity', 1); }
+      const pct = (p.valor - 100).toFixed(2);
+      const pctStr = (pct >= 0 ? '+' : '') + pct + '%';
+      const pctClr = pct >= 0 ? '#55c94f' : '#ff8585';
+      return `<div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
+        <span style="color:${s.color}; font-weight:600;">● ${s.name}</span>
+        <span style="color:var(--be8-ice); font-weight:600;">${p.valor.toFixed(2)} <span style="color:${pctClr}; font-size:9.5px;">(${pctStr})</span></span>
+      </div>`;
+    }).join('');
+
+    const scale = rect.width / W;
+    const px = xAt * scale;
+    const ttW = tooltip.offsetWidth, wrapW = wrap.offsetWidth;
+    const ttX = px + 14 + ttW > wrapW ? px - ttW - 14 : px + 14;
+    tooltip.style.left = ttX + 'px';
+    tooltip.style.top = '12px';
+    tooltip.style.opacity = 1;
+  });
+  svg.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = 0;
+    crossV.setAttribute('opacity', 0);
+    norm.forEach((_, i) => c.querySelector('.mc-cross-' + i).setAttribute('opacity', 0));
+  });
 }
 
 /* =====================================================================
@@ -264,7 +484,7 @@ function renderCambio() {
     dEl.textContent = fmtPct(d);
     setStatusBadge('status-usd', 'OK');
     renderSparkline('usd-spark', usd.serie_90d, '#0eb194');
-    renderLineChart('usd-90-chart', usd.serie_90d, '#0eb194');
+    renderLineChart('usd-90-chart', usd.serie_90d, '#0eb194', { decimals: 4, prefix: 'R$ ' });
   } else {
     setStatusBadge('status-usd', 'PENDENTE');
   }
@@ -325,14 +545,14 @@ function renderCommodities() {
   // Sparklines + linecharts adicionais
   if (map.brent && map.brent.serie_90d) {
     renderSparkline('brent-spark', map.brent.serie_90d, '#d4a84b');
-    renderLineChart('brent-90-chart', map.brent.serie_90d, '#d4a84b');
+    renderLineChart('brent-90-chart', map.brent.serie_90d, '#d4a84b', { decimals: 2, prefix: '$ ', suffix: ' /bbl' });
   }
   if (map.soja && map.soja.serie_90d) {
     renderSparkline('soja-spark', map.soja.serie_90d, '#55c94f');
-    renderLineChart('soja-90-chart', map.soja.serie_90d, '#55c94f');
+    renderLineChart('soja-90-chart', map.soja.serie_90d, '#55c94f', { decimals: 2, prefix: '¢ ', suffix: ' /bu' });
   }
   if (map.oleo_soja && map.oleo_soja.serie_90d) {
-    renderLineChart('oleo-90-chart', map.oleo_soja.serie_90d, '#0eb194');
+    renderLineChart('oleo-90-chart', map.oleo_soja.serie_90d, '#0eb194', { decimals: 2, prefix: '¢ ', suffix: ' /lb' });
   }
 
   // Tabela commodities
@@ -887,13 +1107,13 @@ function renderGovernance() {
   $('#sources-meta').textContent = `${ok}/${FONTES.length} OK`;
   const summary = $('#sources-summary');
   if (summary) {
-    summary.innerHTML = FONTES.slice(0, 6).map(f => {
+    summary.innerHTML = FONTES.map(f => {
       const info = sf[f.id] || {};
       const st = info.status || 'PENDENTE';
       const cls = st === 'OK' ? 'src-live' : st === 'PARCIAL' ? 'src-cached' : st === 'PENDENTE' ? 'src-pending' : 'src-error';
       const label = st === 'OK' ? '✓' : st === 'PARCIAL' ? '~' : st === 'PENDENTE' ? '○' : '✕';
       return `<div style="display:flex; justify-content:space-between; padding:3px 0;">
-        <span style="color:var(--be8-mist);">${f.nome.split('·')[0].trim()}</span>
+        <span style="color:var(--be8-mist); font-size:11.5px;">${f.nome.split('·')[0].trim()}</span>
         <span class="src-status ${cls}" style="padding:2px 7px;">${label}</span>
       </div>`;
     }).join('');
@@ -909,56 +1129,105 @@ function renderGovernance() {
    RADAR IA · regras determinísticas
    ===================================================================== */
 function buildInsights() {
-  const out = [];
+  const bulls = [];
+  const bears = [];
+  const neutrals = [];
   const cmap = {};
   (STATE.commodities?.commodities || []).forEach(c => cmap[c.id] = c);
   const usd = STATE.cambio?.moedas?.USD;
+  const eur = STATE.cambio?.moedas?.EUR;
 
-  // Regra 1: dólar
+  // ===== REGRAS DINÂMICAS (baseadas em dados ao vivo) =====
+
+  // Regra 1: dólar diário
   if (usd && usd.variacao_pct != null) {
-    if (usd.variacao_pct > 0.3) {
-      out.push({ type: 'bull', tag: 'CÂMBIO', text: `USD/BRL em alta de ${fmtPct(usd.variacao_pct)} no fechamento — janela favorável a exportações de óleo e farelo de soja.` });
-    } else if (usd.variacao_pct < -0.3) {
-      out.push({ type: 'bear', tag: 'CÂMBIO', text: `USD/BRL em queda de ${fmtPct(usd.variacao_pct)} — compressão de margem para exportadores; metanol importado fica mais barato.` });
+    if (usd.variacao_pct > 0.2) {
+      bulls.push({ type: 'bull', tag: 'CÂMBIO', text: `USD/BRL em alta de ${fmtPct(usd.variacao_pct)} no fechamento (${fmtBRL(usd.cotacao_atual)}) — janela favorável a exportações de óleo e farelo de soja.` });
+    } else if (usd.variacao_pct < -0.2) {
+      bears.push({ type: 'bear', tag: 'CÂMBIO', text: `USD/BRL em queda de ${fmtPct(usd.variacao_pct)} (${fmtBRL(usd.cotacao_atual)}) — compressão de margem para exportadores; metanol importado fica mais barato.` });
+    } else {
+      neutrals.push({ type: 'neutral', tag: 'CÂMBIO', text: `USD/BRL estável em ${fmtBRL(usd.cotacao_atual)} (${fmtPct(usd.variacao_pct)}) — ambiente neutro para exportação.` });
     }
   }
 
-  // Regra 2: óleo soja + Brent
+  // Regra 2: óleo soja + Brent (combinada — premium pricing biodiesel)
   const oleo = cmap.oleo_soja, brent = cmap.brent;
-  if (oleo && brent && oleo.var_7d_pct != null && brent.var_7d_pct != null) {
-    if (oleo.var_7d_pct > 1 && brent.var_7d_pct > 1) {
-      out.push({ type: 'bull', tag: 'BIODIESEL', text: `Alta simultânea óleo soja (${fmtPct(oleo.var_7d_pct)} 7d) e Brent (${fmtPct(brent.var_7d_pct)} 7d) — pressão de alta no B100; ambiente favorável a repasse.` });
-    } else if (oleo.var_7d_pct > 2 && brent.var_7d_pct < 0) {
-      out.push({ type: 'alert', tag: 'MARGEM', text: `Descolamento: óleo soja sobe ${fmtPct(oleo.var_7d_pct)} (7d) enquanto Brent recua ${fmtPct(brent.var_7d_pct)} — compressão de margem biodiesel vs. diesel fóssil.` });
-    } else if (oleo.var_7d_pct < -2) {
-      out.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja em queda forte (${fmtPct(oleo.var_7d_pct)} 7d) — janela para melhora de margem do B100.` });
+  if (oleo && brent && oleo.var_d_pct != null && brent.var_d_pct != null) {
+    if (oleo.var_d_pct > 0.5 && brent.var_d_pct > 0.5) {
+      bulls.push({ type: 'bull', tag: 'BIODIESEL', text: `Alta simultânea óleo soja (${fmtPct(oleo.var_d_pct)}) e Brent (${fmtPct(brent.var_d_pct)}) — pressão de alta no B100; ambiente favorável a repasse.` });
+    } else if (oleo.var_d_pct > 1 && brent.var_d_pct < -0.5) {
+      bears.push({ type: 'alert', tag: 'MARGEM', text: `Descolamento: óleo soja sobe ${fmtPct(oleo.var_d_pct)} enquanto Brent recua ${fmtPct(brent.var_d_pct)} — atenção à margem biodiesel vs. diesel.` });
+    } else if (oleo.var_d_pct < -0.8) {
+      bulls.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja em queda de ${fmtPct(oleo.var_d_pct)} — oportunidade de melhora de margem do B100.` });
     }
   }
 
-  // Regra 3: soja CBOT
+  // Regra 3: óleo soja (qualquer movimento)
+  if (oleo && oleo.var_7d_pct != null) {
+    if (oleo.var_7d_pct > 2) {
+      bears.push({ type: 'alert', tag: 'INSUMO', text: `Óleo de soja acumula ${fmtPct(oleo.var_7d_pct)} em 7 dias — custo principal do B100 sob pressão.` });
+    } else if (oleo.var_7d_pct < -2) {
+      bulls.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja recua ${fmtPct(oleo.var_7d_pct)} em 7 dias — alívio no custo principal do B100.` });
+    }
+  }
+
+  // Regra 4: soja CBOT trend
   const soja = cmap.soja;
   if (soja && soja.var_30d_pct != null) {
     if (soja.var_30d_pct > 4) {
-      out.push({ type: 'alert', tag: 'ORIGINAÇÃO', text: `Soja CBOT acumula alta de ${fmtPct(soja.var_30d_pct)} em 30d — risco de competição por matéria-prima entre esmagamento e exportação.` });
+      bears.push({ type: 'alert', tag: 'ORIGINAÇÃO', text: `Soja CBOT acumula alta de ${fmtPct(soja.var_30d_pct)} em 30d — risco de competição por matéria-prima entre esmagamento e exportação.` });
     } else if (soja.var_30d_pct < -4) {
-      out.push({ type: 'bull', tag: 'ORIGINAÇÃO', text: `Soja CBOT recua ${fmtPct(soja.var_30d_pct)} em 30d — ambiente favorável para fixação de compras.` });
+      bulls.push({ type: 'bull', tag: 'ORIGINAÇÃO', text: `Soja CBOT recua ${fmtPct(soja.var_30d_pct)} em 30d — ambiente favorável para fixação de compras.` });
     }
   }
 
-  // Regra 4: Estoque global / Brent crítico
+  // Regra 5: Brent absoluto
   if (brent && brent.ultimo != null) {
-    if (brent.ultimo > 90) {
-      out.push({ type: 'alert', tag: 'PETRÓLEO', text: `Brent acima de US$ 90/bbl (atual ${fmtUSD(brent.ultimo)}) — alta volatilidade do diesel fóssil; janela para precificação premium do B100.` });
+    if (brent.ultimo >= 90) {
+      bulls.push({ type: 'bull', tag: 'PETRÓLEO', text: `Brent em ${fmtUSD(brent.ultimo)}/bbl (acima de US$ 90) — diesel fóssil caro, janela para precificação premium do B100 nos próximos leilões.` });
+    } else if (brent.ultimo < 70) {
+      bears.push({ type: 'alert', tag: 'PETRÓLEO', text: `Brent em ${fmtUSD(brent.ultimo)}/bbl (abaixo de US$ 70) — diesel fóssil barato, pressão para baixar preço-teto dos leilões B100.` });
     }
   }
 
-  // Regra 5: estrutural
-  out.push({ type: 'neutral', tag: 'REGULATÓRIO', text: `Lei 14.993/2024 mantém trajetória: B14 → B15 → B16 (mar/2026) → B17 → … → B20 (2030). Demanda B100 estruturalmente crescente.` });
-
-  if (out.length === 1) {
-    out.unshift({ type: 'neutral', tag: 'STATUS', text: 'Mercado em modo lateral — nenhuma regra de tendência forte foi acionada hoje.' });
+  // Regra 6: Milho (proxy etanol concorrente)
+  const milho = cmap.milho;
+  if (milho && milho.var_30d_pct != null) {
+    if (milho.var_30d_pct > 5) {
+      neutrals.push({ type: 'neutral', tag: 'CONCORRÊNCIA', text: `Milho CBOT em alta de ${fmtPct(milho.var_30d_pct)} (30d) — pode reduzir competitividade do etanol de milho vs. biodiesel.` });
+    }
   }
-  return out;
+
+  // ===== INSIGHTS ESTRUTURAIS (sempre presentes — base institucional) =====
+  bulls.push({ type: 'bull', tag: 'DEMANDA', text: 'Lei 14.993/2024 mantém trajetória B15 → B16 (mar/2026) → B20 (2030). Crescimento estrutural de demanda B100 de ~7% a.a.' });
+  bulls.push({ type: 'bull', tag: 'POSICIONAMENTO', text: 'Be8 mantém posição entre os maiores produtores nacionais com capacidade de 1.080 milhões L/ano integrada em 2 plantas (RS+PR).' });
+  bears.push({ type: 'alert', tag: 'VOLATILIDADE', text: 'Curva de óleo de soja segue como principal fonte de volatilidade da margem B100. Monitorar variação semanal CBOT.' });
+
+  // ===== GARANTIA DE MÍNIMO 3 + 3 =====
+  // Se faltar bulls, completar com positivos estruturais
+  while (bulls.length < 3) {
+    const extra = [
+      { type: 'bull', tag: 'EXPORT', text: 'Be8 Switzerland mantém canal de exportação ativo para EUA e Europa — diversifica risco de demanda interna.' },
+      { type: 'bull', tag: 'INTEGRAÇÃO', text: 'Verticalização originação → esmagamento → biodiesel reduz exposição a margens de terceiros.' },
+      { type: 'bull', tag: 'CBIO', text: 'Renovabio emite CBIOs por planta certificada — receita adicional não correlacionada com preço B100.' },
+    ];
+    const e = extra[bulls.length % extra.length];
+    if (!bulls.find(b => b.tag === e.tag)) bulls.push(e);
+    else break;
+  }
+  while (bears.length < 3) {
+    const extra = [
+      { type: 'alert', tag: 'INSUMO', text: 'Exposição estrutural ao preço do óleo de soja (≈70% do custo variável) — risco contínuo.' },
+      { type: 'alert', tag: 'REGULATÓRIO', text: 'Decisões CNPE/ANP sobre cronograma e fórmula de leilões podem alterar premissas de margem.' },
+      { type: 'alert', tag: 'CONCORRÊNCIA', text: 'Expansão de etanol de milho (Centro-Oeste) compete por share na matriz renovável.' },
+    ];
+    const e = extra[bears.length % extra.length];
+    if (!bears.find(b => b.tag === e.tag)) bears.push(e);
+    else break;
+  }
+
+  // Concatena: bulls, bears, neutrals
+  return [...bulls, ...bears, ...neutrals];
 }
 
 function renderRadarIA() {
@@ -1126,37 +1395,68 @@ function renderNewsletter() {
 }
 
 function renderNewsCard(it) {
-  const imp = (it.impacto || 'medio').toLowerCase();
-  const tag = (it.tag || 'neutro').toLowerCase();
+  // Mapeamento flexível: o coletor python usa impacto_nivel/tag, mas o frontend pode receber impacto também
+  const imp = String(it.impacto || it.impacto_nivel || 'medio').toLowerCase().replace('é', 'e');
+  const tagRaw = String(it.tag || 'neutro').toLowerCase();
+  // Tag pode vir como 'core', 'regulatorio', 'insumo' (do python) ou 'oportunidade', 'risco'
+  const tagMap = {
+    'core': { label: 'CORE BIODIESEL', color: 'var(--be8-green-2)', bg: 'rgba(85,201,79,0.12)' },
+    'regulatorio': { label: 'REGULATÓRIO', color: 'var(--be8-gold)', bg: 'rgba(212,168,75,0.12)' },
+    'insumo': { label: 'INSUMO', color: '#7ed957', bg: 'rgba(126,217,87,0.10)' },
+    'macro': { label: 'MACRO', color: 'var(--be8-mist)', bg: 'rgba(168,189,201,0.08)' },
+    'oportunidade': { label: 'OPORTUNIDADE', color: 'var(--be8-green-2)', bg: 'rgba(85,201,79,0.12)' },
+    'risco': { label: 'RISCO', color: 'var(--be8-red)', bg: 'rgba(232,95,95,0.12)' },
+    'neutro': { label: 'NEUTRO', color: 'var(--be8-mist)', bg: 'rgba(168,189,201,0.08)' },
+  };
+  const t = tagMap[tagRaw] || tagMap['neutro'];
   const impClr = imp === 'alto' ? '#ff8585' : imp === 'medio' ? 'var(--be8-gold)' : 'var(--be8-mist)';
-  const tagClr = tag === 'oportunidade' ? 'var(--be8-green-2)' : tag === 'risco' ? 'var(--be8-red)' : 'var(--be8-mist)';
+  const impBg = imp === 'alto' ? 'rgba(232,95,95,0.10)' : imp === 'medio' ? 'rgba(212,168,75,0.10)' : 'rgba(168,189,201,0.08)';
+
+  // Inicial da fonte como "thumbnail" visual quando não há imagem
+  const fonteInicial = (it.fonte || 'B').charAt(0).toUpperCase();
+
   return `
-    <div class="card news-card" style="display:flex; flex-direction:column; gap:8px;">
-      <div style="display:flex; gap:14px; align-items:flex-start; justify-content:space-between;">
-        <div style="flex:1;">
-          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:6px;">
-            <span style="color:var(--be8-green-1);">${it.categoria || 'geral'}</span>
-            <span style="color:var(--be8-dim);">${it.fonte || ''}</span>
-            <span style="color:var(--be8-dim);">${it.data || ''}</span>
+    <div class="card news-card" style="display:flex; flex-direction:column; gap:10px; padding:18px;">
+      <div style="display:flex; gap:16px; align-items:flex-start;">
+        <!-- Thumbnail (placeholder com inicial da fonte) -->
+        <div style="flex:0 0 56px; width:56px; height:56px; border-radius:8px; background: var(--grad-energy); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:24px; font-weight:600; color:#081f2e;">${fonteInicial}</div>
+
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:8px; flex-wrap:wrap;">
+            <span style="color:var(--be8-green-1);">${(it.categoria || 'geral').toUpperCase()}</span>
+            <span style="color:var(--be8-dim);">·</span>
+            <span style="color:var(--be8-mist);">${it.fonte || 'Fonte'}</span>
+            <span style="color:var(--be8-dim);">·</span>
+            <span style="color:var(--be8-dim);">${(it.data || '').replace(/\d+:\d+:\d+.*$/, '').slice(0,16)}</span>
           </div>
-          <h3 style="font-family:var(--font-display); font-size:18px; font-weight:500; line-height:1.25; color:var(--be8-ice);">
-            <a href="${it.link}" target="_blank" rel="noopener" style="color:inherit;">${it.titulo}</a>
+          <h3 style="font-family:var(--font-display); font-size:18px; font-weight:500; line-height:1.3; color:var(--be8-ice); margin-bottom:6px;">
+            <a href="${it.link || '#'}" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;" onmouseover="this.style.color='var(--be8-green-1)'" onmouseout="this.style.color='var(--be8-ice)'">${it.titulo || '(sem título)'}</a>
           </h3>
-          ${it.resumo ? `<p style="font-size:13px; color:var(--be8-mist); line-height:1.6; margin-top:8px;">${it.resumo}</p>` : ''}
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px; min-width:90px; align-items:flex-end;">
-          <span style="font-size:10px; padding:2px 8px; border-radius:3px; font-weight:600; color:${impClr}; background:${impClr === '#ff8585' ? 'rgba(232,95,95,0.10)' : impClr === 'var(--be8-gold)' ? 'rgba(212,168,75,0.10)' : 'rgba(168,189,201,0.08)'};">${imp.toUpperCase()}</span>
-          <span style="font-size:10px; padding:2px 8px; border-radius:3px; color:${tagClr}; background:${tagClr === 'var(--be8-green-2)' ? 'rgba(85,201,79,0.10)' : tagClr === 'var(--be8-red)' ? 'rgba(232,95,95,0.10)' : 'rgba(168,189,201,0.08)'};">${tag}</span>
+          ${it.resumo ? `<p style="font-size:13px; color:var(--be8-mist); line-height:1.6; margin-bottom:8px;">${it.resumo.length > 280 ? it.resumo.slice(0, 280) + '…' : it.resumo}</p>` : ''}
+
+          <!-- Tags -->
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+            <span style="font-size:10px; padding:3px 9px; border-radius:3px; font-weight:600; color:${impClr}; background:${impBg}; letter-spacing:0.05em;">IMPACTO ${imp.toUpperCase()}</span>
+            <span style="font-size:10px; padding:3px 9px; border-radius:3px; color:${t.color}; background:${t.bg}; letter-spacing:0.05em; font-weight:600;">${t.label}</span>
+          </div>
         </div>
       </div>
-      ${it.impacto_be8 ? `<div style="margin-top:6px; padding:8px 12px; border-left:2px solid var(--be8-green-1); background:rgba(14,177,148,0.04); border-radius:0 4px 4px 0; font-size:12px; color:var(--be8-mist); line-height:1.5;"><strong style="color:var(--be8-green-1);">Impacto Be8:</strong> ${it.impacto_be8}</div>` : ''}
+
+      ${it.impacto_be8 ? `<div style="margin-top:4px; padding:10px 14px; border-left:3px solid var(--be8-green-1); background:rgba(14,177,148,0.05); border-radius:0 6px 6px 0; font-size:12px; color:var(--be8-mist); line-height:1.55;"><strong style="color:var(--be8-green-1); letter-spacing:0.03em;">▸ Impacto Be8:</strong> ${it.impacto_be8}</div>` : ''}
+
+      ${it.link ? `<a href="${it.link}" target="_blank" rel="noopener" style="display:inline-flex; align-self:flex-start; align-items:center; gap:6px; margin-top:4px; padding:7px 14px; background:rgba(14,177,148,0.08); border:1px solid rgba(14,177,148,0.25); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:var(--be8-green-1); letter-spacing:0.05em; transition:all 0.15s;" onmouseover="this.style.background='rgba(14,177,148,0.18)';this.style.borderColor='var(--be8-green-1)'" onmouseout="this.style.background='rgba(14,177,148,0.08)';this.style.borderColor='rgba(14,177,148,0.25)'">ABRIR NOTÍCIA <span style="font-size:14px;">→</span></a>` : ''}
     </div>`;
 }
 
 function renderNewsItemMini(it) {
-  return `<a href="${it.link}" target="_blank" rel="noopener" style="display:block; padding:10px 12px; border-left:2px solid var(--be8-green-1); background:rgba(8,31,46,0.4); border-radius:0 4px 4px 0; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(14,177,148,0.06)';" onmouseout="this.style.background='rgba(8,31,46,0.4)';">
-    <div style="font-size:13px; color:var(--be8-ice); line-height:1.4; font-weight:500;">${it.titulo}</div>
-    <div style="margin-top:4px; font-family:var(--font-mono); font-size:10px; color:var(--be8-dim); letter-spacing:0.04em;">${it.fonte || ''} · ${it.data || ''}</div>
+  const imp = String(it.impacto || it.impacto_nivel || 'medio').toLowerCase();
+  const impDot = imp === 'alto' ? '#ff8585' : imp === 'medio' ? 'var(--be8-gold)' : 'var(--be8-green-1)';
+  return `<a href="${it.link || '#'}" target="_blank" rel="noopener" style="display:block; padding:12px 14px; border-left:2px solid ${impDot}; background:rgba(8,31,46,0.4); border-radius:0 6px 6px 0; transition: all 0.15s ease; text-decoration:none;" onmouseover="this.style.background='rgba(14,177,148,0.08)';this.style.transform='translateX(2px)';" onmouseout="this.style.background='rgba(8,31,46,0.4)';this.style.transform='translateX(0)';">
+    <div style="font-size:13px; color:var(--be8-ice); line-height:1.4; font-weight:500;">${it.titulo || '(sem título)'}</div>
+    <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-family:var(--font-mono); font-size:10px; color:var(--be8-dim); letter-spacing:0.04em;">${it.fonte || ''} · ${(it.data || '').slice(0,10)}</span>
+      <span style="font-family:var(--font-mono); font-size:10px; color:var(--be8-green-1);">abrir →</span>
+    </div>
   </a>`;
 }
 
@@ -1206,17 +1506,29 @@ function renderBe8Profile() {
     `).join('');
   }
 
-  // Cadeia de valor
-  if (p.cadeia_valor) {
-    $('#profile-cadeia').innerHTML = `
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:stretch;">
-        ${p.cadeia_valor.map((etapa, i) => `
-          <div style="flex:1; min-width:180px; padding:14px; background:linear-gradient(155deg, rgba(14,177,148,0.06) 0%, rgba(8,31,46,0.2) 50%); border:1px solid var(--be8-border-2); border-radius:8px; position:relative;">
-            <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--be8-green-1); letter-spacing:0.12em; margin-bottom:6px;">${String(i+1).padStart(2,'0')}</div>
-            <div style="font-size:13px; color:var(--be8-ice); font-weight:500; line-height:1.4;">${etapa}</div>
-          </div>
-        `).join('')}
-      </div>`;
+  // Cadeia de valor — HERO (imagem) + cards numerados abaixo
+  const cadeiaEl = $('#profile-cadeia');
+  if (cadeiaEl) {
+    const imgHTML = p.cadeia_valor_imagem ? `
+      <div style="margin-bottom:24px; border-radius:10px; overflow:hidden; border:1px solid var(--be8-border-2); box-shadow: 0 4px 24px rgba(0,0,0,0.4); background:#0e1a25;">
+        <img src="${p.cadeia_valor_imagem}" alt="Cadeia de Valor Be8" style="display:block; width:100%; height:auto;">
+        ${p.cadeia_valor_legenda ? `<div style="padding:14px 18px; background: rgba(8,31,46,0.6); font-size:11.5px; color:var(--be8-mist); line-height:1.6; border-top:1px solid var(--be8-border);"><strong style="color:var(--be8-ice);">▸ Leitura visual:</strong> ${p.cadeia_valor_legenda}</div>` : ''}
+      </div>` : '';
+
+    let cardsHTML = '';
+    if (p.cadeia_valor && Array.isArray(p.cadeia_valor) && p.cadeia_valor.length > 0) {
+      cardsHTML = `
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--be8-green-1); letter-spacing:0.1em; margin-bottom:14px; text-transform:uppercase;">Sumário navegável · 10 etapas-chave</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+          ${p.cadeia_valor.map((etapa, i) => `
+            <div style="padding:14px; background:linear-gradient(155deg, rgba(14,177,148,0.06) 0%, rgba(8,31,46,0.2) 50%); border:1px solid var(--be8-border-2); border-radius:8px;">
+              <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--be8-green-1); letter-spacing:0.12em; margin-bottom:6px;">${String(i+1).padStart(2,'0')}</div>
+              <div style="font-size:13px; color:var(--be8-ice); font-weight:500; line-height:1.4;">${etapa}</div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+    cadeiaEl.innerHTML = imgHTML + cardsHTML;
   }
 
   // Timeline
@@ -1234,17 +1546,23 @@ function renderBe8Profile() {
       </div>`;
   }
 
-  // Sustentabilidade
-  if (p.sustentabilidade_inovacao) {
+  // Sustentabilidade (aceita lista direta ou objeto.destaques)
+  const sustent = p.sustentabilidade_inovacao
+                || (p.sustentabilidade && p.sustentabilidade.destaques)
+                || null;
+  if (sustent && Array.isArray(sustent)) {
     $('#profile-sustentabilidade').innerHTML = '<ul style="margin-left:18px;">' +
-      p.sustentabilidade_inovacao.map(s => `<li style="margin-bottom:6px;">${s}</li>`).join('') +
+      sustent.map(s => `<li style="margin-bottom:8px;">${s}</li>`).join('') +
       '</ul>';
   }
 
-  // Posicionamento
-  if (p.posicionamento_competitivo) {
+  // Posicionamento (aceita lista pronta ou estruturada)
+  const posList = p.posicionamento_competitivo_lista
+               || (p.posicionamento_competitivo && p.posicionamento_competitivo.vantagens)
+               || null;
+  if (posList && Array.isArray(posList)) {
     $('#profile-posicionamento').innerHTML = '<ul style="margin-left:18px;">' +
-      p.posicionamento_competitivo.map(s => `<li style="margin-bottom:6px;">${s}</li>`).join('') +
+      posList.map(s => `<li style="margin-bottom:8px;">${s}</li>`).join('') +
       '</ul>';
   }
 
@@ -1444,49 +1762,105 @@ function bindTVControls() {
 /* =====================================================================
    ORQUESTRAÇÃO
    ===================================================================== */
+async function reloadAllData() {
+  const btn = $('#refresh-all');
+  if (btn) { btn.disabled = true; btn.textContent = '↻ atualizando…'; }
+  try {
+    const [cambio, commodities, conab, anpComb, anpB100, comex, noticias, profile, status] = await Promise.all([
+      loadJSON('data/cambio.json'),
+      loadJSON('data/commodities.json'),
+      loadJSON('data/conab_graos.json'),
+      loadJSON('data/anp_combustiveis.json'),
+      loadJSON('data/anp_b100.json'),
+      loadJSON('data/comex.json'),
+      loadJSON('data/noticias.json'),
+      loadJSON('data/be8_profile.json'),
+      loadJSON('data/status_fontes.json'),
+    ]);
+    STATE.cambio = cambio;
+    STATE.commodities = commodities;
+    STATE.conab = conab;
+    STATE.anp_combustiveis = anpComb;
+    STATE.anp_b100 = anpB100;
+    STATE.comex = comex;
+    STATE.noticias = noticias;
+    STATE.be8_profile = profile;
+    STATE.status_fontes = status;
+
+    renderCambio();
+    renderCommodities();
+    renderTicker();
+    renderConab();
+    renderBiodieselANP();
+    renderANPCombustiveis();
+    renderComex();
+    renderGovernance();
+    renderNewsletter();
+    renderBe8Profile();
+    renderRadarIA();
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Atualizar'; }
+  }
+}
+
+async function snapshotPNG() {
+  const btn = $('#export-snapshot');
+  if (btn) { btn.disabled = true; btn.textContent = '↓ capturando…'; }
+  try {
+    // Encontrar a página ativa
+    const page = document.querySelector('.page.active');
+    if (!page) {
+      alert('Nenhuma página ativa para capturar.');
+      return;
+    }
+    // Estratégia: usar html2canvas via CDN se disponível; caso contrário, fallback para print
+    if (!window.html2canvas) {
+      // Carregar dinamicamente
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      }).catch(() => null);
+    }
+    if (window.html2canvas) {
+      const canvas = await window.html2canvas(page, {
+        backgroundColor: '#050f17',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        windowWidth: document.documentElement.scrollWidth,
+      });
+      const tabName = (document.querySelector('.nav-tab.active')?.textContent || 'painel').trim().replace(/\s+/g, '_').toLowerCase();
+      const date = new Date().toISOString().slice(0,10);
+      const link = document.createElement('a');
+      link.download = `be8_${tabName}_${date}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } else {
+      // Fallback: abrir diálogo de impressão (usuário salva como PDF)
+      window.print();
+    }
+  } catch (e) {
+    console.error('snapshot falhou:', e);
+    alert('Não foi possível gerar snapshot. Use Ctrl+P (imprimir → salvar como PDF) como alternativa.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↓ Snapshot'; }
+  }
+}
+
 async function boot() {
   setSessionClock();
   setInterval(setSessionClock, 1000);
 
   // Carregar todos os JSONs em paralelo
-  const [cambio, commodities, conab, anpComb, anpB100, comex, noticias, profile, status] = await Promise.all([
-    loadJSON('data/cambio.json'),
-    loadJSON('data/commodities.json'),
-    loadJSON('data/conab_graos.json'),
-    loadJSON('data/anp_combustiveis.json'),
-    loadJSON('data/anp_b100.json'),
-    loadJSON('data/comex.json'),
-    loadJSON('data/noticias.json'),
-    loadJSON('data/be8_profile.json'),
-    loadJSON('data/status_fontes.json'),
-  ]);
-  STATE.cambio = cambio;
-  STATE.commodities = commodities;
-  STATE.conab = conab;
-  STATE.anp_combustiveis = anpComb;
-  STATE.anp_b100 = anpB100;
-  STATE.comex = comex;
-  STATE.noticias = noticias;
-  STATE.be8_profile = profile;
-  STATE.status_fontes = status;
-
-  // Renderizar tudo
-  renderCambio();
-  renderCommodities();
-  renderTicker();
-  renderConab();
-  renderBiodieselANP();
-  renderANPCombustiveis();
-  renderComex();
-  renderGovernance();
-  renderNewsletter();
-  renderBe8Profile();
-  renderRadarIA();
+  await reloadAllData();
 
   // Bind controles
   bindTVControls();
-  $('#refresh-all')?.addEventListener('click', () => location.reload());
-  $('#export-snapshot')?.addEventListener('click', () => window.print());
+  $('#refresh-all')?.addEventListener('click', reloadAllData);
+  $('#export-snapshot')?.addEventListener('click', snapshotPNG);
 }
 
 document.addEventListener('DOMContentLoaded', boot);

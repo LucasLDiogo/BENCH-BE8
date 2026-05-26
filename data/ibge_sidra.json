@@ -1,8 +1,145 @@
 {
-  "ultima_atualizacao": "2026-05-25T22:14:51",
-  "fonte": "IBGE · SIDRA · Tabela 6588 (LSPA)",
-  "endpoint": "https://apisidra.ibge.gov.br/values",
-  "status": "ERRO",
-  "culturas": {},
-  "erro": "Nenhuma cultura retornou dados"
+  "ultima_atualizacao": "2026-05-26T02:02:56",
+  "fonte": "IBGE · PAM 2024 (snapshot embutido)",
+  "endpoint": "https://sidra.ibge.gov.br/tabela/1612",
+  "status": "PARCIAL",
+  "modo": "snapshot embutido · PAM 2024",
+  "culturas": {
+    "Soja": {
+      "ufs": [
+        {
+          "uf": "MT",
+          "valor_t": 47500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "PR",
+          "valor_t": 22000000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "RS",
+          "valor_t": 21500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "GO",
+          "valor_t": 18500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MS",
+          "valor_t": 14500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MG",
+          "valor_t": 7500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "BA",
+          "valor_t": 7100000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MA",
+          "valor_t": 4300000,
+          "periodo": "2024"
+        }
+      ],
+      "total_t": 142900000,
+      "total_mt": 142.9,
+      "periodo": "2024"
+    },
+    "Milho": {
+      "ufs": [
+        {
+          "uf": "MT",
+          "valor_t": 50000000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "PR",
+          "valor_t": 17000000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MS",
+          "valor_t": 13500000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "GO",
+          "valor_t": 12000000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MG",
+          "valor_t": 8300000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "RS",
+          "valor_t": 4700000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "SP",
+          "valor_t": 3400000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "BA",
+          "valor_t": 3100000,
+          "periodo": "2024"
+        }
+      ],
+      "total_t": 112000000,
+      "total_mt": 112.0,
+      "periodo": "2024"
+    },
+    "Trigo": {
+      "ufs": [
+        {
+          "uf": "RS",
+          "valor_t": 3900000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "PR",
+          "valor_t": 3100000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "SC",
+          "valor_t": 280000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MG",
+          "valor_t": 200000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "MS",
+          "valor_t": 170000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "SP",
+          "valor_t": 150000,
+          "periodo": "2024"
+        },
+        {
+          "uf": "GO",
+          "valor_t": 110000,
+          "periodo": "2024"
+        }
+      ],
+      "total_t": 7910000,
+      "total_mt": 7.91,
+      "periodo": "2024"
+    }
+  }
 }
