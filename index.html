@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be8 · Market Intelligence Platform</title>
+<meta name="description" content="Torre de Inteligência Estratégica Be8 — Câmbio, Commodities, Biodiesel, Comex, Grãos, Newsletter, Radar IA">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="assets/logo-be8.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- =========================================================================
+     TOPBAR
+     ========================================================================= -->
+<header class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <img src="assets/logo-be8.svg" alt="Be8" class="brand-logo">
+      <div class="brand-divider"></div>
+      <div class="brand-title">Market <strong>Intelligence</strong> Platform</div>
+    </div>
+    <div class="session-meta">
+      <span><span class="live-dot"></span> Sessão ao vivo</span>
+      <span id="session-date">—</span>
+      <span id="session-time">—</span>
+      <button class="tv-toggle" id="tv-toggle" title="Ativar modo TV (apresentação automática)">Modo TV</button>
+      <button class="tv-toggle" id="tv-config-btn" title="Configurar Modo TV" style="padding: 7px 10px;">⚙</button>
+    </div>
+  </div>
+
+  <div class="ticker-strip">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+
+  <nav class="nav-tabs" id="nav-tabs">
+    <button class="nav-tab active" data-page="executive"><span class="tab-num">01</span> Visão Executiva</button>
+    <button class="nav-tab" data-page="cambio-commodities"><span class="tab-num">02</span> Câmbio & Commodities</button>
+    <button class="nav-tab" data-page="graos"><span class="tab-num">03</span> Grãos & Safra</button>
+    <button class="nav-tab" data-page="biodiesel"><span class="tab-num">04</span> Biodiesel & Market Share</button>
+    <button class="nav-tab" data-page="combustiveis"><span class="tab-num">05</span> Combustíveis ANP</button>
+    <button class="nav-tab" data-page="comex"><span class="tab-num">06</span> Comércio Exterior</button>
+    <button class="nav-tab" data-page="radar"><span class="tab-num">07</span> Radar IA</button>
+    <button class="nav-tab" data-page="governanca"><span class="tab-num">08</span> Governança</button>
+    <button class="nav-tab" data-page="newsletter"><span class="tab-num">09</span> Newsletter</button>
+    <button class="nav-tab" data-page="be8-profile"><span class="tab-num">10</span> Be8 Profile</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- =========================================================================
+     PÁGINA 01 — VISÃO EXECUTIVA
+     ========================================================================= -->
+<section class="page active" id="page-executive">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">01 · Cockpit Estratégico</div>
+      <h1>Visão <em>Executiva</em></h1>
+      <div class="subtitle">Cockpit consolidado com os indicadores macro que afetam a competitividade e a decisão da Be8 — câmbio, commodities, grãos, biodiesel, regulatório.</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn" id="refresh-all">↻ Atualizar</button>
+      <button class="btn btn-primary" id="export-snapshot">↓ Snapshot</button>
+    </div>
+  </div>
+
+  <!-- Resumo do dia + top riscos/oportunidades -->
+  <div class="grid grid-12" style="margin-bottom: 20px;">
+    <div class="card col-span-8 insight-banner-card">
+      <div class="insight-banner">
+        <div class="ic-radar">◉</div>
+        <div class="insight-content">
+          <div class="insight-tag">Resumo executivo do dia · IA</div>
+          <div class="insight-text" id="exec-summary">Aguardando dados do agente para consolidar a leitura de mercado…</div>
+        </div>
+      </div>
+    </div>
+    <div class="card col-span-4">
+      <div class="card-header">
+        <div class="card-label">⚡ Status das fontes</div>
+        <span class="card-meta" id="sources-meta">—</span>
+      </div>
+      <div id="sources-summary" style="display:flex; flex-direction:column; gap:6px; font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- KPI macro -->
+  <div class="grid grid-4">
+    <div class="card" id="kpi-usd">
+      <div class="card-header">
+        <div class="card-label">Dólar PTAX</div>
+        <span class="src-status src-pending" id="status-usd">—</span>
+      </div>
+      <div class="kpi-value count-up" id="usd-value">R$ —</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="usd-delta">—</span>
+        <span class="kpi-context">vs. ontem · BCB</span>
+      </div>
+      <div class="card-spark" id="usd-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-eur">
+      <div class="card-header">
+        <div class="card-label">Euro PTAX</div>
+        <span class="src-status src-pending" id="status-eur">—</span>
+      </div>
+      <div class="kpi-value count-up" id="eur-value">R$ —</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="eur-delta">—</span>
+        <span class="kpi-context">vs. ontem · BCB</span>
+      </div>
+      <div class="card-spark" id="eur-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-brent">
+      <div class="card-header">
+        <div class="card-label">Petróleo Brent</div>
+        <span class="src-status src-pending" id="status-brent">—</span>
+      </div>
+      <div class="kpi-value count-up" id="brent-value">$ —<span class="unit">/bbl</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="brent-delta">—</span>
+        <span class="kpi-context">ICE · Yahoo Finance</span>
+      </div>
+      <div class="card-spark" id="brent-spark"></div>
+    </div>
+
+    <div class="card" id="kpi-soja">
+      <div class="card-header">
+        <div class="card-label">Soja CBOT</div>
+        <span class="src-status src-pending" id="status-soja">—</span>
+      </div>
+      <div class="kpi-value count-up" id="soja-value">¢ —<span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="soja-delta">—</span>
+        <span class="kpi-context">Chicago · Yahoo</span>
+      </div>
+      <div class="card-spark" id="soja-spark"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-4" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Milho CBOT</div>
+        <span class="src-status src-pending">—</span>
+      </div>
+      <div class="kpi-value count-up" id="milho-value">¢ —<span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="milho-delta">—</span>
+        <span class="kpi-context">Chicago futures</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Trigo CBOT</div>
+        <span class="src-status src-pending">—</span>
+      </div>
+      <div class="kpi-value count-up" id="trigo-value">¢ —<span class="unit">/bu</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="trigo-delta">—</span>
+        <span class="kpi-context">Chicago futures</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Óleo de Soja CBOT</div>
+        <span class="src-status src-pending">—</span>
+      </div>
+      <div class="kpi-value count-up" id="oleo_soja-value">¢ —<span class="unit">/lb</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="oleo_soja-delta">—</span>
+        <span class="kpi-context">Insumo-chave biodiesel</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">WTI Crude</div>
+        <span class="src-status src-pending">—</span>
+      </div>
+      <div class="kpi-value count-up" id="wti-value">$ —<span class="unit">/bbl</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="wti-delta">—</span>
+        <span class="kpi-context">NYMEX futures</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 3 oportunidades vs riscos -->
+  <div class="grid grid-2" style="margin-top: 28px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-green-2);">↑ Top 3 Oportunidades</div>
+      </div>
+      <div id="top-opportunities" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: #ff8585;">↓ Top 3 Riscos</div>
+      </div>
+      <div id="top-risks" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Tendência normalizada -->
+  <div class="section-title">
+    <span class="num">// 01.A</span>
+    <h2>Tendência 30 dias — USD/BRL × Brent × Soja (base 100)</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-12">
+    <div class="card col-span-8">
+      <div class="card-header">
+        <div class="card-label">Tendência normalizada</div>
+        <span class="card-meta">D-30 → D-0</span>
+      </div>
+      <div class="chart-area" id="trend-chart"></div>
+    </div>
+    <div class="card col-span-4">
+      <div class="card-header">
+        <div class="card-label">Alertas Críticos</div>
+        <span class="card-meta" id="alerts-count">0 ativos</span>
+      </div>
+      <div id="alerts-feed" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 02 — CÂMBIO & COMMODITIES
+     ========================================================================= -->
+<section class="page" id="page-cambio-commodities">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">02 · Macro & Insumos</div>
+      <h1>Câmbio & <em>Commodities</em></h1>
+      <div class="subtitle">Variáveis macro que precificam matéria-prima do biodiesel e competitividade nas exportações.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-12">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">USD/BRL · série 90 dias</div>
+        <span class="card-meta">BCB PTAX · Fechamento</span>
+      </div>
+      <div class="chart-area" id="usd-90-chart"></div>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Brent · série 90 dias</div>
+        <span class="card-meta">Yahoo Finance · ICE</span>
+      </div>
+      <div class="chart-area" id="brent-90-chart"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-12" style="margin-top: 16px;">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Óleo de Soja · série 90 dias</div>
+        <span class="card-meta">CBOT · insumo-chave B100</span>
+      </div>
+      <div class="chart-area" id="oleo-90-chart"></div>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Soja CBOT · série 90 dias</div>
+        <span class="card-meta">CBOT</span>
+      </div>
+      <div class="chart-area" id="soja-90-chart"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 02.A</span>
+    <h2>Painel de commodities</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <table class="data" id="commodities-table">
+      <thead>
+        <tr>
+          <th>Ativo</th>
+          <th>Mercado</th>
+          <th class="num">Último</th>
+          <th class="num">D-1</th>
+          <th class="num">Var %</th>
+          <th class="num">7d</th>
+          <th class="num">30d</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="commodities-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 02.B</span>
+    <h2>Matriz de correlação — biodiesel implícito</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <p style="color: var(--be8-mist); font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
+      O preço do B100 brasileiro correlaciona-se a três variáveis: <strong style="color:var(--be8-ice)">óleo de soja CBOT</strong> (~80% do custo), <strong style="color:var(--be8-ice)">USD/BRL</strong> (paridade) e <strong style="color:var(--be8-ice)">Brent</strong> (benchmark do diesel substituído). Pearson dos últimos 60 pregões.
+    </p>
+    <div id="correlation-matrix"></div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 03 — GRÃOS & SAFRA
+     ========================================================================= -->
+<section class="page" id="page-graos">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">03 · Originação · Matéria-prima</div>
+      <h1>Grãos & <em>Safra</em> Brasileira</h1>
+      <div class="subtitle">Soja, milho e trigo — estimativa de produção, área plantada e produtividade. Insumo crítico para originação e custo do biodiesel.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-pending" id="conab-status">CONAB · —</span>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card" id="card-soja">
+      <div class="card-header">
+        <div class="card-label">Soja · Safra atual</div>
+        <span class="src-status src-pending" id="status-conab-soja">CONAB</span>
+      </div>
+      <div class="kpi-value" id="soja-safra-prod">— <span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="soja-safra-delta">—</span>
+        <span class="kpi-context">vs. safra anterior</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Insumo principal do biodiesel: óleo de soja responde por ~70% da matéria-prima B100.
+      </div>
+    </div>
+    <div class="card" id="card-milho">
+      <div class="card-header">
+        <div class="card-label">Milho · Safra total</div>
+        <span class="src-status src-pending">CONAB</span>
+      </div>
+      <div class="kpi-value" id="milho-safra-prod">— <span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="milho-safra-delta">—</span>
+        <span class="kpi-context">1ª + 2ª + 3ª safras</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Concorrente energético: substrato do etanol de milho em forte expansão.
+      </div>
+    </div>
+    <div class="card" id="card-trigo">
+      <div class="card-header">
+        <div class="card-label">Trigo · Safra atual</div>
+        <span class="src-status src-pending">CONAB</span>
+      </div>
+      <div class="kpi-value" id="trigo-safra-prod">— <span class="unit">Mt</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="trigo-safra-delta">—</span>
+        <span class="kpi-context">RS + PR principais</span>
+      </div>
+      <div style="margin-top:14px; font-size:11.5px; color: var(--be8-mist); line-height:1.5;">
+        Brasil ainda importador líquido — déficit estrutural ~3 Mt/ano.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 03.A</span>
+    <h2>Produção por UF — ranking</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="grid grid-12">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Top UFs produtoras · Soja</div>
+        <span class="card-meta" id="soja-uf-meta">CONAB</span>
+      </div>
+      <table class="data">
+        <thead>
+          <tr><th class="rank">#</th><th>UF</th><th class="num">Produção (Mt)</th><th class="num">Share %</th><th class="num">Área (Mha)</th></tr>
+        </thead>
+        <tbody id="soja-uf-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">Top UFs produtoras · Milho</div>
+        <span class="card-meta" id="milho-uf-meta">CONAB</span>
+      </div>
+      <table class="data">
+        <thead>
+          <tr><th class="rank">#</th><th>UF</th><th class="num">Produção (Mt)</th><th class="num">Share %</th><th class="num">Área (Mha)</th></tr>
+        </thead>
+        <tbody id="milho-uf-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 03.B</span>
+    <h2>Composição regional</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="regional-soja-viz" style="padding: 12px 0;"></div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 03.C</span>
+    <h2>Impacto para biodiesel</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="impacto-biodiesel" style="padding: 4px 0;"></div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 04 — BIODIESEL & MARKET SHARE
+     ========================================================================= -->
+<section class="page" id="page-biodiesel">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">04 · Core Business Be8</div>
+      <h1>Biodiesel · <em>Market Share</em></h1>
+      <div class="subtitle">Produção nacional de B100, capacidade instalada, ranking de produtores, posicionamento estratégico da Be8.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-pending" id="anp-b100-status">ANP · —</span>
+    </div>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Produção B100 · Brasil</div>
+        <span class="src-status src-pending">ANP mensal</span>
+      </div>
+      <div class="kpi-value" id="b100-prod-total">— <span class="unit">m³/mês</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="b100-prod-delta">—</span>
+        <span class="kpi-context">vs. mês anterior</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Capacidade Instalada</div>
+        <span class="src-status src-pending">Anuário ANP</span>
+      </div>
+      <div class="kpi-value" id="b100-cap-total">— <span class="unit">m³/ano</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">Taxa de utilização: <strong style="color:var(--be8-ice)" id="b100-util">—</strong></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Mistura Vigente</div>
+        <span class="src-status src-live">Regulatório · CNPE</span>
+      </div>
+      <div class="kpi-value" id="b100-mistura">B15</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta up">Lei 14.993/24</span>
+        <span class="kpi-context">+1 p.p./ano até B20 em 2030</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Be8 · Capacidade total</div>
+        <span class="src-status src-live">be8energy.com</span>
+      </div>
+      <div class="kpi-value" id="be8-cap">1.080 <span class="unit">M L/ano</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">Passo Fundo (RS) + Marialva (PR)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 04.A</span>
+    <h2>Ranking de produtores B100 — Market Share</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-12">
+    <div class="card col-span-7">
+      <div class="card-header">
+        <div class="card-label">Principais produtores · share estimado</div>
+        <span class="card-meta" id="b100-rank-meta">ANP</span>
+      </div>
+      <table class="data">
+        <thead>
+          <tr><th class="rank">#</th><th>Produtor</th><th>UF / Planta</th><th class="num">Cap. (m³/ano)</th><th class="num">Share %</th></tr>
+        </thead>
+        <tbody id="biodiesel-rank-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card col-span-5">
+      <div class="card-header">
+        <div class="card-label">Be8 no contexto nacional</div>
+        <span class="src-status src-live">Fontes públicas</span>
+      </div>
+      <div id="be8-context-viz" style="padding: 20px 0;"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 04.B</span>
+    <h2>Composição de matérias-primas · B100 Brasil</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="materias-primas-viz" style="padding: 12px 0;"></div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 05 — COMBUSTÍVEIS ANP
+     ========================================================================= -->
+<section class="page" id="page-combustiveis">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">05 · Preços de revenda</div>
+      <h1>Combustíveis · <em>ANP</em></h1>
+      <div class="subtitle">Levantamento semanal de preços nas bombas — Diesel S10, Diesel S500, Gasolina, Etanol, GLP por UF e região.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-pending" id="anp-status">ANP · —</span>
+    </div>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel S10 médio · Brasil</div>
+        <span class="src-status src-pending" id="status-anp-s10">ANP</span>
+      </div>
+      <div class="kpi-value count-up" id="anp-s10">R$ — <span class="unit">/L</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="anp-s10-delta">—</span>
+        <span class="kpi-context">vs. semana anterior</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel S500 / Óleo Diesel B</div>
+        <span class="src-status src-pending">ANP</span>
+      </div>
+      <div class="kpi-value count-up" id="anp-s500">R$ — <span class="unit">/L</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="anp-s500-delta">—</span>
+        <span class="kpi-context">vs. semana anterior</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Gasolina Comum</div>
+        <span class="src-status src-pending">ANP</span>
+      </div>
+      <div class="kpi-value count-up" id="anp-gasolina">R$ — <span class="unit">/L</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="anp-gasolina-delta">—</span>
+        <span class="kpi-context">vs. semana anterior</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Etanol Hidratado</div>
+        <span class="src-status src-pending">ANP</span>
+      </div>
+      <div class="kpi-value count-up" id="anp-etanol">R$ — <span class="unit">/L</span></div>
+      <div class="kpi-delta-row">
+        <span class="kpi-delta delta flat" id="anp-etanol-delta">—</span>
+        <span class="kpi-context">vs. semana anterior</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 05.A</span>
+    <h2>Ranking por UF — Diesel S10</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-12">
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">UFs mais caras · Diesel S10</div>
+        <span class="card-meta">R$/L</span>
+      </div>
+      <table class="data">
+        <thead>
+          <tr><th class="rank">#</th><th>UF</th><th>Região</th><th class="num">Preço médio</th><th class="num">vs. Brasil</th></tr>
+        </thead>
+        <tbody id="anp-s10-caras-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card col-span-6">
+      <div class="card-header">
+        <div class="card-label">UFs mais baratas · Diesel S10</div>
+        <span class="card-meta">R$/L</span>
+      </div>
+      <table class="data">
+        <thead>
+          <tr><th class="rank">#</th><th>UF</th><th>Região</th><th class="num">Preço médio</th><th class="num">vs. Brasil</th></tr>
+        </thead>
+        <tbody id="anp-s10-baratas-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 05.B</span>
+    <h2>Preço por região</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="anp-regioes-viz" style="padding: 12px 0;"></div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 06 — COMÉRCIO EXTERIOR
+     ========================================================================= -->
+<section class="page" id="page-comex">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">06 · Exportação · Importação</div>
+      <h1>Comércio <em>Exterior</em></h1>
+      <div class="subtitle">Fluxos de biodiesel, óleo de soja, farelo, metanol e diesel — API oficial ComexStat/MDIC.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-pending" id="comex-status">ComexStat · —</span>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Diesel · Importação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-diesel-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">US$ FOB · acumulado ano</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Óleo Soja · Exportação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-oleo-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">toneladas líquidas</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Biodiesel · Exportação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-biodiesel-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">historicamente baixo</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-3" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Farelo Soja · Exportação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-farelo-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">co-produto esmagamento</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Soja em grão · Exportação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-soja-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">Mt</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Metanol · Importação YTD</div>
+        <span class="src-status src-pending">ComexStat</span>
+      </div>
+      <div class="kpi-value" id="comex-metanol-vol">—</div>
+      <div class="kpi-delta-row">
+        <span class="kpi-context">insumo transesterificação</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 06.A</span>
+    <h2>NCMs monitorados</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <table class="data">
+      <thead>
+        <tr><th>NCM</th><th>Descrição</th><th>Fluxo</th><th>Relevância para Be8</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2710.19.21</code></td><td>Óleo diesel</td><td>Importação</td><td>Substituto fóssil — pressão de demanda</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">3826.00.00</code></td><td>Biodiesel B100 e suas misturas</td><td>Export/Import</td><td>Mercado externo direto Be8</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1507.10.00</code></td><td>Óleo de soja em bruto</td><td>Exportação</td><td>Concorrência por matéria-prima</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1507.90.11</code></td><td>Óleo de soja refinado</td><td>Exportação</td><td>Insumo / concorrência</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2304.00.10</code></td><td>Farelo de soja</td><td>Exportação</td><td>Co-produto esmagamento</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">2905.11.00</code></td><td>Metanol</td><td>Importação</td><td>Insumo crítico transesterificação</td></tr>
+        <tr><td><code style="font-family:var(--font-mono);color:var(--be8-green-1);">1201.90.00</code></td><td>Soja em grão</td><td>Exportação</td><td>Disponibilidade matéria-prima</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 07 — RADAR IA
+     ========================================================================= -->
+<section class="page" id="page-radar">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">07 · Decision Intelligence</div>
+      <h1>Radar Executivo <em>IA</em></h1>
+      <div class="subtitle">Síntese automatizada — leitura cruzada de câmbio, commodities e regulatório para apoio à decisão executiva.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner" style="margin-bottom: 20px;">
+    <div class="ic-radar">◉</div>
+    <div class="insight-content">
+      <div class="insight-tag">Síntese executiva · gerada automaticamente</div>
+      <div class="insight-text" id="radar-summary">Aguardando consolidação dos indicadores ao vivo…</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-green-2);">↑ Drivers positivos · Oportunidades</div>
+      </div>
+      <div id="radar-bull" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: #ff8585;">↓ Drivers negativos · Riscos</div>
+      </div>
+      <div id="radar-bear" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 07.A</span>
+    <h2>Ações recomendadas para Be8</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="radar-acoes" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 07.B</span>
+    <h2>Regras de inteligência aplicadas</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <p style="color: var(--be8-mist); font-size: 13px; line-height: 1.6; margin-bottom: 14px;">
+      O Radar IA aplica regras de inferência determinísticas sobre os indicadores ao vivo. As regras são auditáveis e podem ser estendidas com modelos preditivos (Sprint 4).
+    </p>
+    <table class="data">
+      <thead>
+        <tr><th>Regra</th><th>Condição</th><th>Inferência</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pressão B100</td><td>Óleo soja CBOT ↑ E Brent ↑</td><td>Pressão de alta no biodiesel — repasse provável</td></tr>
+        <tr><td>Janela exportação</td><td>USD/BRL ↑ (Real desvaloriza)</td><td>Favorável a exportação óleo/farelo</td></tr>
+        <tr><td>Compressão margem</td><td>Brent ↓ E Óleo soja ↑</td><td>Atenção spread biodiesel × diesel</td></tr>
+        <tr><td>Concorrência insumo</td><td>Óleo soja > média 30d + 2σ</td><td>Risco originação — disputa com exportação</td></tr>
+        <tr><td>Demanda estrutural</td><td>B15 + crescimento diesel</td><td>Demanda B100 estruturalmente crescente</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 08 — GOVERNANÇA
+     ========================================================================= -->
+<section class="page" id="page-governanca">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">08 · Data Lineage · Auditoria</div>
+      <h1>Governança das <em>Fontes</em></h1>
+      <div class="subtitle">Auditoria transparente: o que está ao vivo, em pipeline ou aguardando integração.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-live" id="governance-last">build —</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Fonte</th>
+          <th>Tipo</th>
+          <th>Atualização</th>
+          <th>Custo</th>
+          <th>Endpoint</th>
+          <th>Status</th>
+          <th>Linhas</th>
+          <th>Última verificação</th>
+        </tr>
+      </thead>
+      <tbody id="governance-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">
+    <span class="num">// 08.A</span>
+    <h2>Plano de integração — roadmap</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-green-2);">✓ FASE 1 · Agente Python (ativo)</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>BCB PTAX · câmbio diário</li>
+        <li>Yahoo Finance · 8 commodities</li>
+        <li>ComexStat · API oficial MDIC</li>
+        <li>ANP · CSV preços semanais</li>
+        <li>CONAB · safras grãos</li>
+        <li>Newsletter · RSS setorial</li>
+        <li>Be8 Profile · dados públicos</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-gold);">⊙ FASE 2 · Ampliação</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>IBGE/SIDRA · área plantada</li>
+        <li>FRED + EIA · estoques globais</li>
+        <li>ANP · produção B100 mensal</li>
+        <li>Painel ANP biodiesel · scraping</li>
+        <li>USDA FAS · benchmark global</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label" style="color: var(--be8-mist);">○ FASE 3 · Premium</div>
+      </div>
+      <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
+        <li>CEPEA/ESALQ · widget oficial</li>
+        <li>SIFRECA · benchmark frete</li>
+        <li>ANTT · piso mínimo</li>
+        <li>Modelos ML preditivos B100</li>
+        <li>LLM (Claude/GPT) · resumos automáticos</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 09 — NEWSLETTER EXECUTIVA
+     ========================================================================= -->
+<section class="page" id="page-newsletter">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">09 · Curadoria diária</div>
+      <h1>Newsletter <em>Executiva</em></h1>
+      <div class="subtitle">Manchetes do setor com leitura de impacto para Be8 — economia, biodiesel, agro, regulatório, concorrência.</div>
+    </div>
+    <div class="page-actions">
+      <span class="src-status src-pending" id="news-status">Newsletter · —</span>
+    </div>
+  </div>
+
+  <!-- Hero editorial -->
+  <div class="newsletter-hero">
+    <div class="news-eyebrow" id="news-hero-eyebrow">EDIÇÃO DO DIA · BE8 MARKET INTELLIGENCE</div>
+    <h2 id="news-hero-headline">Aguardando coleta de notícias do dia…</h2>
+    <div class="news-meta" id="news-hero-meta">—</div>
+  </div>
+
+  <!-- 5 principais -->
+  <div class="section-title">
+    <span class="num">// 09.A</span>
+    <h2>Top 5 manchetes do dia</h2>
+    <div class="line"></div>
+  </div>
+  <div id="news-top5" style="display:flex; flex-direction:column; gap:12px;"></div>
+
+  <!-- Radares temáticos -->
+  <div class="section-title">
+    <span class="num">// 09.B</span>
+    <h2>Radares temáticos</h2>
+    <div class="line"></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-label">⚖ Radar Regulatório</div></div>
+      <div id="news-radar-regulatorio" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">⛽ Radar Combustíveis</div></div>
+      <div id="news-radar-combustiveis" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">🌾 Radar Agro</div></div>
+      <div id="news-radar-agro" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">📈 Radar Commodities</div></div>
+      <div id="news-radar-commodities" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">🏭 Radar Concorrentes</div></div>
+      <div id="news-radar-concorrentes" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">⚡ Radar Energia</div></div>
+      <div id="news-radar-energia" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Impacto para Be8 -->
+  <div class="section-title">
+    <span class="num">// 09.C</span>
+    <h2>Impacto consolidado para Be8 e ação recomendada</h2>
+    <div class="line"></div>
+  </div>
+  <div class="card">
+    <div id="news-impacto-be8" style="font-size: 14px; line-height: 1.7; color: var(--be8-ice);"></div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     PÁGINA 10 — BE8 COMPANY PROFILE
+     ========================================================================= -->
+<section class="page" id="page-be8-profile">
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="eyebrow">10 · Quem é a Be8</div>
+      <h1>Be8 · <em>Company Profile</em></h1>
+      <div class="subtitle">Perfil institucional consolidado a partir de fontes públicas confiáveis: be8energy.com, releases corporativos, imprensa setorial.</div>
+    </div>
+  </div>
+
+  <div class="profile-hero">
+    <div class="hero-content">
+      <div class="hero-tagline" id="profile-tagline">—</div>
+      <h2 id="profile-headline">—</h2>
+      <p id="profile-summary" style="margin-top: 16px; font-size: 14px; color: var(--be8-mist); line-height: 1.7;">Carregando perfil institucional…</p>
+    </div>
+  </div>
+
+  <!-- KPIs institucionais -->
+  <div class="grid grid-4" style="margin-top: 24px;">
+    <div class="card"><div class="card-header"><div class="card-label">Fundação</div></div><div class="kpi-value" id="profile-fundacao">—</div><div class="kpi-context" id="profile-fundacao-ctx">—</div></div>
+    <div class="card"><div class="card-header"><div class="card-label">Sede</div></div><div class="kpi-value" id="profile-sede" style="font-size:24px;">—</div><div class="kpi-context">Brasil</div></div>
+    <div class="card"><div class="card-header"><div class="card-label">Capacidade B100</div></div><div class="kpi-value" id="profile-capacidade">—</div><div class="kpi-context">m³/ano · plantas próprias</div></div>
+    <div class="card"><div class="card-header"><div class="card-label">Market Share Histórico</div></div><div class="kpi-value" id="profile-share">—</div><div class="kpi-context" id="profile-share-ctx">—</div></div>
+  </div>
+
+  <!-- Plantas industriais -->
+  <div class="section-title"><span class="num">// 10.A</span><h2>Plantas industriais</h2><div class="line"></div></div>
+  <div class="grid grid-2" id="profile-plantas"></div>
+
+  <!-- Cadeia de valor -->
+  <div class="section-title"><span class="num">// 10.B</span><h2>Cadeia de valor Be8</h2><div class="line"></div></div>
+  <div class="card">
+    <div id="profile-cadeia" style="padding: 14px 0;"></div>
+  </div>
+
+  <!-- Linha do tempo -->
+  <div class="section-title"><span class="num">// 10.C</span><h2>Linha do tempo</h2><div class="line"></div></div>
+  <div class="card">
+    <div id="profile-timeline" style="padding: 8px 0;"></div>
+  </div>
+
+  <!-- Sustentabilidade & Posicionamento -->
+  <div class="grid grid-2" style="margin-top: 28px;">
+    <div class="card">
+      <div class="card-header"><div class="card-label">🌱 Sustentabilidade & Inovação</div></div>
+      <div id="profile-sustentabilidade" style="font-size: 13px; line-height: 1.7; color: var(--be8-ice);"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">🎯 Posicionamento competitivo</div></div>
+      <div id="profile-posicionamento" style="font-size: 13px; line-height: 1.7; color: var(--be8-ice);"></div>
+    </div>
+  </div>
+
+  <!-- Fontes -->
+  <div class="section-title"><span class="num">// 10.D</span><h2>Fontes públicas consultadas</h2><div class="line"></div></div>
+  <div class="card">
+    <ul id="profile-fontes" style="margin-left: 20px; font-size: 12.5px; line-height: 1.9; color: var(--be8-mist);"></ul>
+  </div>
+</section>
+
+</main>
+
+<!-- =========================================================================
+     MODO TV · barra inferior + overlay de configuração
+     ========================================================================= -->
+<div class="tv-bar" id="tv-bar" style="display:none;">
+  <div class="tv-clock" id="tv-clock">—</div>
+  <div style="flex:1; display:flex; align-items:center; gap:14px;">
+    <span id="tv-page-label" style="font-family: var(--font-mono); font-size: 11px; color: var(--be8-mist); letter-spacing: 0.08em;">PÁGINA · —</span>
+    <div class="tv-fill-container" style="flex:1; height: 3px; background: rgba(168,189,201,0.15); border-radius: 2px; overflow: hidden;">
+      <div class="tv-fill" id="tv-fill" style="height:100%; width:0; background: var(--grad-energy); transition: width 0.3s linear;"></div>
+    </div>
+  </div>
+  <button class="btn" id="tv-pause" style="font-size:11px;">⏸ Pausar</button>
+  <button class="btn" id="tv-next" style="font-size:11px;">⏭ Próxima</button>
+  <button class="btn" id="tv-exit" style="font-size:11px;">⨯ Sair</button>
+</div>
+
+<div class="tv-config-overlay" id="tv-config-overlay">
+  <div class="tv-config-modal">
+    <h3>Configurar Modo TV</h3>
+    <p class="desc">Defina quais páginas participam do ciclo, tempo de exibição e rolagem automática. Suas preferências ficam salvas no navegador.</p>
+    <table>
+      <thead>
+        <tr><th>Página</th><th>No ciclo</th><th>Tempo (s)</th><th>Rolagem</th><th>Ordem</th></tr>
+      </thead>
+      <tbody id="tv-config-tbody"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn" id="tv-config-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="tv-config-save">Salvar e iniciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     FOOTER
+     ========================================================================= -->
+<footer>
+  <div><strong style="color: var(--be8-mist);">BE8 · MARKET INTELLIGENCE PLATFORM</strong> · v2.0 · atualização automática 07h e 13h</div>
+  <div>Fontes: BCB · ANP · CONAB · MDIC/ComexStat · IBGE · CME · Yahoo · FRED · EIA</div>
+  <div id="footer-build">build · —</div>
+  <div style="width:100%; text-align:center; padding-top:8px; color: var(--be8-dim); border-top: 1px solid var(--be8-border); margin-top: 4px;">
+    Desenvolvido por Lucas L. Diogo para Be8 · Market Intelligence Platform · 2026
+  </div>
+</footer>
+
+<script src="assets/scripts.js"></script>
+</body>
+</html>

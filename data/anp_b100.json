@@ -1,0 +1,174 @@
+{
+  "ultima_atualizacao": "2026-05-25T22:14:37",
+  "fonte": "ANP · Dados estatísticos · Biocombustíveis",
+  "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/biocombustiveis",
+  "status": "ERRO",
+  "mes_referencia": null,
+  "producao_brasil_m3": null,
+  "capacidade_brasil_m3_ano": null,
+  "taxa_utilizacao_pct": null,
+  "mistura_atual": "B15",
+  "mistura_proxima": "B16 (mar/2026)",
+  "produtores": [
+    {
+      "produtor": "Be8 (BSBIOS)",
+      "grupo": "Be8",
+      "plantas": [
+        "Passo Fundo (RS)",
+        "Marialva (PR)"
+      ],
+      "uf_principal": "RS",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "ADM do Brasil",
+      "grupo": "ADM",
+      "plantas": [
+        "Rondonópolis (MT)",
+        "Joaçaba (SC)"
+      ],
+      "uf_principal": "MT",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Bunge Alimentos",
+      "grupo": "Bunge",
+      "plantas": [
+        "Nova Mutum (MT)"
+      ],
+      "uf_principal": "MT",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Cargill",
+      "grupo": "Cargill",
+      "plantas": [
+        "Três Lagoas (MS)"
+      ],
+      "uf_principal": "MS",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Granol",
+      "grupo": "Granol",
+      "plantas": [
+        "Anápolis (GO)",
+        "Cachoeira do Sul (RS)"
+      ],
+      "uf_principal": "GO",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Oleoplan",
+      "grupo": "Oleoplan",
+      "plantas": [
+        "Veranópolis (RS)"
+      ],
+      "uf_principal": "RS",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Camera Agroalimentos",
+      "grupo": "Camera",
+      "plantas": [
+        "Ijuí (RS)"
+      ],
+      "uf_principal": "RS",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Caramuru",
+      "grupo": "Caramuru",
+      "plantas": [
+        "São Simão (GO)"
+      ],
+      "uf_principal": "GO",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Olfar",
+      "grupo": "Olfar",
+      "plantas": [
+        "Erechim (RS)"
+      ],
+      "uf_principal": "RS",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Potencial Biodiesel",
+      "grupo": "Potencial",
+      "plantas": [
+        "Lapa (PR)"
+      ],
+      "uf_principal": "PR",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Binatural",
+      "grupo": "Binatural",
+      "plantas": [
+        "Formosa (GO)"
+      ],
+      "uf_principal": "GO",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    },
+    {
+      "produtor": "Fiagril",
+      "grupo": "Fiagril",
+      "plantas": [
+        "Lucas do Rio Verde (MT)"
+      ],
+      "uf_principal": "MT",
+      "volume_m3_mes": null,
+      "capacidade_m3_ano": null,
+      "market_share_pct": null,
+      "ranking": null,
+      "status_dado": "aguardando parser ANP"
+    }
+  ],
+  "nota": "Nenhum link de planilha localizado na página ANP. Estrutura de produtores preservada."
+}

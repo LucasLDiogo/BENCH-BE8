@@ -1,0 +1,186 @@
+"""
+Gerador do perfil institucional Be8.
+Dados são curados de fontes públicas validadas:
+  - be8energy.com (site oficial)
+  - Wikipédia (cross-check)
+  - Imprensa setorial (BiodieselBR, O Nacional, etc.)
+NÃO inventa números. Campos sem fonte pública confirmada → null + nota explicativa.
+O arquivo é ATUALIZADO MANUALMENTE quando há novos fatos públicos divulgados.
+"""
+from __future__ import annotations
+from utils import save_json, mark_source_ok, DATA_DIR, log, now_iso
+
+PROFILE = {
+    "ultima_atualizacao": now_iso(),
+    "fonte_principal": "be8energy.com",
+    "fontes_referencia": [
+        "https://www.be8energy.com/pt/historico",
+        "https://pt.wikipedia.org/wiki/Be8",
+        "https://www.onacional.com.br/cidade,2/2024/05/19/o-nacional-99-anos-be8-uma-histo,128646",
+        "https://www.biodieselbr.com/usinas_brasil/fabrica/be8-pr",
+    ],
+    "status": "OK",
+    "identidade": {
+        "razao_social_atual": "Be8 (anteriormente BSBIOS)",
+        "ano_fundacao": 2005,
+        "data_fundacao": "15 de abril de 2005",
+        "inicio_producao": "12 de junho de 2007",
+        "mudanca_marca": "Abril de 2023 (BSBIOS → Be8)",
+        "controlador": "ECB Group · Erasmo Carlos Battistella",
+        "sede": "Passo Fundo · Rio Grande do Sul · Brasil",
+        "setor": "Biocombustíveis · Energia renovável · Agroindústria",
+    },
+    "tagline": "Originais de marca · Energia que move o Brasil",
+    "missao_atuacao": [
+        "Produção de biodiesel B100",
+        "Esmagamento de soja",
+        "Comercialização de óleo de soja e farelo",
+        "Glicerina e subprodutos",
+        "Exportação de biodiesel (desde 2016)",
+        "Operações via Be8 Switzerland (mercado internacional)",
+    ],
+    "plantas_industriais": [
+        {
+            "unidade": "Passo Fundo (RS)",
+            "tipo": "Biodiesel + esmagamento de soja",
+            "ano_inicio": 2007,
+            "capacidade_biodiesel_litros_ano": 540_000_000,
+            "capacidade_esmagamento_t_ano": 1_000_000,
+            "observacao": "Unidade matriz · ampliada em 2023 para 540 mi L/ano",
+        },
+        {
+            "unidade": "Marialva (PR)",
+            "tipo": "Biodiesel",
+            "ano_inicio": 2010,
+            "capacidade_biodiesel_litros_ano": 540_000_000,
+            "observacao": "Adquirida em 2009 da Agrenco · ampliada em 2023",
+        },
+    ],
+    "capacidade_total": {
+        "biodiesel_litros_ano":  1_080_000_000,
+        "biodiesel_milhoes_l_ano": 1080,
+        "fonte": "be8energy.com / O Nacional · ampliação 2023",
+    },
+    "indicadores_publicos": [
+        {
+            "indicador": "Market share biodiesel Brasil (2023)",
+            "valor": "10,9%",
+            "fonte": "O Nacional · 2024 (referente ao ano 2023)",
+            "observacao": "Liderança mantida por anos consecutivos",
+        },
+        {
+            "indicador": "Market share biodiesel Brasil (2020)",
+            "valor": "11,7%",
+            "fonte": "Be8 / BSBIOS · 2021",
+            "observacao": "Terceiro ano consecutivo na liderança",
+        },
+        {
+            "indicador": "Produção 2023",
+            "valor": "891.454 m³ de biodiesel",
+            "fonte": "O Nacional · 2024",
+        },
+        {
+            "indicador": "Exportações 2023",
+            "valor": "~85 milhões de litros",
+            "fonte": "O Nacional · 2024",
+            "observacao": "53% para os Estados Unidos · +57% YoY",
+        },
+        {
+            "indicador": "Empregos diretos (Passo Fundo)",
+            "valor": "~265 diretos",
+            "fonte": "Be8 / FIPE",
+            "observacao": "15.688 diretos + indiretos segundo estudo FIPE",
+        },
+        {
+            "indicador": "Contribuição PIB Passo Fundo (acum.)",
+            "valor": "R$ 17,8 bilhões",
+            "fonte": "FIPE",
+            "observacao": "Acumulado desde fundação · estudo FIPE",
+        },
+        {
+            "indicador": "Participação PIB Marialva (2020)",
+            "valor": "29,8%",
+            "fonte": "Wikipédia (Be8)",
+        },
+        {
+            "indicador": "Ranking agronegócio Brasil (2022)",
+            "valor": "38ª maior",
+            "fonte": "Wikipédia",
+        },
+    ],
+    "linha_do_tempo": [
+        {"ano": 2005, "evento": "Fundação da BSBIOS em Passo Fundo (RS)"},
+        {"ano": 2007, "evento": "Início oficial da produção de biodiesel"},
+        {"ano": 2009, "evento": "Aquisição da unidade Marialva (PR) · ex-Agrenco"},
+        {"ano": 2009, "evento": "Parceria 50/50 com Petrobras Biocombustíveis (Marialva)"},
+        {"ano": 2009, "evento": "Curitiba adota B100 em ônibus urbanos · fornecimento Be8"},
+        {"ano": 2014, "evento": "Acreditação ISO/IEC 17025 dos laboratórios"},
+        {"ano": 2016, "evento": "Início das relações com mercado internacional"},
+        {"ano": 2019, "evento": "Anúncio de investimentos de R$ 72 milhões em ampliações"},
+        {"ano": 2021, "evento": "Capacidade total atinge 936 mi L/ano · líder de mercado"},
+        {"ano": 2023, "evento": "Rebranding BSBIOS → Be8 · capacidade chega a 1.080 mi L/ano"},
+        {"ano": 2023, "evento": "Primeiras exportações para os Estados Unidos"},
+    ],
+    "produtos": [
+        {"produto": "Biodiesel B100",       "descricao": "Combustível renovável principal · core business"},
+        {"produto": "Óleo de soja",         "descricao": "Produto do esmagamento de soja"},
+        {"produto": "Farelo de soja",       "descricao": "Co-produto do esmagamento · destinado a nutrição animal"},
+        {"produto": "Glicerina",            "descricao": "Co-produto da transesterificação"},
+        {"produto": "Borra · subprodutos",  "descricao": "Subproduto do processo de refino"},
+        {"produto": "BeVant",               "descricao": "Linha de produtos da Be8 · ver fonte oficial be8energy.com"},
+    ],
+    "presenca_geografica": [
+        {"localidade": "Passo Fundo · RS · Brasil", "tipo": "Sede + planta industrial"},
+        {"localidade": "Marialva · PR · Brasil",    "tipo": "Planta industrial"},
+        {"localidade": "Be8 Switzerland",            "tipo": "Subsidiária internacional · trading"},
+        {"localidade": "Paraguai (Villeta)",         "tipo": "Projeto ECB Group · investimento anunciado em 2019"},
+    ],
+    "cadeia_de_valor": [
+        {"etapa": "Originação", "descricao": "Soja contratada com cooperativas (ex. Cotrijal) e produtores"},
+        {"etapa": "Esmagamento", "descricao": "Processamento de >1 milhão t soja/ano em Passo Fundo"},
+        {"etapa": "Transesterificação", "descricao": "Conversão de óleo de soja em biodiesel B100"},
+        {"etapa": "Logística & Distribuição", "descricao": "Atende leilões ANP + distribuidoras + exportação"},
+        {"etapa": "Trading Internacional", "descricao": "Be8 Switzerland · exportações EUA, Europa"},
+    ],
+    "posicionamento_competitivo": {
+        "vantagens": [
+            "Integração vertical: originação → esmagamento → biodiesel",
+            "Liderança histórica de market share no Brasil",
+            "Acreditação de qualidade (ISO 17025) reconhecida pela ANP",
+            "Capacidade produtiva entre as maiores do país (1.080 mi L/ano)",
+            "Operação internacional (Be8 Switzerland · exportações EUA)",
+            "Posicionamento estratégico no Sul · perto da matéria-prima e dos portos do Sul",
+        ],
+        "ambiente_competitivo": [
+            "Concorrentes diretos: ADM, Bunge, Cargill, Granol, Oleoplan",
+            "Pressão de margem com volatilidade de óleo de soja e Brent",
+            "Mistura crescente B15→B20 amplia mercado nacional",
+        ],
+    },
+    "sustentabilidade": {
+        "destaques": [
+            "Biodiesel substitui diesel fóssil · redução de CO2 ciclo de vida",
+            "Renovabio · emissão de CBIOs por planta certificada",
+            "Programa Nacional de Produção e Uso de Biodiesel (PNPB)",
+            "Programa Selo Combustível Social",
+        ],
+        "nota": "Detalhes adicionais sobre programas ESG, certificações e métricas específicas devem ser consultados em be8energy.com/sustentabilidade",
+    },
+    "papel_estrategico": (
+        "A Be8 ocupa posição central na cadeia brasileira de biocombustíveis, conectando "
+        "o agronegócio (soja) à matriz energética renovável. Sua liderança histórica de market "
+        "share, integração vertical e expansão internacional posicionam a companhia como "
+        "referência setorial · agente de transição energética e indutor de demanda na cadeia de soja."
+    ),
+}
+
+def run() -> None:
+    save_json(DATA_DIR / "be8_profile.json", PROFILE)
+    mark_source_ok("be8_profile",
+                   rows=len(PROFILE.get("linha_do_tempo", [])),
+                   note="perfil curado · fontes públicas validadas",
+                   endpoint="be8energy.com + fontes")
+    log.info("Perfil Be8 atualizado")
+
+if __name__ == "__main__":
+    run()

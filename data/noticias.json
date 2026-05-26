@@ -1,0 +1,345 @@
+{
+  "ultima_atualizacao": "2026-05-25T22:15:42",
+  "fonte": "Agregação de feeds RSS públicos",
+  "status": "PARCIAL",
+  "noticias": [
+    {
+      "titulo": "5º leilão Eco Invest pode levantar R$ 50 bilhões em investimentos",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 14:56:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/5o-leilao-eco-invest-pode-levantar-r-50-bilhoes-em-investimentos",
+      "resumo": "Os ministérios da Fazenda e do Meio Ambiente e Mudança do Clima lançaram, nesta segunda-feira (25), o 5º Leilão do Eco Invest Brasil. O programa usa capital público do Fundo Clima para alavancar aportes privados, com foco no fortalecimento da inovação tecnológica e no aumento da …",
+      "categoria": "combustíveis",
+      "tag": "macro",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+    },
+    {
+      "titulo": "Lula conversa com presidente da Bolívia e determina envio de ajuda",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 20:35:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/lula-conversa-com-presidente-da-bolivia-e-determina-envio-de-ajuda",
+      "resumo": "O presidente Luiz Inácio Lula da Silva determinou, nesta segunda-feira (25), o envio de ajuda humanitária à Bolívia, que vive uma onda de protestos. Ele atendeu a um pedido do presidente do país, Rodrigo Paz, após ligação telefônica entre os mandatários, segundo o Palácio do Plan…",
+      "categoria": "combustíveis",
+      "tag": "macro",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+    },
+    {
+      "titulo": "Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Mon, 25 May 2026 23:15:27 +0000",
+      "link": "https://www.canalrural.com.br/videos/chuvas-em-sitio-do-quinto-ba-trazem-alivio-mas-ainda-sao-insuficientes/",
+      "resumo": "Previsão do tempo indica chuvas abaixo da média em Sítio do Quinto, Bahia, impactando lavouras e produtividade dos agricultores O post Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes apareceu primeiro em Canal Rural .",
+      "categoria": "safra",
+      "tag": "originação",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Mercado eleva previsão da inflação para 5,04% este ano",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 09:55:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/mercado-eleva-previsao-da-inflacao-para-504-este-ano",
+      "resumo": "A previsão do mercado financeiro para o Índice Nacional de Preços ao Consumidor Amplo (IPCA), referência oficial da inflação no país, passou de 4,92% para 5,04% este ano . A estimativa está no Boletim Focus desta segunda-feira (25), pesquisa divulgada semanalmente pelo Banco Cent…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 16:24:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/cresce-percentual-de-paulistanos-que-apostam-em-bets-para-elevar-renda",
+      "resumo": "A proporção de paulistanos que aposta em plataformas online para ter um aumento rápido da renda doméstica aumentou dez pontos percentuais entre 2024 e 2026, segundo estudo divulgado nesta segunda-feira (25) pela Federação do Comércio de Bens, Serviços e Turismo do Estado de São P…",
+      "categoria": "energia",
+      "tag": "regulatorio",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Quarta edição do leilão Eco Invest liberou R$ 13,2 bi em investimentos",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 16:32:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/quarta-edicao-do-leilao-eco-invest-libera-r-132-bi-em-investimentos",
+      "resumo": "A 4ª edição do leilão do programa Eco Invest Brasil destravou R$ 13,2 bilhões para projetos de bioeconomia, turismo sustentável e infraestrutura no país. Mais da metade desse valor, o equivalente a cerca de R$ 9 bilhões, foi alocada para investimentos na Amazônia Legal. Os dados …",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Beatriz Arcoverde, da EBC, vence categoria do Prêmio Mulheres Raras",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 19:40:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-05/beatriz-arcoverde-da-ebc-vence-categoria-do-premio-mulheres-raras",
+      "resumo": "A força da Empresa Brasil de Comunicação ( EBC ) e do jornalismo público comprometido com a inclusão e a representatividade ganhou destaque nacional na noite do Prêmio Mulheres Raras 2026. Realizada pelo Instituto Vidas Raras, a cerimônia consagrou a editora Beatriz Arcoverde, da…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Audiovisual brasileiro terá linhas de crédito e plano de exportação",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 20:04:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/cultura/noticia/2026-05/audiovisual-brasileiro-tera-linhas-de-credito-e-plano-de-exportacao",
+      "resumo": "O Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) anunciou nesta segunda-feira (25) a criação do Programa da Nova Indústria do Audiovisual Brasileiro. O objetivo é disponibilizar linhas de crédito específicas e um plano de exportação de produtos para o setor,…",
+      "categoria": "comércio exterior",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Selo reconhece iniciativas empresariais em favor da igualdade",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 20:36:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/selo-reconhece-iniciativas-empresariais-em-favor-da-igualdade",
+      "resumo": "O Ministério das Mulheres entregou o Selo Pró-Equidade de Gênero e Raça para 80 empresas de diferentes ramos de atividade econômica, instaladas em todo o país . A cerimônia de entrega do selo ocorreu na tarde desta segunda-feira (25), em Brasília. A Empresa Brasil de Comunicação …",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Adoção: novo aplicativo amplia busca ativa de crianças e adolescentes",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 20:37:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/adocao-novo-aplicativo-amplia-busca-ativa-de-criancas-e-adolescentes",
+      "resumo": "Um aplicativo chamado A.Dot , que reúne informações sobre crianças e adolescentes com mais dificuldades de conseguir uma família adotiva, foi lançado pelo Conselho Nacional de Justiça (CNJ) nesta segunda-feira (25), Dia Nacional da Adoção. A busca ativa do Sistema Nacional de Ado…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Presidente do TSE cria comissão para combater IA ilegal nas eleições",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 20:57:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/presidente-do-tse-cria-comissao-para-combater-ia-ilegal-nas-eleicoes",
+      "resumo": "O presidente do Tribunal Superior Eleitoral (TSE), ministro Nunes Marques, realizou nesta segunda-feira (25) a primeira reunião com presidentes dos tribunais regionais eleitorais (TREs) após tomar posse no cargo . Os presidentes definiram que será criada uma comissão permanente p…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Fim da escala 6x1: relator propõe que um dia de folga seja no domingo",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Mon, 25 May 2026 21:13:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/politica/noticia/2026-05/fim-da-escala-6x1-relator-propoe-que-um-dia-de-folga-seja-no-domingo",
+      "resumo": "O relator da Proposta de Emenda à Constituição (PEC) 221/19 que acaba com a escala 6x1, deputado federal Léo Prates (Republicanos-BA), propõe que um dos dias de repouso semanal remunerado seja, preferencialmente, no domingo. O deputado apresentou nesta segunda-feira (25) o relató…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Desenrola 2.0 leva 1,4 milhão ao app do FGTS",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 21:53:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/desenrola-20-leva-14-milhao-ao-app-do-fgts",
+      "resumo": "O primeiro dia de liberação do uso do FGTS (Fundo de Garantia do Tempo de Serviço) no Desenrola Brasil 2.0 levou 1,4 milhão de trabalhadores ao aplicativo do fundo nesta segunda-feira (25), divulgou nesta noite a Caixa Econômica Federal. De acordo com o banco, os usuários acessar…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    }
+  ],
+  "manchete_dia": {
+    "titulo": "5º leilão Eco Invest pode levantar R$ 50 bilhões em investimentos",
+    "fonte": "Agência Brasil · Economia",
+    "fonte_id": "agencia_brasil_economia",
+    "data": "Mon, 25 May 2026 14:56:00 -0300",
+    "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/5o-leilao-eco-invest-pode-levantar-r-50-bilhoes-em-investimentos",
+    "resumo": "Os ministérios da Fazenda e do Meio Ambiente e Mudança do Clima lançaram, nesta segunda-feira (25), o 5º Leilão do Eco Invest Brasil. O programa usa capital público do Fundo Clima para alavancar aportes privados, com foco no fortalecimento da inovação tecnológica e no aumento da …",
+    "categoria": "combustíveis",
+    "tag": "macro",
+    "impacto_nivel": "alto",
+    "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+  },
+  "radares": {
+    "combustíveis": [
+      {
+        "titulo": "5º leilão Eco Invest pode levantar R$ 50 bilhões em investimentos",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Mon, 25 May 2026 14:56:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/5o-leilao-eco-invest-pode-levantar-r-50-bilhoes-em-investimentos",
+        "resumo": "Os ministérios da Fazenda e do Meio Ambiente e Mudança do Clima lançaram, nesta segunda-feira (25), o 5º Leilão do Eco Invest Brasil. O programa usa capital público do Fundo Clima para alavancar aportes privados, com foco no fortalecimento da inovação tecnológica e no aumento da …",
+        "categoria": "combustíveis",
+        "tag": "macro",
+        "impacto_nivel": "alto",
+        "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+      },
+      {
+        "titulo": "Lula conversa com presidente da Bolívia e determina envio de ajuda",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 20:35:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/lula-conversa-com-presidente-da-bolivia-e-determina-envio-de-ajuda",
+        "resumo": "O presidente Luiz Inácio Lula da Silva determinou, nesta segunda-feira (25), o envio de ajuda humanitária à Bolívia, que vive uma onda de protestos. Ele atendeu a um pedido do presidente do país, Rodrigo Paz, após ligação telefônica entre os mandatários, segundo o Palácio do Plan…",
+        "categoria": "combustíveis",
+        "tag": "macro",
+        "impacto_nivel": "alto",
+        "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+      }
+    ],
+    "safra": [
+      {
+        "titulo": "Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Mon, 25 May 2026 23:15:27 +0000",
+        "link": "https://www.canalrural.com.br/videos/chuvas-em-sitio-do-quinto-ba-trazem-alivio-mas-ainda-sao-insuficientes/",
+        "resumo": "Previsão do tempo indica chuvas abaixo da média em Sítio do Quinto, Bahia, impactando lavouras e produtividade dos agricultores O post Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes apareceu primeiro em Canal Rural .",
+        "categoria": "safra",
+        "tag": "originação",
+        "impacto_nivel": "alto",
+        "impacto_be8": "Contexto macro · monitorar."
+      }
+    ],
+    "câmbio": [
+      {
+        "titulo": "Mercado eleva previsão da inflação para 5,04% este ano",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Mon, 25 May 2026 09:55:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/mercado-eleva-previsao-da-inflacao-para-504-este-ano",
+        "resumo": "A previsão do mercado financeiro para o Índice Nacional de Preços ao Consumidor Amplo (IPCA), referência oficial da inflação no país, passou de 4,92% para 5,04% este ano . A estimativa está no Boletim Focus desta segunda-feira (25), pesquisa divulgada semanalmente pelo Banco Cent…",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Quarta edição do leilão Eco Invest liberou R$ 13,2 bi em investimentos",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Mon, 25 May 2026 16:32:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/quarta-edicao-do-leilao-eco-invest-libera-r-132-bi-em-investimentos",
+        "resumo": "A 4ª edição do leilão do programa Eco Invest Brasil destravou R$ 13,2 bilhões para projetos de bioeconomia, turismo sustentável e infraestrutura no país. Mais da metade desse valor, o equivalente a cerca de R$ 9 bilhões, foi alocada para investimentos na Amazônia Legal. Os dados …",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Beatriz Arcoverde, da EBC, vence categoria do Prêmio Mulheres Raras",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 19:40:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-05/beatriz-arcoverde-da-ebc-vence-categoria-do-premio-mulheres-raras",
+        "resumo": "A força da Empresa Brasil de Comunicação ( EBC ) e do jornalismo público comprometido com a inclusão e a representatividade ganhou destaque nacional na noite do Prêmio Mulheres Raras 2026. Realizada pelo Instituto Vidas Raras, a cerimônia consagrou a editora Beatriz Arcoverde, da…",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Selo reconhece iniciativas empresariais em favor da igualdade",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 20:36:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/selo-reconhece-iniciativas-empresariais-em-favor-da-igualdade",
+        "resumo": "O Ministério das Mulheres entregou o Selo Pró-Equidade de Gênero e Raça para 80 empresas de diferentes ramos de atividade econômica, instaladas em todo o país . A cerimônia de entrega do selo ocorreu na tarde desta segunda-feira (25), em Brasília. A Empresa Brasil de Comunicação …",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Adoção: novo aplicativo amplia busca ativa de crianças e adolescentes",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 20:37:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/adocao-novo-aplicativo-amplia-busca-ativa-de-criancas-e-adolescentes",
+        "resumo": "Um aplicativo chamado A.Dot , que reúne informações sobre crianças e adolescentes com mais dificuldades de conseguir uma família adotiva, foi lançado pelo Conselho Nacional de Justiça (CNJ) nesta segunda-feira (25), Dia Nacional da Adoção. A busca ativa do Sistema Nacional de Ado…",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      }
+    ],
+    "energia": [
+      {
+        "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Mon, 25 May 2026 16:24:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/cresce-percentual-de-paulistanos-que-apostam-em-bets-para-elevar-renda",
+        "resumo": "A proporção de paulistanos que aposta em plataformas online para ter um aumento rápido da renda doméstica aumentou dez pontos percentuais entre 2024 e 2026, segundo estudo divulgado nesta segunda-feira (25) pela Federação do Comércio de Bens, Serviços e Turismo do Estado de São P…",
+        "categoria": "energia",
+        "tag": "regulatorio",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      }
+    ],
+    "comércio exterior": [
+      {
+        "titulo": "Audiovisual brasileiro terá linhas de crédito e plano de exportação",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 20:04:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/cultura/noticia/2026-05/audiovisual-brasileiro-tera-linhas-de-credito-e-plano-de-exportacao",
+        "resumo": "O Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) anunciou nesta segunda-feira (25) a criação do Programa da Nova Indústria do Audiovisual Brasileiro. O objetivo é disponibilizar linhas de crédito específicas e um plano de exportação de produtos para o setor,…",
+        "categoria": "comércio exterior",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      }
+    ]
+  },
+  "fontes_status": [
+    {
+      "fonte": "Agência Brasil · Economia",
+      "id": "agencia_brasil_economia",
+      "status": "OK",
+      "noticias": 5
+    },
+    {
+      "fonte": "Agência Brasil · Últimas",
+      "id": "agencia_brasil_geral",
+      "status": "OK",
+      "noticias": 7
+    },
+    {
+      "fonte": "Notícias Agrícolas",
+      "id": "noticias_agricolas",
+      "status": "ERRO",
+      "erro": "HTTP falhou após 2 tentativas: HTTP Error 404: Not Found"
+    },
+    {
+      "fonte": "Canal Rural",
+      "id": "canal_rural",
+      "status": "OK",
+      "noticias": 1
+    },
+    {
+      "fonte": "EPBR · Energia",
+      "id": "epbr_biocombustiveis",
+      "status": "ERRO",
+      "erro": "HTTP falhou após 2 tentativas: HTTP Error 522: <none>"
+    },
+    {
+      "fonte": "ANP · Notícias institucionais",
+      "id": "gov_anp",
+      "status": "ERRO",
+      "erro": "HTTP falhou após 2 tentativas: HTTP Error 404: Not Found"
+    }
+  ]
+}

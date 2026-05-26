@@ -1,0 +1,8 @@
+{
+  "ultima_atualizacao": "2026-05-25T22:14:51",
+  "fonte": "IBGE · SIDRA · Tabela 6588 (LSPA)",
+  "endpoint": "https://apisidra.ibge.gov.br/values",
+  "status": "ERRO",
+  "culturas": {},
+  "erro": "Nenhuma cultura retornou dados"
+}
