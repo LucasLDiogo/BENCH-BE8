@@ -2,33 +2,148 @@
   "fontes": {
     "be8_profile": {
       "status": "OK",
-      "ultima_atualizacao_ok": "2026-05-26T02:01:45",
+      "ultima_atualizacao_ok": "2026-05-25T23:21:34",
       "linhas": 11,
       "nota": "perfil curado · fontes públicas validadas",
       "endpoint": "be8energy.com + fontes",
-      "ultima_verificacao": "2026-05-26T02:01:45"
+      "ultima_verificacao": "2026-05-25T23:21:34"
     },
     "conab_graos": {
-      "status": "PARCIAL",
-      "nota": "fonte ao vivo indisponível · usando snapshot embutido (jan/2026)",
-      "linhas": 32,
-      "endpoint": "https://portaldeinformacoes.conab.gov.br/safra-serie-historica-graos.html",
-      "ultima_verificacao": "2026-05-26T02:01:58"
+      "status": "OK",
+      "nota": "safra 1ª SAFRA · 3 culturas",
+      "linhas": 81,
+      "endpoint": "https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.txt",
+      "ultima_verificacao": "2026-05-25T23:20:14",
+      "ultima_atualizacao_ok": "2026-05-25T23:20:14"
     },
     "anp_b100": {
       "status": "PARCIAL",
-      "nota": "snapshot Anuário ANP 2024 (planilha mensal indisponível)",
+      "nota": "planilha capturada · snapshot base",
       "linhas": 13,
-      "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos",
-      "ultima_verificacao": "2026-05-26T02:02:27"
+      "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls",
+      "ultima_verificacao": "2026-05-25T23:20:12"
     },
     "ibge_sidra": {
+      "status": "OK",
+      "nota": "3 culturas · 61 UFs · PAM 1612",
+      "linhas": 61,
+      "endpoint": "https://apisidra.ibge.gov.br/values",
+      "ultima_verificacao": "2026-05-25T23:20:17",
+      "ultima_atualizacao_ok": "2026-05-25T23:20:17"
+    },
+    "bcb_ptax": {
+      "status": "OK",
+      "ultima_atualizacao_ok": "2026-05-25T23:20:00",
+      "linhas": 124,
+      "nota": "USD + EUR · 124 fechamentos",
+      "endpoint": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata",
+      "ultima_verificacao": "2026-05-25T23:20:00"
+    },
+    "commodities_yahoo": {
+      "status": "OK",
+      "ultima_atualizacao_ok": "2026-05-25T23:20:03",
+      "linhas": 8,
+      "nota": "todas as commodities OK",
+      "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart",
+      "ultima_verificacao": "2026-05-25T23:20:03"
+    },
+    "anp_combustiveis": {
+      "status": "OK",
+      "ultima_atualizacao_ok": "2026-05-25T23:20:10",
+      "linhas": 44931,
+      "nota": "ref 28/02/2026 · 3 produtos",
+      "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan/2026/02-cados-abertos-preco-gasolina-etanol.csv",
+      "ultima_verificacao": "2026-05-25T23:20:10"
+    },
+    "comex": {
       "status": "PARCIAL",
-      "nota": "API indisponível · usando snapshot PAM 2024",
-      "linhas": 23,
-      "endpoint": "https://sidra.ibge.gov.br/tabela/1612",
-      "ultima_verificacao": "2026-05-26T02:02:56"
+      "nota": "2 falhas / 8",
+      "linhas": 6,
+      "endpoint": "https://api-comexstat.mdic.gov.br/general",
+      "ultima_verificacao": "2026-05-25T23:20:41"
+    },
+    "fred_eia": {
+      "status": "PARCIAL",
+      "nota": "Aguardando configuração de chaves (opcional)",
+      "linhas": 0,
+      "endpoint": "fred.stlouisfed.org + api.eia.gov",
+      "ultima_verificacao": "2026-05-25T23:20:41"
+    },
+    "noticias_rss": {
+      "status": "PARCIAL",
+      "nota": "3 feeds falharam",
+      "linhas": 14,
+      "endpoint": "RSS agregado",
+      "ultima_verificacao": "2026-05-25T23:21:34"
     }
   },
-  "ultima_atualizacao_global": "2026-05-26T02:02:56"
+  "ultima_atualizacao_global": "2026-05-25T23:21:34",
+  "ultima_execucao": {
+    "timestamp": "2026-05-25T23:21:34",
+    "duracao_segundos": 95.6,
+    "coletores_ok": 10,
+    "coletores_erro": 0,
+    "detalhes": [
+      {
+        "modulo": "baixar_cambio",
+        "label": "BCB · Câmbio PTAX",
+        "status": "OK",
+        "duracao_s": 1.6
+      },
+      {
+        "modulo": "baixar_commodities",
+        "label": "Yahoo Finance · Commodities",
+        "status": "OK",
+        "duracao_s": 3.0
+      },
+      {
+        "modulo": "baixar_anp_combustiveis",
+        "label": "ANP · Preços combustíveis",
+        "status": "OK",
+        "duracao_s": 7.2
+      },
+      {
+        "modulo": "baixar_anp_b100",
+        "label": "ANP · Biodiesel B100",
+        "status": "OK",
+        "duracao_s": 2.3
+      },
+      {
+        "modulo": "baixar_conab",
+        "label": "CONAB · Safras",
+        "status": "OK",
+        "duracao_s": 2.0
+      },
+      {
+        "modulo": "baixar_ibge_sidra",
+        "label": "IBGE SIDRA · LSPA",
+        "status": "OK",
+        "duracao_s": 2.9
+      },
+      {
+        "modulo": "baixar_comex",
+        "label": "ComexStat · Comércio exterior",
+        "status": "OK",
+        "duracao_s": 24.0
+      },
+      {
+        "modulo": "baixar_fred_eia",
+        "label": "FRED + EIA · Macro/Energia",
+        "status": "OK",
+        "duracao_s": 0.0
+      },
+      {
+        "modulo": "gerar_noticias",
+        "label": "Notícias setoriais (RSS)",
+        "status": "OK",
+        "duracao_s": 52.5
+      },
+      {
+        "modulo": "gerar_be8_profile",
+        "label": "Be8 · Perfil institucional",
+        "status": "OK",
+        "duracao_s": 0.0
+      }
+    ]
+  }
 }

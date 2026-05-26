@@ -1,145 +1,395 @@
 {
-  "ultima_atualizacao": "2026-05-26T02:02:56",
-  "fonte": "IBGE · PAM 2024 (snapshot embutido)",
-  "endpoint": "https://sidra.ibge.gov.br/tabela/1612",
-  "status": "PARCIAL",
-  "modo": "snapshot embutido · PAM 2024",
+  "ultima_atualizacao": "2026-05-25T23:20:17",
+  "fonte": "IBGE · SIDRA · Tabela 1612 (PAM)",
+  "endpoint": "https://apisidra.ibge.gov.br/values",
+  "status": "OK",
   "culturas": {
     "Soja": {
       "ufs": [
         {
           "uf": "MT",
-          "valor_t": 47500000,
-          "periodo": "2024"
+          "valor_t": 38396410.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 26.58
         },
         {
           "uf": "PR",
-          "valor_t": 22000000,
-          "periodo": "2024"
+          "valor_t": 18689393.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 12.94
         },
         {
           "uf": "RS",
-          "valor_t": 21500000,
-          "periodo": "2024"
+          "valor_t": 18247609.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 12.63
         },
         {
           "uf": "GO",
-          "valor_t": 18500000,
-          "periodo": "2024"
+          "valor_t": 16973882.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 11.75
         },
         {
           "uf": "MS",
-          "valor_t": 14500000,
-          "periodo": "2024"
+          "valor_t": 11303640.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 7.82
         },
         {
           "uf": "MG",
-          "valor_t": 7500000,
-          "periodo": "2024"
+          "valor_t": 7740542.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 5.36
         },
         {
           "uf": "BA",
-          "valor_t": 7100000,
-          "periodo": "2024"
+          "valor_t": 7668295.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 5.31
+        },
+        {
+          "uf": "TO",
+          "valor_t": 4343438.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 3.01
         },
         {
           "uf": "MA",
-          "valor_t": 4300000,
-          "periodo": "2024"
+          "valor_t": 4073259.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 2.82
+        },
+        {
+          "uf": "PI",
+          "valor_t": 3811694.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 2.64
+        },
+        {
+          "uf": "PA",
+          "valor_t": 3751973.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 2.6
+        },
+        {
+          "uf": "SP",
+          "valor_t": 3626440.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 2.51
+        },
+        {
+          "uf": "SC",
+          "valor_t": 2733806.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 1.89
+        },
+        {
+          "uf": "RO",
+          "valor_t": 2221610.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 1.54
+        },
+        {
+          "uf": "RR",
+          "valor_t": 416650.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.29
+        },
+        {
+          "uf": "DF",
+          "valor_t": 290700.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.2
+        },
+        {
+          "uf": "AM",
+          "valor_t": 70057.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.05
+        },
+        {
+          "uf": "AC",
+          "valor_t": 60554.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.04
+        },
+        {
+          "uf": "AP",
+          "valor_t": 20300.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.01
+        },
+        {
+          "uf": "AL",
+          "valor_t": 17656.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.01
+        },
+        {
+          "uf": "CE",
+          "valor_t": 11822.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.01
+        },
+        {
+          "uf": "RJ",
+          "valor_t": 2289.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.0
+        },
+        {
+          "uf": "ES",
+          "valor_t": 1509.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.0
+        },
+        {
+          "uf": "RN",
+          "valor_t": 240.0,
+          "periodo": "Soja (em grão)",
+          "share_pct": 0.0
         }
       ],
-      "total_t": 142900000,
-      "total_mt": 142.9,
-      "periodo": "2024"
+      "total_t": 144473768.0,
+      "total_mt": 144.47,
+      "periodo": "Soja (em grão)"
     },
     "Milho": {
       "ufs": [
         {
           "uf": "MT",
-          "valor_t": 50000000,
-          "periodo": "2024"
+          "valor_t": 47414131.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 41.25
         },
         {
           "uf": "PR",
-          "valor_t": 17000000,
-          "periodo": "2024"
-        },
-        {
-          "uf": "MS",
-          "valor_t": 13500000,
-          "periodo": "2024"
+          "valor_t": 15514499.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 13.5
         },
         {
           "uf": "GO",
-          "valor_t": 12000000,
-          "periodo": "2024"
+          "valor_t": 13026753.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 11.33
+        },
+        {
+          "uf": "MS",
+          "valor_t": 7881086.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 6.86
         },
         {
           "uf": "MG",
-          "valor_t": 8300000,
-          "periodo": "2024"
+          "valor_t": 6599875.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 5.74
         },
         {
           "uf": "RS",
-          "valor_t": 4700000,
-          "periodo": "2024"
+          "valor_t": 4505668.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 3.92
         },
         {
           "uf": "SP",
-          "valor_t": 3400000,
-          "periodo": "2024"
+          "valor_t": 3657604.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 3.18
         },
         {
           "uf": "BA",
-          "valor_t": 3100000,
-          "periodo": "2024"
+          "valor_t": 2631104.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 2.29
+        },
+        {
+          "uf": "MA",
+          "valor_t": 2384065.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 2.07
+        },
+        {
+          "uf": "TO",
+          "valor_t": 2163958.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 1.88
+        },
+        {
+          "uf": "SC",
+          "valor_t": 1824156.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 1.59
+        },
+        {
+          "uf": "PA",
+          "valor_t": 1759249.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 1.53
+        },
+        {
+          "uf": "RO",
+          "valor_t": 1721713.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 1.5
+        },
+        {
+          "uf": "PI",
+          "valor_t": 1667634.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 1.45
+        },
+        {
+          "uf": "SE",
+          "valor_t": 913909.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.8
+        },
+        {
+          "uf": "CE",
+          "valor_t": 398661.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.35
+        },
+        {
+          "uf": "DF",
+          "valor_t": 328200.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.29
+        },
+        {
+          "uf": "AC",
+          "valor_t": 119066.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.1
+        },
+        {
+          "uf": "PE",
+          "valor_t": 115522.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.1
+        },
+        {
+          "uf": "RR",
+          "valor_t": 111098.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.1
+        },
+        {
+          "uf": "AL",
+          "valor_t": 60451.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.05
+        },
+        {
+          "uf": "ES",
+          "valor_t": 58800.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.05
+        },
+        {
+          "uf": "PB",
+          "valor_t": 47842.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.04
+        },
+        {
+          "uf": "RN",
+          "valor_t": 22696.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.02
+        },
+        {
+          "uf": "AM",
+          "valor_t": 17440.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.02
+        },
+        {
+          "uf": "RJ",
+          "valor_t": 6305.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.01
+        },
+        {
+          "uf": "AP",
+          "valor_t": 1818.0,
+          "periodo": "Milho (em grão)",
+          "share_pct": 0.0
         }
       ],
-      "total_t": 112000000,
-      "total_mt": 112.0,
-      "periodo": "2024"
+      "total_t": 114953303.0,
+      "total_mt": 114.95,
+      "periodo": "Milho (em grão)"
     },
     "Trigo": {
       "ufs": [
         {
           "uf": "RS",
-          "valor_t": 3900000,
-          "periodo": "2024"
+          "valor_t": 3628046.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 48.24
         },
         {
           "uf": "PR",
-          "valor_t": 3100000,
-          "periodo": "2024"
+          "valor_t": 2430551.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 32.32
         },
         {
           "uf": "SC",
-          "valor_t": 280000,
-          "periodo": "2024"
-        },
-        {
-          "uf": "MG",
-          "valor_t": 200000,
-          "periodo": "2024"
-        },
-        {
-          "uf": "MS",
-          "valor_t": 170000,
-          "periodo": "2024"
+          "valor_t": 421315.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 5.6
         },
         {
           "uf": "SP",
-          "valor_t": 150000,
-          "periodo": "2024"
+          "valor_t": 412321.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 5.48
+        },
+        {
+          "uf": "MG",
+          "valor_t": 403074.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 5.36
         },
         {
           "uf": "GO",
-          "valor_t": 110000,
-          "periodo": "2024"
+          "valor_t": 132252.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 1.76
+        },
+        {
+          "uf": "MS",
+          "valor_t": 43150.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 0.57
+        },
+        {
+          "uf": "BA",
+          "valor_t": 28923.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 0.38
+        },
+        {
+          "uf": "DF",
+          "valor_t": 19140.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 0.25
+        },
+        {
+          "uf": "MT",
+          "valor_t": 1406.0,
+          "periodo": "Trigo (em grão)",
+          "share_pct": 0.02
         }
       ],
-      "total_t": 7910000,
-      "total_mt": 7.91,
-      "periodo": "2024"
+      "total_t": 7520178.0,
+      "total_mt": 7.52,
+      "periodo": "Trigo (em grão)"
     }
   }
 }

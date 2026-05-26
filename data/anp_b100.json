@@ -1,7 +1,7 @@
 {
-  "ultima_atualizacao": "2026-05-26T02:02:27",
-  "fonte": "ANP · Anuário Estatístico 2024 (snapshot embutido)",
-  "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos",
+  "ultima_atualizacao": "2026-05-25T23:20:12",
+  "fonte": "ANP · planilha mensal capturada + snapshot Anuário 2024",
+  "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls",
   "status": "PARCIAL",
   "modo": "snapshot embutido · capacidade autorizada + market share público",
   "mes_referencia": "2026-05",
@@ -129,5 +129,5 @@
       "destaque": false
     }
   ],
-  "nota": "Capacidades autorizadas e market shares baseados no Anuário Estatístico ANP 2024 e referências públicas (O Nacional 2024 para Be8). Quando a planilha mensal da ANP estiver disponível, os valores serão atualizados ao vivo."
+  "nota": "Planilha mensal capturada · parser específico em desenvolvimento. Usando snapshot Anuário 2024 + dados públicos como base."
 }
