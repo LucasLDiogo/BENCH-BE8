@@ -67,6 +67,10 @@ function setActivePage(pageId) {
   $$('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === pageId));
   $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + pageId));
   window.scrollTo({top: 0, behavior: 'smooth'});
+  // Se entrou na página de Vendas/Mapa, força recarregamento do Leaflet
+  if (pageId === 'vendas-mapa') {
+    setTimeout(() => { try { ensureMapaOnPageEntry(); } catch(e){ console.error(e); } }, 80);
+  }
 }
 
 $$('.nav-tab').forEach(tab => {
@@ -2078,7 +2082,7 @@ function renderVendasMapa() {
   setStatusBadge('vendas-status', v.status || 'OK',
     `ANP · ano ${v.ano_referencia || ''}`);
 
-  // KPIs globais
+  // KPIs globais (volume)
   if (v.produtos.diesel_b) $('#vendas-diesel-total').innerHTML =
     fmtNum(v.produtos.diesel_b.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
   if (v.produtos.gasolina_c) $('#vendas-gasolina-total').innerHTML =
@@ -2086,13 +2090,117 @@ function renderVendasMapa() {
   if (v.produtos.etanol_hidratado) $('#vendas-etanol-total').innerHTML =
     fmtNum(v.produtos.etanol_hidratado.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
 
-  // Mapa é assíncrono (carrega Leaflet via CDN se necessário)
-  renderMapaProduto(STATE.vendas_produto_ativo).catch(e => {
+  // KPIs de preço (se disponíveis)
+  ['diesel_b', 'gasolina_c', 'etanol_hidratado'].forEach(k => {
+    const elPreco = $(`#vendas-${k.replace('_c','').replace('_b','').replace('_hidratado','')}-preco`);
+    if (!elPreco) return;
+    const prod = v.produtos[k];
+    if (prod && prod.preco_medio_brasil_l != null) {
+      elPreco.innerHTML = `R$ ${fmtNum(prod.preco_medio_brasil_l, 3)} <span class="unit">/L</span>`;
+    } else {
+      elPreco.innerHTML = '— <span class="unit">aguardando ANP</span>';
+    }
+  });
+
+  // Estado de modo ativo (volume ou preco)
+  const modo = STATE.vendas_modo_ativo || 'volume';
+  renderMapaProduto(STATE.vendas_produto_ativo, modo).catch(e => {
     console.error('Erro ao renderizar mapa Leaflet:', e);
     $('#brasil-mapa').innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Mapa Leaflet não pôde ser carregado · verifique conexão com CDN unpkg.com</div>';
   });
   renderRankingVendas(STATE.vendas_produto_ativo);
   renderRegionalVendas(STATE.vendas_produto_ativo);
+  renderPrecoTopRankings(STATE.vendas_produto_ativo);
+  renderPrecoRegional(STATE.vendas_produto_ativo);
+}
+
+// Carrega mapa de novo quando entra na página 11 (corrige bug do tamanho 0 no boot)
+function ensureMapaOnPageEntry() {
+  if (window.STATE && STATE.anp_vendas && document.querySelector('.page.active')?.id === 'page-vendas-mapa') {
+    // Se o mapa não existe ou está com tamanho zero, força re-render
+    if (!LEAFLET_MAP || !$('#leaflet-map')) {
+      renderMapaProduto(STATE.vendas_produto_ativo, STATE.vendas_modo_ativo || 'volume');
+    } else {
+      // Apenas recalcula tamanho (caso a página estivesse oculta)
+      setTimeout(() => {
+        try { LEAFLET_MAP.invalidateSize(); } catch(e){}
+        try { LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] }); } catch(e){}
+      }, 50);
+    }
+  }
+}
+
+// Render: ranking de UFs mais caras / mais baratas
+function renderPrecoTopRankings(prodKey) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos[prodKey]) return;
+  const prod = v.produtos[prodKey];
+  const tbCaros = $('#precos-caros-tbody');
+  const tbBaratos = $('#precos-baratos-tbody');
+  if (!tbCaros || !tbBaratos) return;
+
+  if (!prod.top_mais_caros || prod.top_mais_caros.length === 0) {
+    tbCaros.innerHTML = '<tr><td colspan="4" style="color:var(--be8-mist); text-align:center; padding:14px 0;">Preço por UF aguardando coletor ANP</td></tr>';
+    tbBaratos.innerHTML = '<tr><td colspan="4" style="color:var(--be8-mist); text-align:center; padding:14px 0;">Preço por UF aguardando coletor ANP</td></tr>';
+    return;
+  }
+
+  const precoBR = prod.preco_medio_brasil_l;
+
+  tbCaros.innerHTML = prod.top_mais_caros.map((u, i) => {
+    const delta = precoBR ? ((u.preco_l / precoBR - 1) * 100) : null;
+    const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
+    return `<tr>
+      <td class="rank">${String(i+1).padStart(2,'0')}</td>
+      <td><strong>${u.uf}</strong></td>
+      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
+      <td class="num"><strong style="color:#d4a84b;">R$ ${fmtNum(u.preco_l, 3)}</strong>${delta != null ? `<br><span style="font-size:10px; color:${corDelta};">${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}%</span>` : ''}</td>
+    </tr>`;
+  }).join('');
+
+  tbBaratos.innerHTML = prod.top_mais_baratos.map((u, i) => {
+    const delta = precoBR ? ((u.preco_l / precoBR - 1) * 100) : null;
+    const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
+    return `<tr>
+      <td class="rank">${String(i+1).padStart(2,'0')}</td>
+      <td><strong>${u.uf}</strong></td>
+      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
+      <td class="num"><strong style="color:#55c94f;">R$ ${fmtNum(u.preco_l, 3)}</strong>${delta != null ? `<br><span style="font-size:10px; color:${corDelta};">${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}%</span>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Render: preço médio por região (cards)
+function renderPrecoRegional(prodKey) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos[prodKey]) return;
+  const prod = v.produtos[prodKey];
+  const el = $('#preco-regional-cards');
+  if (!el) return;
+
+  const temPreco = prod.por_regiao.some(r => r.preco_medio_l != null);
+  if (!temPreco) {
+    el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Preço regional aguardando coletor ANP de preços</div>';
+    return;
+  }
+
+  const precoBR = prod.preco_medio_brasil_l;
+  const cores = { N:'#a8bdc9', NE:'#7a9bbf', CO:'#0eb194', SE:'#d4a84b', S:'#55c94f' };
+
+  el.innerHTML = '<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;">' +
+    prod.por_regiao.map(r => {
+      const preco = r.preco_medio_l;
+      const c = cores[r.regiao_sigla] || '#5e7382';
+      const delta = (precoBR && preco != null) ? ((preco / precoBR - 1) * 100) : null;
+      const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
+      return `
+        <div style="padding:14px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border); border-top: 3px solid ${c};">
+          <div style="font-family:'JetBrains Mono'; font-size:10px; color:${c}; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">${r.regiao_nome}</div>
+          <div style="font-family:'Fraunces'; font-size:24px; color:var(--be8-ice);">${preco != null ? 'R$ ' + fmtNum(preco, 3) : '—'}</div>
+          <div style="font-size:11px; color:var(--be8-mist); margin-top:4px;">por litro · ${fmtNum(r.share_pct, 1)}% volume</div>
+          ${delta != null ? `<div style="font-family:'JetBrains Mono'; font-size:11px; color:${corDelta}; margin-top:4px;">${delta > 0 ? '+' : ''}${fmtNum(delta, 2)}% vs. Brasil</div>` : ''}
+        </div>`;
+    }).join('') + '</div>';
 }
 
 // ===== CONFIGURAÇÃO LEAFLET =====
@@ -2139,52 +2247,66 @@ function getColorForValue(val, max) {
   return '#d4a84b';
 }
 
-async function renderMapaProduto(prodKey) {
+async function renderMapaProduto(prodKey, modo = 'volume') {
+  // modo: 'volume' (default) ou 'preco' — define qual métrica colorir
   const v = STATE.anp_vendas;
   if (!v || !v.produtos || !v.produtos[prodKey]) return;
 
   await loadLeafletAndGeoJSON();
 
   const prod = v.produtos[prodKey];
-  const ufVol = {};
-  prod.por_uf.forEach(u => { ufVol[u.uf] = u.volume_medio_mensal_m3; });
   const ufData = {};
   prod.por_uf.forEach(u => { ufData[u.uf] = u; });
 
-  const maxVal = Math.max(...Object.values(ufVol));
-  const minVal = Math.min(...Object.values(ufVol));
+  // Métrica ativa: volume mensal OU preço R$/L
+  const temPreco = prod.por_uf.some(u => u.preco_medio_l != null);
+  const metricKey = (modo === 'preco' && temPreco) ? 'preco_medio_l' : 'volume_medio_mensal_m3';
+  const metricLabel = (modo === 'preco' && temPreco) ? 'preço médio (R$/L)' : 'volume médio mensal (m³)';
+  const metricUnit  = (modo === 'preco' && temPreco) ? 'R$/L' : 'm³';
+
+  const ufVal = {};
+  prod.por_uf.forEach(u => { if (u[metricKey] != null) ufVal[u.uf] = u[metricKey]; });
+
+  const maxVal = Math.max(...Object.values(ufVal));
+  const minVal = Math.min(...Object.values(ufVal));
 
   const labels = { diesel_b: 'Diesel B', gasolina_c: 'Gasolina C', etanol_hidratado: 'Etanol Hidratado' };
-  $('#mapa-titulo').textContent = `${labels[prodKey]} · volume médio mensal por UF (m³)`;
+  $('#mapa-titulo').textContent = `${labels[prodKey]} · ${metricLabel} · clique numa UF para detalhes`;
 
-  // Limpar container e criar div para o Leaflet
+  // Estado ativo do modo (para reconstruir ao filtrar)
+  STATE.vendas_modo_ativo = modo;
+
+  // Container Leaflet
   const container = $('#brasil-mapa');
-  container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
+  // Só recria o div se ainda não existe (evita destruir mapa entre toggles)
+  if (!$('#leaflet-map')) {
+    container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
+  }
 
-  // Destruir mapa antigo se existir
+  // Destruir mapa antigo (sempre)
   if (LEAFLET_MAP) {
-    LEAFLET_MAP.remove();
+    try { LEAFLET_MAP.remove(); } catch(e){}
     LEAFLET_MAP = null;
+    LEAFLET_LAYER = null;
+    LEAFLET_LEGEND = null;
+    // Re-criar o div pois L.map.remove() esvazia o conteúdo
+    container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
   }
 
   // Criar mapa
   LEAFLET_MAP = L.map('leaflet-map', {
     zoomControl: true,
-    scrollWheelZoom: false,    // evita roubar scroll da página
+    scrollWheelZoom: false,
     attributionControl: false,
     minZoom: 3.5,
     maxZoom: 7,
   }).setView([-14.5, -54], 4);
 
-  // Sem tilelayer (mapa "limpo" no estilo dashboard) — só os polígonos UF sobre fundo escuro
-  // Se quisesse tilelayer escuro: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(LEAFLET_MAP);
-
-  // Estilo dos polígonos
   function styleUF(feature) {
     const sigla = feature.properties.sigla;
-    const vol = ufVol[sigla] || 0;
+    const val = ufVal[sigla] != null ? ufVal[sigla] : 0;
     return {
-      fillColor: getColorForValue(vol, maxVal),
+      fillColor: getColorForValue(val, maxVal),
       weight: 0.8,
       opacity: 1,
       color: '#0a1a25',
@@ -2192,39 +2314,50 @@ async function renderMapaProduto(prodKey) {
     };
   }
 
-  // Highlight ao passar o mouse
   function highlightFeature(e) {
-    const layer = e.target;
-    layer.setStyle({
+    e.target.setStyle({
       weight: 2.5,
       color: '#a8efe0',
       fillOpacity: 1,
     });
-    layer.bringToFront();
+    e.target.bringToFront();
   }
 
   function resetHighlight(e) {
     LEAFLET_LAYER.resetStyle(e.target);
   }
 
-  // Tooltip rico
+  function clickUF(e) {
+    const sigla = e.target.feature.properties.sigla;
+    const name = e.target.feature.properties.name;
+    showUFDrilldown(prodKey, sigla, name);
+    // Zoom suave na UF clicada
+    try {
+      LEAFLET_MAP.fitBounds(e.target.getBounds(), { padding: [40, 40], maxZoom: 6 });
+    } catch (err) {}
+  }
+
   function onEachFeature(feature, layer) {
     const sigla = feature.properties.sigla;
     const name = feature.properties.name;
     const u = ufData[sigla];
+    const precoStr = u && u.preco_medio_l != null ? `R$ ${fmtNum(u.preco_medio_l, 3)}/L` : '—';
     const tip = `
-      <div style="font-family:'Inter Tight', sans-serif; min-width:180px;">
+      <div style="font-family:'Inter Tight', sans-serif; min-width:200px;">
         <div style="font-family:'Fraunces', serif; font-size:16px; font-weight:600; color:#fff; margin-bottom:6px;">${name} <span style="color:#0eb194;">(${sigla})</span></div>
-        <div style="display:grid; grid-template-columns:auto auto; gap:4px 12px; font-size:11px;">
+        <div style="display:grid; grid-template-columns:auto auto; gap:4px 14px; font-size:11px;">
           <span style="color:#a8bdc9;">Volume mensal:</span>
           <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_medio_mensal_m3, 0) : '—'} m³</strong>
           <span style="color:#a8bdc9;">Anual:</span>
           <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_anual_m3/1e3, 0) : '—'}k m³</strong>
           <span style="color:#a8bdc9;">Share BR:</span>
           <strong style="color:#55c94f; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.share_pct, 2) : '—'}%</strong>
+          <span style="color:#a8bdc9;">Preço médio:</span>
+          <strong style="color:#d4a84b; font-family:'JetBrains Mono', monospace;">${precoStr}</strong>
           <span style="color:#a8bdc9;">Região:</span>
-          <strong style="color:#d4a84b;">${u ? (REG_NOMES[u.regiao] || '—') : '—'}</strong>
+          <strong style="color:#0eb194;">${u ? (REG_NOMES[u.regiao] || '—') : '—'}</strong>
         </div>
+        <div style="margin-top:8px; font-size:10px; color:#7a9bbf; font-style:italic;">› Clique para ver detalhes</div>
       </div>`;
     layer.bindTooltip(tip, {
       sticky: true,
@@ -2235,6 +2368,7 @@ async function renderMapaProduto(prodKey) {
     layer.on({
       mouseover: highlightFeature,
       mouseout: resetHighlight,
+      click: clickUF,
     });
   }
 
@@ -2243,27 +2377,37 @@ async function renderMapaProduto(prodKey) {
     onEachFeature: onEachFeature,
   }).addTo(LEAFLET_MAP);
 
-  // Ajustar visualização à área dos polígonos
+  // Ajustar visualização
   try {
     LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] });
   } catch (e) {}
 
-  // Adicionar legenda customizada
+  // Forçar recálculo de tamanho após inserção
+  // CRÍTICO: se a página estava oculta no boot, Leaflet inicializa com tamanho 0
+  setTimeout(() => {
+    if (LEAFLET_MAP) {
+      LEAFLET_MAP.invalidateSize();
+      try { LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] }); } catch(e){}
+    }
+  }, 100);
+
+  // Legenda
   if (LEAFLET_LEGEND) {
-    LEAFLET_LEGEND.remove();
+    try { LEAFLET_LEGEND.remove(); } catch(e){}
   }
   LEAFLET_LEGEND = L.control({ position: 'bottomright' });
   LEAFLET_LEGEND.onAdd = () => {
     const div = L.DomUtil.create('div', 'be8-map-legend');
     const stops = [0.05, 0.20, 0.35, 0.50, 0.65, 0.80, 1.0];
     let html = `<div style="background:rgba(5,15,23,0.92); border:1px solid #1f3a4a; border-radius:6px; padding:10px 12px; font-family:'JetBrains Mono', monospace; font-size:10px; color:#a8bdc9;">
-      <div style="margin-bottom:6px; color:#fff; font-weight:600; letter-spacing:0.06em;">VOLUME MENSAL (m³)</div>`;
+      <div style="margin-bottom:6px; color:#fff; font-weight:600; letter-spacing:0.06em;">${metricLabel.toUpperCase()}</div>`;
     stops.forEach(s => {
       const val = s * maxVal;
       const c = getColorForValue(val, maxVal);
+      const valStr = (modo === 'preco') ? `R$ ${fmtNum(val, 2)}` : `${fmtNum(val/1000, 0)}k`;
       html += `<div style="display:flex; align-items:center; gap:8px; margin:2px 0;">
         <span style="display:inline-block; width:18px; height:12px; background:${c}; border-radius:2px;"></span>
-        <span>${fmtNum(val/1000, 0)}k</span>
+        <span>${valStr}</span>
       </div>`;
     });
     html += '</div>';
@@ -2273,12 +2417,98 @@ async function renderMapaProduto(prodKey) {
   LEAFLET_LEGEND.addTo(LEAFLET_MAP);
 }
 
+/* =====================================================================
+   DRILLDOWN POR UF (modal-card inline)
+   ===================================================================== */
+function showUFDrilldown(prodKey, uf, ufName) {
+  const v = STATE.anp_vendas;
+  if (!v || !v.produtos[prodKey]) return;
+  const prod = v.produtos[prodKey];
+  const u = prod.por_uf.find(x => x.uf === uf);
+  if (!u) return;
+  const reg = prod.por_regiao.find(r => r.regiao_sigla === u.regiao);
+
+  const labels = { diesel_b: 'Diesel B', gasolina_c: 'Gasolina C', etanol_hidratado: 'Etanol Hidratado' };
+
+  // Ranking nacional desta UF
+  const sortedByVol = [...prod.por_uf].sort((a, b) => b.volume_anual_m3 - a.volume_anual_m3);
+  const rankNacional = sortedByVol.findIndex(x => x.uf === uf) + 1;
+
+  let rankPrecoStr = '—';
+  if (u.preco_medio_l != null) {
+    const sortedByPreco = prod.por_uf
+      .filter(x => x.preco_medio_l != null)
+      .sort((a, b) => b.preco_medio_l - a.preco_medio_l);
+    const rk = sortedByPreco.findIndex(x => x.uf === uf) + 1;
+    rankPrecoStr = `${rk}º de ${sortedByPreco.length}`;
+  }
+
+  const precoStr = u.preco_medio_l != null ? `R$ ${fmtNum(u.preco_medio_l, 3)}` : '—';
+  const precoBrasil = prod.preco_medio_brasil_l;
+  let precoDeltaStr = '';
+  if (u.preco_medio_l != null && precoBrasil) {
+    const delta = ((u.preco_medio_l / precoBrasil) - 1) * 100;
+    const cor = delta > 0 ? '#ff6b8a' : '#55c94f';
+    const sinal = delta > 0 ? '+' : '';
+    precoDeltaStr = `<span style="color:${cor}; font-family:'JetBrains Mono'; font-size:12px;">${sinal}${fmtNum(delta, 2)}% vs. Brasil</span>`;
+  }
+
+  const html = `
+    <div style="border:1px solid var(--be8-green-1); border-radius:8px; padding:18px 20px; background:linear-gradient(135deg, rgba(14,177,148,0.08), rgba(8,31,46,0.6));">
+      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:14px;">
+        <div>
+          <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--be8-green-1); letter-spacing:0.12em; text-transform:uppercase;">DRILLDOWN · ${labels[prodKey]}</div>
+          <div style="font-family:'Fraunces', serif; font-size:28px; color:var(--be8-ice); margin-top:4px;">${ufName} <span style="color:var(--be8-green-1);">(${uf})</span></div>
+          <div style="font-size:12px; color:var(--be8-mist); margin-top:4px;">${REG_NOMES[u.regiao] || u.regiao} · ${rankNacional}º maior consumidor nacional</div>
+        </div>
+        <button id="drilldown-close" style="background:transparent; border:1px solid var(--be8-border); color:var(--be8-mist); width:32px; height:32px; border-radius:6px; cursor:pointer; font-size:18px;">×</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px;">
+        <div style="padding:12px 14px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
+          <div style="font-size:10px; color:var(--be8-mist); letter-spacing:0.08em; text-transform:uppercase;">VOLUME ANUAL</div>
+          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.volume_anual_m3/1e3, 0)}k <span style="font-size:13px; color:var(--be8-mist);">m³</span></div>
+        </div>
+        <div style="padding:12px 14px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
+          <div style="font-size:10px; color:var(--be8-mist); letter-spacing:0.08em; text-transform:uppercase;">VOLUME MENSAL</div>
+          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.volume_medio_mensal_m3, 0)} <span style="font-size:13px; color:var(--be8-mist);">m³</span></div>
+        </div>
+        <div style="padding:12px 14px; background:rgba(212,168,75,0.06); border-radius:6px; border:1px solid rgba(212,168,75,0.25);">
+          <div style="font-size:10px; color:var(--be8-gold); letter-spacing:0.08em; text-transform:uppercase;">PREÇO MÉDIO R$/L</div>
+          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${precoStr}</div>
+          ${precoDeltaStr ? `<div style="margin-top:4px;">${precoDeltaStr}</div>` : ''}
+        </div>
+        <div style="padding:12px 14px; background:rgba(85,201,79,0.06); border-radius:6px; border:1px solid rgba(85,201,79,0.25);">
+          <div style="font-size:10px; color:var(--be8-green-2); letter-spacing:0.08em; text-transform:uppercase;">SHARE BRASIL</div>
+          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.share_pct, 2)}<span style="font-size:13px; color:var(--be8-mist);">%</span></div>
+          <div style="font-size:11px; color:var(--be8-mist); margin-top:4px;">Rank preço: ${rankPrecoStr}</div>
+        </div>
+      </div>
+
+      ${reg ? `<div style="margin-top:14px; padding:12px 14px; background:rgba(8,31,46,0.4); border-radius:6px; border-left: 2px solid var(--be8-green-1); font-size:12px; color:var(--be8-mist);">
+        <strong style="color:var(--be8-ice);">Região ${reg.regiao_nome}</strong> · volume total ${fmtNum(reg.volume_anual_m3/1e6, 2)} M m³/ano (${fmtNum(reg.share_pct, 1)}% nacional)${reg.preco_medio_l != null ? ` · preço médio R$ ${fmtNum(reg.preco_medio_l, 3)}/L` : ''}
+      </div>` : ''}
+    </div>`;
+
+  const slot = $('#vendas-drilldown');
+  if (slot) {
+    slot.innerHTML = html;
+    slot.style.display = 'block';
+    setTimeout(() => slot.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    $('#drilldown-close')?.addEventListener('click', () => {
+      slot.style.display = 'none';
+      slot.innerHTML = '';
+    });
+  }
+}
+
 function renderRankingVendas(prodKey) {
   const v = STATE.anp_vendas;
   if (!v || !v.produtos[prodKey]) return;
   const prod = v.produtos[prodKey];
   const tb = $('#vendas-rank-tbody');
   if (!tb) return;
+  const temPreco = prod.por_uf.some(u => u.preco_medio_l != null);
   tb.innerHTML = prod.por_uf.slice(0, 10).map((u, i) => `
     <tr>
       <td class="rank">${String(i+1).padStart(2,'0')}</td>
@@ -2286,8 +2516,20 @@ function renderRankingVendas(prodKey) {
       <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
       <td class="num">${fmtNum(u.volume_medio_mensal_m3, 0)}</td>
       <td class="num">${fmtNum(u.share_pct, 1)}%</td>
+      ${temPreco ? `<td class="num"><strong style="color:#d4a84b;">${u.preco_medio_l != null ? 'R$ ' + fmtNum(u.preco_medio_l, 3) : '—'}</strong></td>` : ''}
     </tr>`).join('');
-  $('#vendas-rank-meta').textContent = `Total: ${fmtNum(prod.total_medio_mensal_m3/1e3, 0)}k m³/mês`;
+
+  // Header dinâmico com coluna preço
+  const thead = tb.closest('table')?.querySelector('thead tr');
+  if (thead) {
+    if (temPreco && !thead.querySelector('th[data-preco]')) {
+      thead.insertAdjacentHTML('beforeend', '<th class="num" data-preco>PREÇO R$/L</th>');
+    } else if (!temPreco) {
+      thead.querySelector('th[data-preco]')?.remove();
+    }
+  }
+
+  $('#vendas-rank-meta').textContent = `Total: ${fmtNum(prod.total_medio_mensal_m3/1e3, 0)}k m³/mês${prod.preco_medio_brasil_l ? ` · Brasil R$ ${fmtNum(prod.preco_medio_brasil_l, 3)}/L` : ''}`;
 }
 
 function renderRegionalVendas(prodKey) {
@@ -2320,14 +2562,28 @@ function renderRegionalVendas(prodKey) {
 }
 
 function bindVendasFilters() {
-  $$('.vendas-filter').forEach(btn => {
+  // Filtro de produto
+  $$('.vendas-filter[data-prod]').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.vendas-filter').forEach(b => b.classList.remove('active'));
+      $$('.vendas-filter[data-prod]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       STATE.vendas_produto_ativo = btn.getAttribute('data-prod');
-      renderMapaProduto(STATE.vendas_produto_ativo);
+      const modo = STATE.vendas_modo_ativo || 'volume';
+      renderMapaProduto(STATE.vendas_produto_ativo, modo);
       renderRankingVendas(STATE.vendas_produto_ativo);
       renderRegionalVendas(STATE.vendas_produto_ativo);
+      renderPrecoTopRankings(STATE.vendas_produto_ativo);
+      renderPrecoRegional(STATE.vendas_produto_ativo);
+    });
+  });
+
+  // Toggle volume / preço
+  $$('.vendas-modo[data-modo]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.vendas-modo[data-modo]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      STATE.vendas_modo_ativo = btn.getAttribute('data-modo');
+      renderMapaProduto(STATE.vendas_produto_ativo, STATE.vendas_modo_ativo);
     });
   });
 }

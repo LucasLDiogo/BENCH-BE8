@@ -148,9 +148,12 @@ def parse_txt(raw: bytes) -> dict:
     if idx_produto < 0 or idx_uf < 0 or idx_safra < 0:
         raise RuntimeError(f"Colunas essenciais não encontradas. Header: {header}")
 
-    # Agrupa por (produto, uf, ano_agricola) somando TODAS as safras (1ª + 2ª + 3ª + Única)
+    # Agrupa por (produto, uf, ano_agricola, tipo_safra) — cada linha CSV é um registro único
+    # tipo_safra (dsc_safra_previsao) tem valores: '1A SAFRA', '2A SAFRA', '3A SAFRA', 'UNICA',
+    # 'IRRIGADA', 'SEQUEIRO', 'VERAO', 'INVERNO', 'TOTAL', etc.
     bucket = {}
     safras_vistas = set()
+    tipos_vistos = set()
     for r in rows[1:]:
         if len(r) <= max(idx_produto, idx_uf, idx_safra):
             continue
@@ -158,9 +161,11 @@ def parse_txt(raw: bytes) -> dict:
             produto = (r[idx_produto] or '').strip()
             uf = (r[idx_uf] or '').strip().upper()
             ano_agricola = (r[idx_safra] or '').strip()  # ex: '2025/26'
+            tipo_safra = (r[idx_tipo] or '').strip().upper() if idx_tipo >= 0 and idx_tipo < len(r) else ''
             if not produto or len(uf) != 2 or not ano_agricola:
                 continue
             safras_vistas.add(ano_agricola)
+            tipos_vistos.add(tipo_safra)
             prod_val = None
             area_val = None
             rend_val = None
@@ -180,34 +185,18 @@ def parse_txt(raw: bytes) -> dict:
                     if v: rend_val = float(v)
             except: pass
 
-            # Chave SEM tipo de safra → soma 1ª + 2ª + 3ª automaticamente
-            key = (produto, uf, ano_agricola)
-            if key in bucket:
-                # Acumula (somar produção/área de várias safras do mesmo produto/uf/ano)
-                if prod_val:
-                    bucket[key]['producao'] = (bucket[key]['producao'] or 0) + prod_val
-                if area_val:
-                    bucket[key]['area'] = (bucket[key]['area'] or 0) + area_val
-                # Rendimento: média ponderada (vamos calcular depois)
-                bucket[key]['rendimento_acum'] = bucket[key].get('rendimento_acum', 0) + (rend_val or 0) * (prod_val or 0)
-                bucket[key]['rendimento_peso'] = bucket[key].get('rendimento_peso', 0) + (prod_val or 0)
-            else:
-                bucket[key] = {
-                    'produto': produto, 'uf': uf, 'safra': ano_agricola,
-                    'producao': prod_val, 'area': area_val, 'rendimento': rend_val,
-                    'rendimento_acum': (rend_val or 0) * (prod_val or 0),
-                    'rendimento_peso': prod_val or 0,
-                }
+            # Chave INCLUI tipo de safra → cada linha CSV é um registro único
+            key = (produto, uf, ano_agricola, tipo_safra)
+            bucket[key] = {
+                'produto': produto, 'uf': uf, 'safra': ano_agricola, 'tipo': tipo_safra,
+                'producao': prod_val, 'area': area_val, 'rendimento': rend_val,
+            }
         except Exception as e:
             log.debug(f"Linha ignorada: {e}")
             continue
 
-    # Calcular rendimento médio ponderado para entradas agregadas
-    for k, b in bucket.items():
-        if b.get('rendimento_peso') and b['rendimento_peso'] > 0:
-            b['rendimento'] = b['rendimento_acum'] / b['rendimento_peso']
-
     log.info(f"CONAB · {len(bucket)} registros · {len(safras_vistas)} safras únicas")
+    log.info(f"CONAB · tipos de safra detectados: {sorted(tipos_vistos)[:20]}")
 
     # Detecta safra mais recente (formato YYYY/YY ou YYYY)
     def safra_key(s):
@@ -235,109 +224,114 @@ def parse_txt(raw: bytes) -> dict:
 
     culturas = {}  # cultura → {uf: {producao, area, rendimento, producao_anterior}}
 
-    # === LÓGICA INTELIGENTE PARA EVITAR DUPLA CONTAGEM ===
-    # CONAB publica produtos como:
-    #   "MILHO 1ª SAFRA", "MILHO 2ª SAFRA", "MILHO 3ª SAFRA", "MILHO TOTAL"
-    #   "SOJA" (única safra)
-    #   "TRIGO" (só uma safra)
-    # Se um TOTAL existir, devemos usar APENAS o TOTAL.
-    # Se não houver TOTAL, somar as safras individuais.
+    # === LÓGICA DEFINITIVA PARA EVITAR DUPLA CONTAGEM ===
+    # CONAB publica para cada (cultura, UF, ano_agricola) múltiplas linhas:
+    #   tipo_safra = '1A SAFRA' / '2A SAFRA' / '3A SAFRA' / 'UNICA' / 'IRRIGADA' / 'SEQUEIRO' / 'TOTAL' / 'VERAO' / 'INVERNO' / ...
+    # Estratégia:
+    #   1) Se existe 'TOTAL' para (cultura, UF, ano) → usa SÓ o TOTAL
+    #   2) Senão, soma 1A + 2A + 3A + ÚNICA (safras concorrentes)
+    #   3) NUNCA soma IRRIGADA + SEQUEIRO (são desagregações do total) → ignora se houver outras
+    #   4) NUNCA soma VERAO + INVERNO (mesma razão)
 
-    def classifica_produto(produto_raw):
-        """Retorna (cultura_base, eh_total) — eh_total=True se for o totalizador da cultura."""
+    SAFRAS_PRIMARIAS = {'TOTAL', 'GERAL'}                          # se existe, usa exclusivamente
+    SAFRAS_ADITIVAS  = {'1A SAFRA', '2A SAFRA', '3A SAFRA', 'UNICA', '4A SAFRA'}  # somáveis entre si
+    SAFRAS_ALTERNATIVAS = {'IRRIGADA', 'SEQUEIRO', 'VERAO', 'INVERNO', 'PRIMAVERA', 'OUTONO'}  # desagregações; ignorar
+
+    def classifica_cultura(produto_raw):
         pl = (produto_raw or '').upper().strip()
-        # Identifica cultura base
-        cultura = None
-        if 'SOJA' in pl: cultura = 'Soja'
-        elif 'MILHO' in pl: cultura = 'Milho'
-        elif 'TRIGO' in pl: cultura = 'Trigo'
-        else: return (None, False)
-        # Identifica se é totalizador ou safra individual
-        # Marcadores de "safra individual": "1ª", "2ª", "3ª", "1A SAFRA", "PRIMEIRA", "SEGUNDA"
-        marcadores_individual = ['1ª', '2ª', '3ª', '1A SAFRA', '2A SAFRA', '3A SAFRA', '1A.', '2A.', '3A.',
-                                  'PRIMEIRA', 'SEGUNDA', 'TERCEIRA',
-                                  'IRRIGADA', 'SEQUEIRO', 'VERAO', 'INVERNO',
-                                  '- 1', '- 2', '- 3', 'SAFRINHA']
-        # Marcadores de "total": "TOTAL", "GERAL"
-        marcadores_total = ['TOTAL', 'GERAL']
-        eh_individual = any(m in pl for m in marcadores_individual)
-        eh_total_explicito = any(m in pl for m in marcadores_total)
-        # Lógica: se tem TOTAL explícito → total; se tem marcador individual → não-total; senão → "padrão" (vale como total se não tiver desagregação)
-        if eh_total_explicito:
-            return (cultura, True)
-        if eh_individual:
-            return (cultura, False)
-        # Produto "puro" como apenas "SOJA" ou "TRIGO" — tratamos como total
-        return (cultura, True)
+        if 'SOJA' in pl: return 'Soja'
+        if 'MILHO' in pl: return 'Milho'
+        if 'TRIGO' in pl: return 'Trigo'
+        return None
 
-    # PRIMEIRA PASSAGEM: identificar se existem produtos "TOTAL" para cada cultura na safra recente
+    # PASSO 1: Agrupar por (cultura, uf, ano) → lista de (tipo_safra, producao, area, rendimento)
+    agg = {}  # (cultura, uf, ano) → list of records
+    for (produto, uf, ano, tipo), rec in bucket.items():
+        cultura = classifica_cultura(produto)
+        if not cultura: continue
+        key = (cultura, uf, ano)
+        agg.setdefault(key, []).append({
+            'tipo': tipo, 'producao': rec['producao'] or 0,
+            'area': rec['area'] or 0, 'rendimento': rec['rendimento'] or 0,
+        })
+
+    # PASSO 2: Para cada (cultura, uf, ano), aplicar lógica de seleção
+    def consolida(records):
+        """Recebe lista de registros e retorna {producao, area, rendimento} final."""
+        if not records: return {'producao': 0, 'area': 0, 'rendimento': 0}
+
+        # Procura registro PRIMÁRIO (TOTAL/GERAL)
+        primario = [r for r in records if r['tipo'] in SAFRAS_PRIMARIAS]
+        if primario:
+            r = primario[0]
+            return {'producao': r['producao'], 'area': r['area'], 'rendimento': r['rendimento']}
+
+        # Se não tem primário, soma os ADITIVOS
+        aditivos = [r for r in records if r['tipo'] in SAFRAS_ADITIVAS]
+        if aditivos:
+            prod = sum(r['producao'] for r in aditivos)
+            area = sum(r['area'] for r in aditivos)
+            # rendimento ponderado
+            wsum = sum(r['rendimento'] * r['producao'] for r in aditivos)
+            rend = wsum / prod if prod > 0 else 0
+            return {'producao': prod, 'area': area, 'rendimento': rend}
+
+        # Senão, soma TODOS os registros disponíveis (último recurso)
+        prod = sum(r['producao'] for r in records)
+        area = sum(r['area'] for r in records)
+        rend = (sum(r['rendimento'] * r['producao'] for r in records) / prod) if prod > 0 else 0
+        return {'producao': prod, 'area': area, 'rendimento': rend}
+
+    # Identificar safras com TOTAL detectado por cultura (para diagnóstico)
     cultura_tem_total = {'Soja': False, 'Milho': False, 'Trigo': False}
-    for (produto, uf, safra) in bucket.keys():
-        if safra != safra_recente: continue
-        cultura, eh_total = classifica_produto(produto)
-        if cultura and eh_total:
+    for (cultura, uf, ano), records in agg.items():
+        if ano != safra_recente: continue
+        if any(r['tipo'] in SAFRAS_PRIMARIAS for r in records):
             cultura_tem_total[cultura] = True
-
     log.info(f"CONAB · culturas com TOTAL na safra {safra_recente}: {cultura_tem_total}")
 
-    # SEGUNDA PASSAGEM: agregar usando a lógica certa
-    for (produto, uf, safra), rec in bucket.items():
-        cultura, eh_total = classifica_produto(produto)
-        if not cultura: continue
-
-        # Se tem TOTAL disponível para esta cultura, só usa TOTAL.
-        # Se não tem, soma as safras individuais.
-        if cultura_tem_total[cultura] and not eh_total:
-            continue  # pula safras individuais quando há total
-
+    # Aplicar consolidação
+    for (cultura, uf, ano), records in agg.items():
         if cultura not in culturas:
             culturas[cultura] = {}
-
-        if safra == safra_recente:
-            if uf in culturas[cultura]:
-                # Já há registro (somar — caso de múltiplas safras individuais sem total)
-                culturas[cultura][uf]['producao'] = (culturas[cultura][uf]['producao'] or 0) + (rec['producao'] or 0)
-                culturas[cultura][uf]['area'] = (culturas[cultura][uf]['area'] or 0) + (rec['area'] or 0)
-            else:
-                culturas[cultura][uf] = {
-                    'producao': rec['producao'] or 0,
-                    'area': rec['area'] or 0,
-                    'rendimento': rec['rendimento'] or 0,
-                    'producao_anterior': 0,
-                }
-        elif safra == safra_anterior:
+        cons = consolida(records)
+        if ano == safra_recente:
+            culturas[cultura][uf] = {
+                'producao': cons['producao'],
+                'area': cons['area'],
+                'rendimento': cons['rendimento'],
+                'producao_anterior': culturas[cultura].get(uf, {}).get('producao_anterior', 0),
+            }
+        elif ano == safra_anterior:
             if uf not in culturas[cultura]:
                 culturas[cultura][uf] = {'producao': 0, 'area': 0, 'rendimento': 0, 'producao_anterior': 0}
-            culturas[cultura][uf]['producao_anterior'] = (culturas[cultura][uf].get('producao_anterior') or 0) + (rec['producao'] or 0)
+            culturas[cultura][uf]['producao_anterior'] = cons['producao']
 
-    # FALLBACK PARA TRIGO: se zerou (porque safra é por ano civil "2025" em vez de "2025/26")
-    # tenta safra do ano-base só, ou safra mais recente que tenha trigo
-    if cultura_tem_total.get('Trigo') is False or sum((u['producao'] or 0) for u in culturas.get('Trigo', {}).values()) == 0:
-        log.info(f"CONAB · Trigo zerado em {safra_recente}, buscando safra alternativa para Trigo...")
-        # Procura registros de trigo em qualquer safra recente (top 5)
-        trigo_safras_disponiveis = set()
-        for (produto, uf, safra), rec in bucket.items():
-            cultura, _ = classifica_produto(produto)
-            if cultura == 'Trigo' and rec.get('producao'):
-                trigo_safras_disponiveis.add(safra)
-        if trigo_safras_disponiveis:
-            trigo_safra_recente = sorted(trigo_safras_disponiveis, key=safra_key, reverse=True)[0]
-            log.info(f"CONAB · safra alternativa para Trigo: {trigo_safra_recente}")
+    # FALLBACK PARA TRIGO: se zerou (safra de Trigo no Brasil pode ser ano civil "2025")
+    if not culturas.get('Trigo') or sum((u['producao'] or 0) for u in culturas.get('Trigo', {}).values()) == 0:
+        log.info(f"CONAB · Trigo zerado em {safra_recente}, buscando safra alternativa...")
+        # Procura safras alternativas com produção de Trigo > 0
+        trigo_por_safra = {}  # safra → total_producao
+        for (cultura, uf, ano), records in agg.items():
+            if cultura != 'Trigo': continue
+            cons = consolida(records)
+            trigo_por_safra[ano] = trigo_por_safra.get(ano, 0) + cons['producao']
+        # Top safra
+        trigo_safras = sorted([(s, p) for s, p in trigo_por_safra.items() if p > 0],
+                              key=lambda x: safra_key(x[0]), reverse=True)
+        if trigo_safras:
+            trigo_safra_alt = trigo_safras[0][0]
+            log.info(f"CONAB · safra alternativa para Trigo: {trigo_safra_alt} (produção {trigo_safras[0][1]/1000:.1f} Mt)")
             culturas['Trigo'] = {}
-            for (produto, uf, safra), rec in bucket.items():
-                cultura, eh_total = classifica_produto(produto)
-                if cultura != 'Trigo' or safra != trigo_safra_recente: continue
-                if cultura_tem_total.get('Trigo', False) and not eh_total: continue
-                if uf in culturas['Trigo']:
-                    culturas['Trigo'][uf]['producao'] = (culturas['Trigo'][uf]['producao'] or 0) + (rec['producao'] or 0)
-                    culturas['Trigo'][uf]['area']     = (culturas['Trigo'][uf]['area']     or 0) + (rec['area']     or 0)
-                else:
-                    culturas['Trigo'][uf] = {
-                        'producao': rec['producao'] or 0,
-                        'area': rec['area'] or 0,
-                        'rendimento': rec['rendimento'] or 0,
-                        'producao_anterior': 0,
-                    }
+            for (cultura, uf, ano), records in agg.items():
+                if cultura != 'Trigo' or ano != trigo_safra_alt: continue
+                cons = consolida(records)
+                culturas['Trigo'][uf] = {
+                    'producao': cons['producao'],
+                    'area': cons['area'],
+                    'rendimento': cons['rendimento'],
+                    'producao_anterior': 0,
+                }
 
     # Log diagnóstico para conferir totais
     for cult, ufs in culturas.items():

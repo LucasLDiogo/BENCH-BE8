@@ -190,41 +190,128 @@ def build_fallback() -> dict:
     }
 
 
+def enrich_with_prices(out: dict) -> dict:
+    """Enriquece dados de vendas com preço médio R$/L por UF e por região.
+
+    Lê o data/anp_combustiveis.json (gerado pelo baixar_anp_combustiveis.py) e
+    junta os preços nos produtos correspondentes:
+        diesel_b ← Diesel S10 (ou Diesel)
+        gasolina_c ← Gasolina Comum
+        etanol_hidratado ← Etanol Hidratado
+    """
+    try:
+        from utils import load_json
+        precos = load_json(DATA_DIR / "anp_combustiveis.json", default=None)
+        if not precos or not precos.get('produtos'):
+            log.info("ANP Vendas · sem preços disponíveis ainda (anp_combustiveis vazio)")
+            return out
+
+        # Mapeamento: vendas key → preços key (várias possibilidades)
+        map_vendas_to_preco = {
+            'diesel_b': ['diesel_s10', 'diesel', 'diesel_s500', 'oleo_diesel_b'],
+            'gasolina_c': ['gasolina_comum', 'gasolina_c', 'gasolina'],
+            'etanol_hidratado': ['etanol_hidratado', 'etanol'],
+        }
+
+        # Indexar produtos de preços por produto_id e nome
+        prod_idx = {}
+        for p in precos['produtos']:
+            pid = (p.get('produto_id') or '').lower().strip()
+            pname = (p.get('produto') or '').lower().strip().replace(' ', '_')
+            prod_idx[pid] = p
+            prod_idx[pname] = p
+
+        for vendas_key, preco_keys in map_vendas_to_preco.items():
+            if vendas_key not in out['produtos']:
+                continue
+            # Encontrar produto de preço correspondente
+            preco_prod = None
+            for pk in preco_keys:
+                if pk in prod_idx:
+                    preco_prod = prod_idx[pk]
+                    break
+            if not preco_prod:
+                log.info(f"ANP Vendas · preço não encontrado para {vendas_key}")
+                continue
+
+            # Construir mapas {uf: preco} e {regiao: preco}
+            preco_por_uf = {p['uf']: p.get('preco_medio') for p in preco_prod.get('por_uf', []) if p.get('uf')}
+            preco_por_reg = {p['regiao']: p.get('preco_medio') for p in preco_prod.get('por_regiao', []) if p.get('regiao')}
+            preco_brasil = preco_prod.get('preco_medio_brasil')
+
+            # Anexar preço em cada UF/região do bloco de vendas
+            for uf_obj in out['produtos'][vendas_key].get('por_uf', []):
+                uf = uf_obj.get('uf')
+                if uf in preco_por_uf:
+                    uf_obj['preco_medio_l'] = preco_por_uf[uf]
+                else:
+                    uf_obj['preco_medio_l'] = None
+
+            for reg_obj in out['produtos'][vendas_key].get('por_regiao', []):
+                rs = reg_obj.get('regiao_sigla')
+                if rs in preco_por_reg:
+                    reg_obj['preco_medio_l'] = preco_por_reg[rs]
+                else:
+                    reg_obj['preco_medio_l'] = None
+
+            out['produtos'][vendas_key]['preco_medio_brasil_l'] = preco_brasil
+            out['produtos'][vendas_key]['preco_referencia'] = precos.get('data_referencia')
+
+            # Ranking caro/barato
+            ufs_com_preco = [u for u in out['produtos'][vendas_key]['por_uf']
+                             if u.get('preco_medio_l') is not None]
+            if ufs_com_preco:
+                ordenado = sorted(ufs_com_preco, key=lambda x: x['preco_medio_l'], reverse=True)
+                out['produtos'][vendas_key]['top_mais_caros'] = [
+                    {'uf': u['uf'], 'regiao': u['regiao'], 'preco_l': u['preco_medio_l']}
+                    for u in ordenado[:5]
+                ]
+                out['produtos'][vendas_key]['top_mais_baratos'] = [
+                    {'uf': u['uf'], 'regiao': u['regiao'], 'preco_l': u['preco_medio_l']}
+                    for u in ordenado[-5:][::-1]
+                ]
+
+            log.info(f"ANP Vendas · preço enriquecido para {vendas_key}: R$ {preco_brasil}/L ({len(ufs_com_preco)} UFs)")
+    except Exception as e:
+        log.warning(f"ANP Vendas · enrich_with_prices falhou: {e}")
+    return out
+
+
 def run() -> None:
     raw, url_used = _try_download()
     if raw:
         try:
             rows = parse_csv(raw)
             log.info(f"ANP Vendas · CSV parseado: {len(rows)} linhas")
-            # Aqui faríamos parsing real. Como o formato pode variar, salvamos e ainda
-            # usamos o snapshot como base para garantir UI consistente.
             try:
                 (DOWNLOADS_DIR / "anp" / f"vendas_{dt.date.today().isoformat()}.csv").write_bytes(raw)
             except Exception as e:
                 log.debug(f"ANP Vendas · falha ao salvar raw: {e}")
 
             out = build_fallback()
-            out['fonte'] = 'ANP · CSV vendas (capturado) + snapshot anual'
+            out['fonte'] = 'ANP · CSV vendas (capturado) + snapshot anual + preços ANP'
             out['endpoint'] = url_used
             out['status'] = 'PARCIAL'
-            out['nota'] = f'CSV capturado de {url_used} · parser específico em desenvolvimento. Usando snapshot anual como base.'
+            out['nota'] = f'CSV capturado de {url_used} · parser específico em desenvolvimento. Usando snapshot anual como base + preços R$/L do levantamento ANP.'
+            out = enrich_with_prices(out)
             save_json(DATA_DIR / "anp_vendas.json", out)
-            mark_source_partial("anp_vendas", "CSV capturado · snapshot base",
+            mark_source_partial("anp_vendas", "CSV capturado · snapshot base + preços",
                                 rows=sum(len(p['por_uf']) for p in out['produtos'].values()),
                                 endpoint=url_used)
-            log.info(f"ANP Vendas · CSV capturado + snapshot aplicado")
+            log.info(f"ANP Vendas · CSV capturado + snapshot + preços aplicados")
             return
         except Exception as e:
             log.warning(f"ANP Vendas · parser falhou: {e}")
 
     # Fallback completo
     out = build_fallback()
+    out = enrich_with_prices(out)
     save_json(DATA_DIR / "anp_vendas.json", out)
     mark_source_partial("anp_vendas",
-                        "snapshot Anuário ANP 2024 (CSV ao vivo indisponível)",
+                        "snapshot Anuário ANP 2024 + preços R$/L (CSV ao vivo indisponível)",
                         rows=sum(len(p['por_uf']) for p in out['produtos'].values()),
                         endpoint=ANP_VDPB_LANDING)
-    log.info(f"ANP Vendas · snapshot aplicado · 3 produtos × 27 UFs")
+    log.info(f"ANP Vendas · snapshot + preços aplicados · 3 produtos × 27 UFs")
 
 
 if __name__ == "__main__":

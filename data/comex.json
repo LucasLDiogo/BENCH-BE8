@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T00:51:20",
+  "ultima_atualizacao": "2026-05-26T08:57:02",
   "fonte": "MDIC · ComexStat (API oficial)",
   "endpoint": "https://api-comexstat.mdic.gov.br/general",
   "status": "PARCIAL",
@@ -115,7 +115,21 @@
       "descricao": "Farelo de soja",
       "fluxo": "export",
       "categoria": "farelo",
-      "erro": "sem retorno"
+      "ano_corrente": {
+        "fob_usd": 590160291.0,
+        "kg": 1522457502.0,
+        "toneladas": 1522457.5,
+        "preco_medio_usd_ton": 387.64
+      },
+      "ano_anterior": {
+        "fob_usd": 1911055899.0,
+        "kg": 5176719262.0,
+        "toneladas": 5176719.26,
+        "preco_medio_usd_ton": 369.16
+      },
+      "var_fob_pct": -69.12,
+      "var_volume_pct": -70.59,
+      "linhas": 16
     },
     {
       "ncm": "29051100",
@@ -129,21 +143,7 @@
       "descricao": "Soja em grão",
       "fluxo": "export",
       "categoria": "soja_grao",
-      "ano_corrente": {
-        "fob_usd": 0.0,
-        "kg": 0.0,
-        "toneladas": 0.0,
-        "preco_medio_usd_ton": null
-      },
-      "ano_anterior": {
-        "fob_usd": 0.0,
-        "kg": 0.0,
-        "toneladas": 0.0,
-        "preco_medio_usd_ton": null
-      },
-      "var_fob_pct": null,
-      "var_volume_pct": null,
-      "linhas": 0
+      "erro": "sem retorno"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T00:51:41",
+  "ultima_atualizacao": "2026-05-26T08:57:26",
   "fonte": "Agregação de feeds RSS públicos",
   "status": "PARCIAL",
   "noticias": [
@@ -28,30 +28,6 @@
       "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
     },
     {
-      "titulo": "Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes",
-      "fonte": "Canal Rural",
-      "fonte_id": "canal_rural",
-      "data": "Mon, 25 May 2026 23:15:27 +0000",
-      "link": "https://www.canalrural.com.br/videos/chuvas-em-sitio-do-quinto-ba-trazem-alivio-mas-ainda-sao-insuficientes/",
-      "resumo": "Previsão do tempo indica chuvas abaixo da média em Sítio do Quinto, Bahia, impactando lavouras e produtividade dos agricultores O post Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes apareceu primeiro em Canal Rural .",
-      "categoria": "safra",
-      "tag": "originação",
-      "impacto_nivel": "alto",
-      "impacto_be8": "Contexto macro · monitorar."
-    },
-    {
-      "titulo": "Mercado eleva previsão da inflação para 5,04% este ano",
-      "fonte": "Agência Brasil · Economia",
-      "fonte_id": "agencia_brasil_economia",
-      "data": "Mon, 25 May 2026 09:55:00 -0300",
-      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/mercado-eleva-previsao-da-inflacao-para-504-este-ano",
-      "resumo": "A previsão do mercado financeiro para o Índice Nacional de Preços ao Consumidor Amplo (IPCA), referência oficial da inflação no país, passou de 4,92% para 5,04% este ano . A estimativa está no Boletim Focus desta segunda-feira (25), pesquisa divulgada semanalmente pelo Banco Cent…",
-      "categoria": "câmbio",
-      "tag": "macro",
-      "impacto_nivel": "médio",
-      "impacto_be8": "Afeta paridade exportação/importação."
-    },
-    {
       "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
       "fonte": "Agência Brasil · Economia",
       "fonte_id": "agencia_brasil_economia",
@@ -70,18 +46,6 @@
       "data": "Mon, 25 May 2026 16:32:00 -0300",
       "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/quarta-edicao-do-leilao-eco-invest-libera-r-132-bi-em-investimentos",
       "resumo": "A 4ª edição do leilão do programa Eco Invest Brasil destravou R$ 13,2 bilhões para projetos de bioeconomia, turismo sustentável e infraestrutura no país. Mais da metade desse valor, o equivalente a cerca de R$ 9 bilhões, foi alocada para investimentos na Amazônia Legal. Os dados …",
-      "categoria": "câmbio",
-      "tag": "macro",
-      "impacto_nivel": "médio",
-      "impacto_be8": "Afeta paridade exportação/importação."
-    },
-    {
-      "titulo": "Beatriz Arcoverde, da EBC, vence categoria do Prêmio Mulheres Raras",
-      "fonte": "Agência Brasil · Últimas",
-      "fonte_id": "agencia_brasil_geral",
-      "data": "Mon, 25 May 2026 19:40:00 -0300",
-      "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-05/beatriz-arcoverde-da-ebc-vence-categoria-do-premio-mulheres-raras",
-      "resumo": "A força da Empresa Brasil de Comunicação ( EBC ) e do jornalismo público comprometido com a inclusão e a representatividade ganhou destaque nacional na noite do Prêmio Mulheres Raras 2026. Realizada pelo Instituto Vidas Raras, a cerimônia consagrou a editora Beatriz Arcoverde, da…",
       "categoria": "câmbio",
       "tag": "macro",
       "impacto_nivel": "médio",
@@ -158,6 +122,90 @@
       "tag": "macro",
       "impacto_nivel": "médio",
       "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Caixa paga Bolsa Família a beneficiários com NIS de final 7",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Tue, 26 May 2026 07:02:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/caixa-paga-bolsa-familia-beneficiarios-com-nis-de-final-7",
+      "resumo": "A Caixa Econômica Federal paga nesta terça-feira (26) a parcela de maio do Bolsa Família aos beneficiários com Número de Inscrição Social (NIS) de final 7. O valor mínimo corresponde a R$ 600, mas com o novo adicional o valor médio do benefício sobe para R$ 678,01. Segundo o Mini…",
+      "categoria": "energia",
+      "tag": "regulatorio",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Metade dos estudantes não vê debate antirracista na escola, diz estudo",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 07:42:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/educacao/noticia/2026-05/metade-dos-estudantes-nao-ve-debate-antirracista-na-escola-diz-estudo",
+      "resumo": "O trabalho \"A herança da cultura negra na formação do Brasil\", pedido em uma escola de Brasília a uma estudante de 15 anos, não deixa de ser uma raridade, diz a mãe da aluna, a advogada Karina Berardo, mãe de dois filhos negros. “Houve uma ampliação do tema a partir do ensino méd…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 08:45:00 +0000",
+      "link": "https://www.canalrural.com.br/economia/petroleo-em-queda-e-inflacao-em-alta-podcast-destaca-o-que-esperar-do-mercado/",
+      "resumo": "Parceria do PicPay com o Canal Rural, o podcast Diário Econômico traz tudo o que você precisa saber sobre economia para começar bem o dia O post Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado apareceu primeiro em Canal Rural .",
+      "categoria": "petróleo",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Bolsas da Ásia caem após ataque dos EUA no sul do Irã",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 09:06:15 +0000",
+      "link": "https://www.canalrural.com.br/economia/bolsas-da-asia-caem-apos-ataque-dos-eua-no-sul-do-ira/",
+      "resumo": "Movimento ocorreu nesta terça-feira (26) em meio ao aumento da tensão geopolítica e à nova alta do petróleo Brent no mercado internacional. O post Bolsas da Ásia caem após ataque dos EUA no sul do Irã apareceu primeiro em Canal Rural .",
+      "categoria": "petróleo",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Bolsas europeias recuam e petróleo sobe após novos ataques dos EUA no Irã",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 09:52:22 +0000",
+      "link": "https://www.canalrural.com.br/economia/bolsas-europeias-recuam-e-petroleo-sobe-apos-novos-ataques-dos-eua-no-ira/",
+      "resumo": "Mercados reagiram nesta terça-feira (26) à piora da percepção sobre um possível acordo de paz; Brent avançava mais de 3% no início do dia. O post Bolsas europeias recuam e petróleo sobe após novos ataques dos EUA no Irã apareceu primeiro em Canal Rural .",
+      "categoria": "petróleo",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Bolsas da Europa recuam após novos ataques dos EUA no Irã",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 10:23:26 +0000",
+      "link": "https://www.canalrural.com.br/economia/bolsas-da-europa-recuam-apos-novos-ataques-dos-eua-no-ira/",
+      "resumo": "Escalada no Oriente Médio reduziu o apetite por risco nos mercados e voltou a pressionar o petróleo Brent, que subia mais de 3% na manhã desta terça-feira. O post Bolsas da Europa recuam após novos ataques dos EUA no Irã apareceu primeiro em Canal Rural .",
+      "categoria": "petróleo",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "FMI diz que inflação ancorada pode reduzir efeito do petróleo na América Latina",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 11:43:01 +0000",
+      "link": "https://www.canalrural.com.br/economia/fmi-diz-que-inflacao-ancorada-pode-reduzir-efeito-do-petroleo-na-america-latina/",
+      "resumo": "Estudo aponta que credibilidade dos bancos centrais ajuda a limitar o repasse da alta da energia e de outras commodities aos preços em geral O post FMI diz que inflação ancorada pode reduzir efeito do petróleo na América Latina apareceu primeiro em Canal Rural .",
+      "categoria": "petróleo",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
     }
   ],
   "manchete_dia": {
@@ -199,33 +247,33 @@
         "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
       }
     ],
-    "safra": [
+    "energia": [
       {
-        "titulo": "Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes",
-        "fonte": "Canal Rural",
-        "fonte_id": "canal_rural",
-        "data": "Mon, 25 May 2026 23:15:27 +0000",
-        "link": "https://www.canalrural.com.br/videos/chuvas-em-sitio-do-quinto-ba-trazem-alivio-mas-ainda-sao-insuficientes/",
-        "resumo": "Previsão do tempo indica chuvas abaixo da média em Sítio do Quinto, Bahia, impactando lavouras e produtividade dos agricultores O post Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes apareceu primeiro em Canal Rural .",
-        "categoria": "safra",
-        "tag": "originação",
-        "impacto_nivel": "alto",
+        "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Mon, 25 May 2026 16:24:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/cresce-percentual-de-paulistanos-que-apostam-em-bets-para-elevar-renda",
+        "resumo": "A proporção de paulistanos que aposta em plataformas online para ter um aumento rápido da renda doméstica aumentou dez pontos percentuais entre 2024 e 2026, segundo estudo divulgado nesta segunda-feira (25) pela Federação do Comércio de Bens, Serviços e Turismo do Estado de São P…",
+        "categoria": "energia",
+        "tag": "regulatorio",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      },
+      {
+        "titulo": "Caixa paga Bolsa Família a beneficiários com NIS de final 7",
+        "fonte": "Agência Brasil · Economia",
+        "fonte_id": "agencia_brasil_economia",
+        "data": "Tue, 26 May 2026 07:02:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/caixa-paga-bolsa-familia-beneficiarios-com-nis-de-final-7",
+        "resumo": "A Caixa Econômica Federal paga nesta terça-feira (26) a parcela de maio do Bolsa Família aos beneficiários com Número de Inscrição Social (NIS) de final 7. O valor mínimo corresponde a R$ 600, mas com o novo adicional o valor médio do benefício sobe para R$ 678,01. Segundo o Mini…",
+        "categoria": "energia",
+        "tag": "regulatorio",
+        "impacto_nivel": "médio",
         "impacto_be8": "Contexto macro · monitorar."
       }
     ],
     "câmbio": [
-      {
-        "titulo": "Mercado eleva previsão da inflação para 5,04% este ano",
-        "fonte": "Agência Brasil · Economia",
-        "fonte_id": "agencia_brasil_economia",
-        "data": "Mon, 25 May 2026 09:55:00 -0300",
-        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/mercado-eleva-previsao-da-inflacao-para-504-este-ano",
-        "resumo": "A previsão do mercado financeiro para o Índice Nacional de Preços ao Consumidor Amplo (IPCA), referência oficial da inflação no país, passou de 4,92% para 5,04% este ano . A estimativa está no Boletim Focus desta segunda-feira (25), pesquisa divulgada semanalmente pelo Banco Cent…",
-        "categoria": "câmbio",
-        "tag": "macro",
-        "impacto_nivel": "médio",
-        "impacto_be8": "Afeta paridade exportação/importação."
-      },
       {
         "titulo": "Quarta edição do leilão Eco Invest liberou R$ 13,2 bi em investimentos",
         "fonte": "Agência Brasil · Economia",
@@ -233,18 +281,6 @@
         "data": "Mon, 25 May 2026 16:32:00 -0300",
         "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/quarta-edicao-do-leilao-eco-invest-libera-r-132-bi-em-investimentos",
         "resumo": "A 4ª edição do leilão do programa Eco Invest Brasil destravou R$ 13,2 bilhões para projetos de bioeconomia, turismo sustentável e infraestrutura no país. Mais da metade desse valor, o equivalente a cerca de R$ 9 bilhões, foi alocada para investimentos na Amazônia Legal. Os dados …",
-        "categoria": "câmbio",
-        "tag": "macro",
-        "impacto_nivel": "médio",
-        "impacto_be8": "Afeta paridade exportação/importação."
-      },
-      {
-        "titulo": "Beatriz Arcoverde, da EBC, vence categoria do Prêmio Mulheres Raras",
-        "fonte": "Agência Brasil · Últimas",
-        "fonte_id": "agencia_brasil_geral",
-        "data": "Mon, 25 May 2026 19:40:00 -0300",
-        "link": "https://agenciabrasil.ebc.com.br/saude/noticia/2026-05/beatriz-arcoverde-da-ebc-vence-categoria-do-premio-mulheres-raras",
-        "resumo": "A força da Empresa Brasil de Comunicação ( EBC ) e do jornalismo público comprometido com a inclusão e a representatividade ganhou destaque nacional na noite do Prêmio Mulheres Raras 2026. Realizada pelo Instituto Vidas Raras, a cerimônia consagrou a editora Beatriz Arcoverde, da…",
         "categoria": "câmbio",
         "tag": "macro",
         "impacto_nivel": "médio",
@@ -273,20 +309,30 @@
         "tag": "macro",
         "impacto_nivel": "médio",
         "impacto_be8": "Afeta paridade exportação/importação."
-      }
-    ],
-    "energia": [
+      },
       {
-        "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
-        "fonte": "Agência Brasil · Economia",
-        "fonte_id": "agencia_brasil_economia",
-        "data": "Mon, 25 May 2026 16:24:00 -0300",
-        "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/cresce-percentual-de-paulistanos-que-apostam-em-bets-para-elevar-renda",
-        "resumo": "A proporção de paulistanos que aposta em plataformas online para ter um aumento rápido da renda doméstica aumentou dez pontos percentuais entre 2024 e 2026, segundo estudo divulgado nesta segunda-feira (25) pela Federação do Comércio de Bens, Serviços e Turismo do Estado de São P…",
-        "categoria": "energia",
-        "tag": "regulatorio",
+        "titulo": "Presidente do TSE cria comissão para combater IA ilegal nas eleições",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 20:57:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/presidente-do-tse-cria-comissao-para-combater-ia-ilegal-nas-eleicoes",
+        "resumo": "O presidente do Tribunal Superior Eleitoral (TSE), ministro Nunes Marques, realizou nesta segunda-feira (25) a primeira reunião com presidentes dos tribunais regionais eleitorais (TREs) após tomar posse no cargo . Os presidentes definiram que será criada uma comissão permanente p…",
+        "categoria": "câmbio",
+        "tag": "macro",
         "impacto_nivel": "médio",
-        "impacto_be8": "Contexto macro · monitorar."
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Fim da escala 6x1: relator propõe que um dia de folga seja no domingo",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Mon, 25 May 2026 21:13:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/politica/noticia/2026-05/fim-da-escala-6x1-relator-propoe-que-um-dia-de-folga-seja-no-domingo",
+        "resumo": "O relator da Proposta de Emenda à Constituição (PEC) 221/19 que acaba com a escala 6x1, deputado federal Léo Prates (Republicanos-BA), propõe que um dos dias de repouso semanal remunerado seja, preferencialmente, no domingo. O deputado apresentou nesta segunda-feira (25) o relató…",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
       }
     ],
     "comércio exterior": [
@@ -298,6 +344,68 @@
         "link": "https://agenciabrasil.ebc.com.br/cultura/noticia/2026-05/audiovisual-brasileiro-tera-linhas-de-credito-e-plano-de-exportacao",
         "resumo": "O Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) anunciou nesta segunda-feira (25) a criação do Programa da Nova Indústria do Audiovisual Brasileiro. O objetivo é disponibilizar linhas de crédito específicas e um plano de exportação de produtos para o setor,…",
         "categoria": "comércio exterior",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      }
+    ],
+    "petróleo": [
+      {
+        "titulo": "Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Tue, 26 May 2026 08:45:00 +0000",
+        "link": "https://www.canalrural.com.br/economia/petroleo-em-queda-e-inflacao-em-alta-podcast-destaca-o-que-esperar-do-mercado/",
+        "resumo": "Parceria do PicPay com o Canal Rural, o podcast Diário Econômico traz tudo o que você precisa saber sobre economia para começar bem o dia O post Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado apareceu primeiro em Canal Rural .",
+        "categoria": "petróleo",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      },
+      {
+        "titulo": "Bolsas da Ásia caem após ataque dos EUA no sul do Irã",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Tue, 26 May 2026 09:06:15 +0000",
+        "link": "https://www.canalrural.com.br/economia/bolsas-da-asia-caem-apos-ataque-dos-eua-no-sul-do-ira/",
+        "resumo": "Movimento ocorreu nesta terça-feira (26) em meio ao aumento da tensão geopolítica e à nova alta do petróleo Brent no mercado internacional. O post Bolsas da Ásia caem após ataque dos EUA no sul do Irã apareceu primeiro em Canal Rural .",
+        "categoria": "petróleo",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      },
+      {
+        "titulo": "Bolsas europeias recuam e petróleo sobe após novos ataques dos EUA no Irã",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Tue, 26 May 2026 09:52:22 +0000",
+        "link": "https://www.canalrural.com.br/economia/bolsas-europeias-recuam-e-petroleo-sobe-apos-novos-ataques-dos-eua-no-ira/",
+        "resumo": "Mercados reagiram nesta terça-feira (26) à piora da percepção sobre um possível acordo de paz; Brent avançava mais de 3% no início do dia. O post Bolsas europeias recuam e petróleo sobe após novos ataques dos EUA no Irã apareceu primeiro em Canal Rural .",
+        "categoria": "petróleo",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      },
+      {
+        "titulo": "Bolsas da Europa recuam após novos ataques dos EUA no Irã",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Tue, 26 May 2026 10:23:26 +0000",
+        "link": "https://www.canalrural.com.br/economia/bolsas-da-europa-recuam-apos-novos-ataques-dos-eua-no-ira/",
+        "resumo": "Escalada no Oriente Médio reduziu o apetite por risco nos mercados e voltou a pressionar o petróleo Brent, que subia mais de 3% na manhã desta terça-feira. O post Bolsas da Europa recuam após novos ataques dos EUA no Irã apareceu primeiro em Canal Rural .",
+        "categoria": "petróleo",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Contexto macro · monitorar."
+      },
+      {
+        "titulo": "FMI diz que inflação ancorada pode reduzir efeito do petróleo na América Latina",
+        "fonte": "Canal Rural",
+        "fonte_id": "canal_rural",
+        "data": "Tue, 26 May 2026 11:43:01 +0000",
+        "link": "https://www.canalrural.com.br/economia/fmi-diz-que-inflacao-ancorada-pode-reduzir-efeito-do-petroleo-na-america-latina/",
+        "resumo": "Estudo aponta que credibilidade dos bancos centrais ajuda a limitar o repasse da alta da energia e de outras commodities aos preços em geral O post FMI diz que inflação ancorada pode reduzir efeito do petróleo na América Latina apareceu primeiro em Canal Rural .",
+        "categoria": "petróleo",
         "tag": "macro",
         "impacto_nivel": "médio",
         "impacto_be8": "Contexto macro · monitorar."
@@ -315,7 +423,7 @@
       "fonte": "Agência Brasil · Últimas",
       "id": "agencia_brasil_geral",
       "status": "OK",
-      "noticias": 8
+      "noticias": 9
     },
     {
       "fonte": "Notícias Agrícolas",
@@ -327,7 +435,7 @@
       "fonte": "Canal Rural",
       "id": "canal_rural",
       "status": "OK",
-      "noticias": 1
+      "noticias": 5
     },
     {
       "fonte": "EPBR · Energia",
@@ -380,18 +488,6 @@
       "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
     },
     {
-      "titulo": "Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes",
-      "fonte": "Canal Rural",
-      "fonte_id": "canal_rural",
-      "data": "Mon, 25 May 2026 23:15:27 +0000",
-      "link": "https://www.canalrural.com.br/videos/chuvas-em-sitio-do-quinto-ba-trazem-alivio-mas-ainda-sao-insuficientes/",
-      "resumo": "Previsão do tempo indica chuvas abaixo da média em Sítio do Quinto, Bahia, impactando lavouras e produtividade dos agricultores O post Chuvas em Sítio do Quinto (BA) trazem alívio, mas ainda são insuficientes apareceu primeiro em Canal Rural .",
-      "categoria": "safra",
-      "tag": "originação",
-      "impacto_nivel": "alto",
-      "impacto_be8": "Contexto macro · monitorar."
-    },
-    {
       "titulo": "Cresce percentual de paulistanos que apostam em bets para elevar renda",
       "fonte": "Agência Brasil · Economia",
       "fonte_id": "agencia_brasil_economia",
@@ -404,18 +500,30 @@
       "impacto_be8": "Contexto macro · monitorar."
     },
     {
-      "titulo": "Mercado eleva previsão da inflação para 5,04% este ano",
+      "titulo": "Caixa paga Bolsa Família a beneficiários com NIS de final 7",
       "fonte": "Agência Brasil · Economia",
       "fonte_id": "agencia_brasil_economia",
-      "data": "Mon, 25 May 2026 09:55:00 -0300",
-      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/mercado-eleva-previsao-da-inflacao-para-504-este-ano",
-      "resumo": "A previsão do mercado financeiro para o Índice Nacional de Preços ao Consumidor Amplo (IPCA), referência oficial da inflação no país, passou de 4,92% para 5,04% este ano . A estimativa está no Boletim Focus desta segunda-feira (25), pesquisa divulgada semanalmente pelo Banco Cent…",
+      "data": "Tue, 26 May 2026 07:02:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/caixa-paga-bolsa-familia-beneficiarios-com-nis-de-final-7",
+      "resumo": "A Caixa Econômica Federal paga nesta terça-feira (26) a parcela de maio do Bolsa Família aos beneficiários com Número de Inscrição Social (NIS) de final 7. O valor mínimo corresponde a R$ 600, mas com o novo adicional o valor médio do benefício sobe para R$ 678,01. Segundo o Mini…",
+      "categoria": "energia",
+      "tag": "regulatorio",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "Quarta edição do leilão Eco Invest liberou R$ 13,2 bi em investimentos",
+      "fonte": "Agência Brasil · Economia",
+      "fonte_id": "agencia_brasil_economia",
+      "data": "Mon, 25 May 2026 16:32:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/quarta-edicao-do-leilao-eco-invest-libera-r-132-bi-em-investimentos",
+      "resumo": "A 4ª edição do leilão do programa Eco Invest Brasil destravou R$ 13,2 bilhões para projetos de bioeconomia, turismo sustentável e infraestrutura no país. Mais da metade desse valor, o equivalente a cerca de R$ 9 bilhões, foi alocada para investimentos na Amazônia Legal. Os dados …",
       "categoria": "câmbio",
       "tag": "macro",
       "impacto_nivel": "médio",
       "impacto_be8": "Afeta paridade exportação/importação."
     }
   ],
-  "impacto_consolidado_be8": "A edição de hoje traz 13 manchetes setoriais, sendo 3 de alto impacto para a Be8. Destaque para 0 notícias diretamente relacionadas ao biodiesel/B100 e 1 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
+  "impacto_consolidado_be8": "A edição de hoje traz 17 manchetes setoriais, sendo 2 de alto impacto para a Be8. Destaque para 0 notícias diretamente relacionadas ao biodiesel/B100 e 2 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
   "acao_recomendada": "Monitorar especialmente as manchetes do eixo regulatório (resoluções CNPE/ANP podem alterar cronograma B15→B20) e acompanhar movimentos da soja CBOT, que definem a curva de custo do óleo nos próximos 30-60 dias. Considerar antecipar fixação de compras se houver sinal de alta sustentada."
 }

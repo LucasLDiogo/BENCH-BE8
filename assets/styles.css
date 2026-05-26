@@ -943,3 +943,39 @@ footer a:hover { color: var(--be8-green-1); }
 .be8-map-legend {
   margin: 10px !important;
 }
+
+/* ===========================================================
+   v2.5 · BOTÕES TOGGLE VOLUME/PREÇO + DRILLDOWN
+   =========================================================== */
+.vendas-modo {
+  background: rgba(8,31,46,0.5);
+  border: 1px solid var(--be8-border);
+  color: var(--be8-mist);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 7px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+.vendas-modo:hover {
+  background: rgba(212,168,75,0.08);
+  color: var(--be8-ice);
+  border-color: var(--be8-gold);
+}
+.vendas-modo.active {
+  background: linear-gradient(135deg, var(--be8-gold) 0%, #b88b3a 100%);
+  color: var(--be8-navy);
+  border-color: var(--be8-gold);
+  font-weight: 600;
+}
+
+#vendas-drilldown {
+  animation: fadeInDown 0.25s ease;
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1053,11 +1053,11 @@
   <div class="page-header">
     <div class="page-eyebrow">11 · DISTRIBUIÇÃO · GEOGRÁFICO</div>
     <h1 class="page-title">Vendas <em>&amp; Mapa</em></h1>
-    <p class="page-sub">Vendas de combustíveis por UF · Diesel B (com mistura biodiesel) · Gasolina · Etanol · mapa choropleth interativo do Brasil.</p>
+    <p class="page-sub">Vendas de combustíveis por UF · Diesel B (com mistura biodiesel) · Gasolina · Etanol · mapa choropleth interativo do Brasil · preço R$/L por UF e por região.</p>
     <span class="status-pill" id="vendas-status">⊘ Aguardando</span>
   </div>
 
-  <!-- KPIs principais -->
+  <!-- KPIs de volume -->
   <div class="grid grid-3">
     <div class="kpi-card">
       <div class="card-header">
@@ -1085,38 +1085,102 @@
     </div>
   </div>
 
+  <!-- KPIs de preço médio R$/L -->
+  <div class="grid grid-3">
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">💰 DIESEL · PREÇO MÉDIO BR</div>
+        <span class="card-meta">ANP</span>
+      </div>
+      <div class="kpi-value" id="vendas-diesel-preco">— <span class="unit">/L</span></div>
+      <div class="kpi-context">Preço de revenda nas bombas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">💰 GASOLINA · PREÇO MÉDIO BR</div>
+        <span class="card-meta">ANP</span>
+      </div>
+      <div class="kpi-value" id="vendas-gasolina-preco">— <span class="unit">/L</span></div>
+      <div class="kpi-context">Preço de revenda nas bombas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="card-header">
+        <div class="card-label">💰 ETANOL · PREÇO MÉDIO BR</div>
+        <span class="card-meta">ANP</span>
+      </div>
+      <div class="kpi-value" id="vendas-etanol-preco">— <span class="unit">/L</span></div>
+      <div class="kpi-context">Preço de revenda nas bombas</div>
+    </div>
+  </div>
+
   <!-- Mapa do Brasil + Controles -->
-  <div class="section-title"><span class="num">// 11.A</span><h2>Mapa do Brasil — volume por UF</h2><div class="line"></div></div>
+  <div class="section-title"><span class="num">// 11.A</span><h2>Mapa do Brasil — clique numa UF para detalhes</h2><div class="line"></div></div>
 
   <div class="card">
-    <!-- Filtro de produto -->
+    <!-- Filtros: produto + modo (volume/preço) -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:14px;">
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:10.5px; color:var(--be8-mist); letter-spacing:0.06em; align-self:center; margin-right:6px;">PRODUTO:</span>
         <button class="vendas-filter active" data-prod="diesel_b">Diesel B</button>
         <button class="vendas-filter" data-prod="gasolina_c">Gasolina C</button>
         <button class="vendas-filter" data-prod="etanol_hidratado">Etanol Hidratado</button>
       </div>
-      <div style="display:flex; gap:14px; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--be8-mist);">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:10.5px; color:var(--be8-mist); letter-spacing:0.06em; align-self:center; margin-right:6px;">COLORIR POR:</span>
+        <button class="vendas-modo active" data-modo="volume">Volume</button>
+        <button class="vendas-modo" data-modo="preco">Preço R$/L</button>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="font-family:var(--font-mono); font-size:11px; color:var(--be8-mist);">
         <span id="mapa-titulo">Diesel B · volume médio mensal (m³)</span>
       </div>
     </div>
 
     <!-- Container do mapa Leaflet (carregado dinamicamente via CDN) -->
     <div id="brasil-mapa" style="position:relative; min-height: 560px; border-radius:8px; overflow:hidden;"></div>
+
+    <!-- Slot para drilldown ao clicar em UF -->
+    <div id="vendas-drilldown" style="display:none; margin-top:18px;"></div>
   </div>
 
   <!-- Ranking por UF + Composição regional -->
   <div class="grid grid-2">
     <div class="card">
-      <div class="card-header"><div class="card-label">📊 Ranking UFs · top 10</div><span class="card-meta" id="vendas-rank-meta"></span></div>
+      <div class="card-header"><div class="card-label">📊 Ranking UFs · top 10 (volume + preço)</div><span class="card-meta" id="vendas-rank-meta"></span></div>
       <table class="data" style="margin-top:12px;">
         <thead><tr><th>#</th><th>UF</th><th>REGIÃO</th><th class="num">VOLUME MENSAL (m³)</th><th class="num">SHARE</th></tr></thead>
         <tbody id="vendas-rank-tbody"></tbody>
       </table>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-label">🌎 Composição regional</div></div>
+      <div class="card-header"><div class="card-label">🌎 Composição regional · volume</div></div>
       <div id="vendas-regional-viz"></div>
+    </div>
+  </div>
+
+  <!-- Preço por região -->
+  <div class="section-title"><span class="num">// 11.B</span><h2>Preço médio R$/L por região</h2><div class="line"></div></div>
+  <div class="card">
+    <div id="preco-regional-cards"></div>
+  </div>
+
+  <!-- Top UFs mais caras e mais baratas -->
+  <div class="section-title"><span class="num">// 11.C</span><h2>Top UFs · preço R$/L</h2><div class="line"></div></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-label">📈 Top 5 UFs mais caras</div><span class="card-meta">R$/L</span></div>
+      <table class="data" style="margin-top:12px;">
+        <thead><tr><th>#</th><th>UF</th><th>REGIÃO</th><th class="num">PREÇO R$/L</th></tr></thead>
+        <tbody id="precos-caros-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-label">📉 Top 5 UFs mais baratas</div><span class="card-meta">R$/L</span></div>
+      <table class="data" style="margin-top:12px;">
+        <thead><tr><th>#</th><th>UF</th><th>REGIÃO</th><th class="num">PREÇO R$/L</th></tr></thead>
+        <tbody id="precos-baratos-tbody"></tbody>
+      </table>
     </div>
   </div>
 </section>
