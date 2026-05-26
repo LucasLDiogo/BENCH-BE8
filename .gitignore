@@ -1,35 +1,14 @@
-# Ambiente
-.env
-.venv/
-venv/
-env/
-
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-.pytest_cache/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs locais detalhados (mantém só atualizacao.log para visibilidade)
-logs/*.log.*
-logs/debug/
-
-# OS
+*.pyc
+*.pyo
+.venv/
+.env
 .DS_Store
-Thumbs.db
-
-# Downloads brutos volumosos (mantidos no .gitkeep apenas para estrutura)
-downloads/*/*.xlsx
-downloads/*/*.xls
-downloads/*/*.csv
-downloads/*/*.zip
-downloads/*/*.pdf
-!downloads/.gitkeep
-!downloads/*/.gitkeep
+*.bak
+logs/*.log
+!logs/.gitkeep
+ 
+# Arquivos locais que nao devem ir pro repo 
+downloads/ 
+CHECKLIST.md 
+diagnostico.txt 

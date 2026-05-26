@@ -1,0 +1,167 @@
+{
+  "fonte": "Manifesto consolidado Be8",
+  "status": "ok",
+  "ultima_atualizacao": "2026-05-26T20:48:18.766327+00:00",
+  "fontes": [
+    {
+      "arquivo": "cambio.json",
+      "fonte": "BCB PTAX",
+      "tipo": "API pública",
+      "atualizacao": "Diária 4x",
+      "custo": "Gratuita",
+      "endpoint": "olinda.bcb.gov.br/odata/CotacaoMoeda",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "commodities.json",
+      "fonte": "Yahoo Finance",
+      "tipo": "API pública",
+      "atualizacao": "15min delay",
+      "custo": "Gratuita",
+      "endpoint": "query1.finance.yahoo.com",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "conab_graos.json",
+      "fonte": "CONAB safras",
+      "tipo": "CSV mensal",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "conab.gov.br/info-agro/safras",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "anp_combustiveis.json",
+      "fonte": "ANP SLP combustíveis",
+      "tipo": "CSV semanal",
+      "atualizacao": "Semanal",
+      "custo": "Gratuita",
+      "endpoint": "gov.br/anp · SLP",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "anp_b100.json",
+      "fonte": "ANP B100",
+      "tipo": "XLS mensal",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "gov.br/anp · biodiesel",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "anp_vendas.json",
+      "fonte": "ANP vendas UF",
+      "tipo": "CSV mensal",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "gov.br/anp · vendas-derivados",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "comex.json",
+      "fonte": "ComexStat MDIC",
+      "tipo": "API REST",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "api-comexstat.mdic.gov.br",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "noticias.json",
+      "fonte": "Notícias (RSS)",
+      "tipo": "RSS",
+      "atualizacao": "Contínua",
+      "custo": "Gratuita",
+      "endpoint": "noticiasagricolas.com.br/rss",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "arquivo": "be8_profile.json",
+      "fonte": "Be8 institucional",
+      "tipo": "Manifesto",
+      "atualizacao": "Quando muda",
+      "custo": "Interna",
+      "endpoint": "/scripts/gerar_be8_profile.py",
+      "status": "ok",
+      "linhas": 20,
+      "ultima_verificacao": "2026-05-26T20:48:18.617413+00:00"
+    },
+    {
+      "arquivo": "usda_benchmarks.json",
+      "fonte": "USDA FAS PSD",
+      "tipo": "API REST",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "apps.fas.usda.gov/PSDOnlineApi",
+      "status": "pendente",
+      "linhas": 0,
+      "ultima_verificacao": null
+    },
+    {
+      "fonte": "FRED",
+      "tipo": "API key",
+      "atualizacao": "—",
+      "custo": "Gratuita",
+      "endpoint": "api.stlouisfed.org/fred",
+      "status": "pendente",
+      "linhas": null,
+      "ultima_verificacao": null
+    },
+    {
+      "fonte": "EIA",
+      "tipo": "API key",
+      "atualizacao": "—",
+      "custo": "Gratuita",
+      "endpoint": "api.eia.gov",
+      "status": "pendente",
+      "linhas": null,
+      "ultima_verificacao": null
+    },
+    {
+      "fonte": "Investing.com",
+      "tipo": "Web (anti-bot)",
+      "atualizacao": "—",
+      "custo": "Gratuita",
+      "endpoint": "br.investing.com",
+      "status": "indisponivel",
+      "linhas": null,
+      "ultima_verificacao": "2026-05-26T20:48:18.765570+00:00"
+    },
+    {
+      "fonte": "CEPEA/ESALQ",
+      "tipo": "Iframe widget",
+      "atualizacao": "Diária",
+      "custo": "Gratuita",
+      "endpoint": "cepea.org.br/br/widget.aspx",
+      "status": "pendente",
+      "linhas": null,
+      "ultima_verificacao": null
+    },
+    {
+      "fonte": "IBGE SIDRA",
+      "tipo": "API REST",
+      "atualizacao": "Mensal",
+      "custo": "Gratuita",
+      "endpoint": "apisidra.ibge.gov.br",
+      "status": "pendente",
+      "linhas": null,
+      "ultima_verificacao": null
+    }
+  ]
+}

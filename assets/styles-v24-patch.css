@@ -1,0 +1,155 @@
+/* =====================================================================
+   BENCH-BE8 · styles-v24-patch.css
+   ---------------------------------------------------------------------
+   Complemento de styles para classes introduzidas no scripts.js v2.4.
+   Se o styles.css principal já tem essas classes, este arquivo é redundante.
+   Inclua DEPOIS do styles.css no <head> para sobrescrever, ou copie estas
+   regras para o styles.css principal.
+   ===================================================================== */
+
+/* Status badges — variantes ok/fallback/erro/indisponível */
+.src-status {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.src-pending  { color: #a8bdc9; border-color: rgba(168,189,201,0.35); }
+.src-live     { color: #7ad9c2; border-color: rgba(122,217,194,0.40); background: rgba(122,217,194,0.06); }
+.src-fallback { color: #ffb86b; border-color: rgba(255,184,107,0.40); background: rgba(255,184,107,0.06); }
+.src-error    { color: #ff8585; border-color: rgba(255,133,133,0.40); background: rgba(255,133,133,0.06); }
+.src-na       { color: #8a99a3; border-color: rgba(138,153,163,0.40); background: rgba(138,153,163,0.05); }
+
+/* Empty state */
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--be8-dim, #8a99a3);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Newsletter items */
+.news-item {
+  display: flex; gap: 14px;
+  padding: 14px; background: rgba(168,189,201,0.04);
+  border: 1px solid var(--be8-border, rgba(168,189,201,0.10));
+  border-radius: 6px;
+}
+.news-item:hover { background: rgba(168,189,201,0.07); }
+.news-rank {
+  font-family: var(--font-mono, monospace);
+  font-size: 22px; color: var(--be8-green-2, #7ad9c2);
+  min-width: 38px;
+}
+.news-body { flex: 1; }
+.news-tag {
+  font-size: 10px; letter-spacing: 0.1em; color: var(--be8-gold, #ffb86b);
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.news-headline { font-size: 15px; color: var(--be8-ice, #e8f0f3); margin-bottom: 6px; line-height: 1.4; }
+.news-desc { font-size: 13px; color: var(--be8-mist, #a8bdc9); line-height: 1.6; margin-bottom: 8px; }
+.news-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--be8-dim, #8a99a3);
+}
+.news-link {
+  color: var(--be8-green-2, #7ad9c2); text-decoration: none;
+  font-family: var(--font-mono, monospace); font-size: 11px;
+}
+.news-link:hover { text-decoration: underline; }
+
+/* Radar mini news */
+.news-mini {
+  padding: 8px 10px; border-left: 2px solid var(--be8-green-2, #7ad9c2);
+  background: rgba(168,189,201,0.03);
+  border-radius: 0 4px 4px 0;
+}
+.news-mini-title { font-size: 12.5px; color: var(--be8-ice, #e8f0f3); line-height: 1.5; margin-bottom: 4px; }
+.news-mini-foot {
+  display: flex; justify-content: space-between;
+  font-size: 10.5px; color: var(--be8-dim, #8a99a3);
+  font-family: var(--font-mono, monospace);
+}
+.news-mini-foot a { color: var(--be8-green-2, #7ad9c2); text-decoration: none; }
+
+/* Radar IA items */
+.radar-item {
+  padding: 10px 12px;
+  background: rgba(168,189,201,0.04);
+  border-radius: 5px;
+  border-left: 2px solid var(--be8-green-2, #7ad9c2);
+}
+.radar-title {
+  font-size: 13px; color: var(--be8-ice, #e8f0f3); font-weight: 600;
+  margin-bottom: 3px;
+}
+.radar-desc { font-size: 12px; color: var(--be8-mist, #a8bdc9); line-height: 1.5; }
+
+/* Ticker */
+.ticker-item {
+  display: inline-block;
+  padding: 0 28px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--be8-ice, #e8f0f3);
+  white-space: nowrap;
+}
+
+/* Delta utility */
+.delta.up   { color: #7ad9c2; }
+.delta.down { color: #ff8585; }
+.delta.flat { color: #8a99a3; }
+
+/* Newsletter hero */
+.newsletter-hero {
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(122,217,194,0.08), rgba(168,189,201,0.03));
+  border: 1px solid var(--be8-border, rgba(168,189,201,0.15));
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+.news-eyebrow {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--be8-gold, #ffb86b); margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.newsletter-hero h2 {
+  font-size: 22px; color: var(--be8-ice, #e8f0f3);
+  margin: 0 0 8px 0; line-height: 1.3;
+}
+.news-meta { font-size: 12px; color: var(--be8-mist, #a8bdc9); }
+
+/* Modo TV — esconde header/nav, dá foco no conteúdo */
+body.tv-mode .nav-tabs,
+body.tv-mode footer { display: none !important; }
+body.tv-mode .page-actions { opacity: 0.5; }
+
+/* Print — para snapshot */
+@media print {
+  .nav-tabs, footer, .tv-bar, .tv-config-overlay, .page-actions { display: none !important; }
+  .page:not(.active) { display: none !important; }
+  body { background: white; color: black; }
+}
+
+/* Print fallback overlay */
+.tv-config-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center; z-index: 999;
+}
+.tv-config-overlay.active { display: flex; }
+.tv-config-modal {
+  background: var(--be8-deep, #0e1416); border: 1px solid var(--be8-border, rgba(168,189,201,0.15));
+  border-radius: 8px; padding: 24px; max-width: 580px; width: 92%;
+  max-height: 84vh; overflow-y: auto;
+}
+.tv-config-modal h3 { font-size: 18px; margin: 0 0 8px 0; color: var(--be8-ice, #e8f0f3); }
+.tv-config-modal .desc { font-size: 12.5px; color: var(--be8-mist, #a8bdc9); margin-bottom: 16px; }
+.tv-config-modal table { width: 100%; font-size: 12px; }
+.tv-config-modal th, .tv-config-modal td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--be8-border, rgba(168,189,201,0.08)); }
+.tv-config-modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }

@@ -1,2698 +1,1154 @@
 /* =====================================================================
-   BE8 · MARKET INTELLIGENCE PLATFORM · frontend
-   Sem CORS: tudo lê JSONs locais gerados pelo agente Python.
-   Se um JSON estiver ausente ou em PENDENTE, mostra status sem quebrar.
+   BENCH-BE8 · Market Intelligence Platform
+   scripts.js · v2.4
+   ---------------------------------------------------------------------
+   Arquitetura defensiva:
+   - safeSetText / safeFetch / updateSourceStatus / renderEmptyState
+   - try/catch por módulo de renderização (erro em uma fonte NÃO derruba
+     o restante do painel)
+   - Logs claros no console com prefixo [BENCH-BE8]
+   - Schema padronizado dos JSONs em /data:
+     { fonte, status: ok|fallback|erro|indisponivel,
+       ultima_atualizacao, dados, erro }
    ===================================================================== */
 
+'use strict';
+
+/* ---------- Helpers DOM ---------- */
+const $  = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+/**
+ * safeSetText — atualiza textContent SEM derrubar a página se o ID
+ * não existir. Loga warn no console pra debug.
+ */
+function safeSetText(id, value, fallback = '—') {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`[BENCH-BE8] Elemento não encontrado: #${id}`);
+    return false;
+  }
+  el.textContent = (value === null || value === undefined || value === '') ? fallback : value;
+  return true;
+}
+
+/**
+ * safeSetHTML — variante que aceita innerHTML (use só com dados sanitizados,
+ * tipicamente textos pré-formatados do agente Python).
+ */
+function safeSetHTML(id, html, fallback = '<span class="muted">—</span>') {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`[BENCH-BE8] Elemento não encontrado: #${id}`);
+    return false;
+  }
+  el.innerHTML = (html === null || html === undefined || html === '') ? fallback : html;
+  return true;
+}
+
+/**
+ * safeFetch — fetch com timeout, no-cache e tratamento de 404 silencioso.
+ * Retorna null em qualquer falha. NUNCA quebra o caller.
+ */
+async function safeFetch(url, opts = {}) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), opts.timeout || 15000);
+  try {
+    const resp = await fetch(url, {
+      cache: 'no-store',
+      signal: ctrl.signal,
+      ...opts,
+    });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      console.warn(`[BENCH-BE8] safeFetch · ${url} · HTTP ${resp.status}`);
+      return null;
+    }
+    return await resp.json();
+  } catch (err) {
+    clearTimeout(timer);
+    console.warn(`[BENCH-BE8] safeFetch · ${url} · falhou:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * validateDataSchema — confere se o JSON segue o schema padrão da Be8.
+ */
+function validateDataSchema(json, requiredFields = ['fonte', 'status', 'ultima_atualizacao']) {
+  if (!json || typeof json !== 'object') return false;
+  return requiredFields.every((k) => k in json);
+}
+
+/**
+ * updateSourceStatus — atualiza pingo de status e tooltip.
+ * status: 'ok' | 'fallback' | 'erro' | 'indisponivel' | 'pendente'
+ */
+function updateSourceStatus(id, status, label = null) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`[BENCH-BE8] Status não encontrado: #${id}`);
+    return;
+  }
+  el.classList.remove('src-pending', 'src-live', 'src-fallback', 'src-error', 'src-na');
+  const map = {
+    ok:           { cls: 'src-live',     txt: label || 'AO VIVO' },
+    fallback:     { cls: 'src-fallback', txt: label || 'FALLBACK' },
+    erro:         { cls: 'src-error',    txt: label || 'ERRO' },
+    indisponivel: { cls: 'src-na',       txt: label || 'INDISPONÍVEL' },
+    pendente:     { cls: 'src-pending',  txt: label || '—' },
+  };
+  const cfg = map[status] || map.pendente;
+  el.classList.add(cfg.cls);
+  el.textContent = cfg.txt;
+}
+
+/**
+ * renderEmptyState — preenche container vazio com mensagem padrão.
+ */
+function renderEmptyState(id, message = 'Sem dados disponíveis') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="empty-state" style="padding:24px;text-align:center;color:var(--be8-dim);font-size:13px;font-style:italic;">${message}</div>`;
+}
+
+/* ---------- Formatadores ---------- */
+const fmt = {
+  brl:   (v, d = 4) => (v == null || isNaN(v)) ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }),
+  usd:   (v, d = 2) => (v == null || isNaN(v)) ? '—' : '$ '  + Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }),
+  cent:  (v, d = 0) => (v == null || isNaN(v)) ? '—' : '¢ '  + Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }),
+  num:   (v, d = 1) => (v == null || isNaN(v)) ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }),
+  pct:   (v, d = 2) => (v == null || isNaN(v)) ? '—' : (Number(v) >= 0 ? '+' : '') + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%',
+  date:  (s) => {
+    if (!s) return '—';
+    try {
+      const d = new Date(s);
+      if (isNaN(d)) return s;
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch { return s; }
+  },
+};
+
+/**
+ * applyDelta — aplica valor de variação e classe (up/down/flat) num elemento.
+ */
+function applyDelta(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('flat', 'up', 'down');
+  if (delta == null || isNaN(delta)) {
+    el.textContent = '—';
+    el.classList.add('flat');
+    return;
+  }
+  const v = Number(delta);
+  el.textContent = fmt.pct(v);
+  if (v > 0.001) el.classList.add('up');
+  else if (v < -0.001) el.classList.add('down');
+  else el.classList.add('flat');
+}
+
+/* =====================================================================
+   STATE global
+   ===================================================================== */
 const STATE = {
-  cambio: null,
-  commodities: null,
-  conab: null,
-  anp_combustiveis: null,
-  anp_b100: null,
-  anp_vendas: null,
-  comex: null,
-  noticias: null,
-  be8_profile: null,
-  status_fontes: null,
-  usda: null,
-  insights: [],
+  cambio:            null,
+  commodities:       null,
+  conab:             null,
+  anp_combustiveis:  null,
+  anp_b100:          null,
+  anp_vendas:        null,
+  comex:             null,
+  noticias:          null,
+  be8_profile:       null,
+  status_fontes:     null,
+  usda:              null,
+  governance:        null,
+  insights:          [],
   vendas_produto_ativo: 'diesel_b',
 };
 
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
+/* =====================================================================
+   NAVEGAÇÃO ENTRE ABAS
+   ===================================================================== */
+function bindNavigation() {
+  $$('.nav-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.page;
+      if (!target) return;
+      $$('.nav-tab').forEach((b) => b.classList.remove('active'));
+      $$('.page').forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      const pageEl = document.getElementById('page-' + target);
+      if (pageEl) pageEl.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
 
 /* =====================================================================
-   HELPERS
+   RELÓGIO de sessão
    ===================================================================== */
-const fmtBRL  = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
-const fmtBRL2 = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
-const fmtUSD  = v => v == null ? '—' : '$ '  + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtCent = v => v == null ? '—' : '¢ '  + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtNum  = (v,d=2) => v == null ? '—' : Number(v).toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
-const fmtPct  = v => v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
-
-function deltaClass(pct) {
-  if (pct == null || isNaN(pct)) return 'flat';
-  if (pct > 0.05) return 'up';
-  if (pct < -0.05) return 'down';
-  return 'flat';
-}
-
-async function loadJSON(path) {
-  try {
-    const r = await fetch(path + '?v=' + Date.now(), {cache: 'no-store'});
-    if (!r.ok) return null;
-    return await r.json();
-  } catch (e) {
-    console.warn(`Falha carregando ${path}:`, e);
-    return null;
-  }
-}
-
 function setSessionClock() {
   const now = new Date();
-  $('#session-date').textContent = now.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
-  $('#session-time').textContent = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + ' BRT';
-  $('#footer-build').textContent = 'build · ' + now.toISOString().slice(0,16).replace('T',' ');
-  const tvClock = $('#tv-clock');
-  if (tvClock) tvClock.textContent = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  safeSetText('session-date', now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' }));
+  safeSetText('session-time', now.toLocaleTimeString('pt-BR'));
+  safeSetText('tv-clock', now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 }
 
 /* =====================================================================
-   NAVIGATION
+   CARREGAMENTO de todos os JSONs
    ===================================================================== */
-function setActivePage(pageId) {
-  $$('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === pageId));
-  $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + pageId));
-  window.scrollTo({top: 0, behavior: 'smooth'});
-  // Se entrou na página de Vendas/Mapa, força recarregamento do Leaflet
-  if (pageId === 'vendas-mapa') {
-    setTimeout(() => { try { ensureMapaOnPageEntry(); } catch(e){ console.error(e); } }, 80);
-  }
-}
+async function reloadAllData() {
+  console.log('[BENCH-BE8] reloadAllData · iniciando');
+  const t0 = performance.now();
 
-$$('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => setActivePage(tab.dataset.page));
-});
+  // Todas em paralelo, com safeFetch (nenhuma derruba as outras)
+  const [
+    cambio, commodities, conab,
+    anpComb, anpB100, anpVendas,
+    comex, noticias, profile,
+    status, usda, governance,
+  ] = await Promise.all([
+    safeFetch('data/cambio.json'),
+    safeFetch('data/commodities.json'),
+    safeFetch('data/conab_graos.json'),
+    safeFetch('data/anp_combustiveis.json'),
+    safeFetch('data/anp_b100.json'),
+    safeFetch('data/anp_vendas.json'),
+    safeFetch('data/comex.json'),
+    safeFetch('data/noticias.json'),
+    safeFetch('data/be8_profile.json'),
+    safeFetch('data/status_fontes.json'),
+    safeFetch('data/usda_benchmarks.json'),
+    safeFetch('data/governance.json'),
+  ]);
 
-/* =====================================================================
-   SVG CHARTS
-   ===================================================================== */
-function renderSparkline(containerId, series, color = '#0eb194') {
-  const c = $('#' + containerId);
-  if (!c) return;
-  if (!series || series.length < 2) {
-    c.innerHTML = '';
-    return;
-  }
-  const W = c.clientWidth || 200, H = 44;
-  const values = series.map(p => p.valor);
-  const min = Math.min(...values), max = Math.max(...values);
-  const range = max - min || 1;
-  const pts = series.map((p, i) => {
-    const x = (i / (series.length - 1)) * W;
-    const y = H - ((p.valor - min) / range) * (H - 6) - 3;
-    return [x, y, p];
-  });
-  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  const areaPath = path + ` L${W},${H} L0,${H} Z`;
-  const last = pts[pts.length-1];
-  const first = pts[0];
-  c.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="overflow:visible;">
-      <defs>
-        <linearGradient id="sp-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="${color}" stop-opacity="0.4"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="${areaPath}" fill="url(#sp-grad-${containerId})"/>
-      <path d="${path}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="${color}"/>
-      <title>Série de ${series.length} pontos · ${first[2].data || 'início'} → ${last[2].data || 'fim'} · último valor ${fmtNum(last[2].valor, 2)}</title>
-    </svg>`;
-}
+  STATE.cambio           = cambio;
+  STATE.commodities      = commodities;
+  STATE.conab            = conab;
+  STATE.anp_combustiveis = anpComb;
+  STATE.anp_b100         = anpB100;
+  STATE.anp_vendas       = anpVendas;
+  STATE.comex            = comex;
+  STATE.noticias         = noticias;
+  STATE.be8_profile      = profile;
+  STATE.status_fontes    = status;
+  STATE.usda             = usda;
+  STATE.governance       = governance;
 
-function renderLineChart(containerId, series, color = '#0eb194', opts = {}) {
-  const c = $('#' + containerId);
-  if (!c) return;
-  if (!series || series.length < 2) {
-    c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados disponíveis ainda — agente Python precisa rodar.</div>';
-    return;
-  }
-  // opts: { decimals, prefix, suffix }
-  const decimals = opts.decimals != null ? opts.decimals : 2;
-  const prefix = opts.prefix || '';
-  const suffix = opts.suffix || '';
-  const fmtV = v => prefix + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:decimals, maximumFractionDigits:decimals}) + suffix;
+  // Cada render é independente — try/catch por módulo
+  const modules = [
+    ['Câmbio',         renderCambio],
+    ['Commodities',    renderCommodities],
+    ['Charts 90d',     renderCharts90d],
+    ['Grãos/CONAB',    renderConab],
+    ['ANP Biodiesel',  renderBiodieselANP],
+    ['ANP Combustíveis', renderANPCombustiveis],
+    ['ComexStat',      renderComex],
+    ['Radar IA',       renderRadarIA],
+    ['Newsletter',     renderNewsletter],
+    ['Governança',     renderGovernance],
+    ['Be8 Profile',    renderBe8Profile],
+    ['Vendas & Mapa',  renderVendasMapa],
+    ['Benchmark USDA', renderUSDA],
+    ['Exec Summary',   renderExecutiveSummary],
+    ['Ticker',         renderTicker],
+  ];
 
-  const W = c.clientWidth || 700, H = 300;
-  const padding = { top: 24, right: 70, bottom: 38, left: 64 };
-  const innerW = W - padding.left - padding.right;
-  const innerH = H - padding.top - padding.bottom;
-  const values = series.map(p => p.valor);
-  const min = Math.min(...values), max = Math.max(...values);
-  const range = max - min || 1;
-  const pad = range * 0.12;
-  const yMin = min - pad, yMax = max + pad;
-  const yRange = yMax - yMin;
-
-  // Pontos com coords + dados originais
-  const pts = series.map((p, i) => {
-    const x = padding.left + (i / (series.length - 1)) * innerW;
-    const y = padding.top + (1 - (p.valor - yMin) / yRange) * innerH;
-    return { x, y, data: p.data, valor: p.valor };
-  });
-  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
-  const areaPath = path + ` L${pts[pts.length-1].x.toFixed(1)},${padding.top + innerH} L${pts[0].x.toFixed(1)},${padding.top + innerH} Z`;
-
-  // Y-ticks (6 níveis)
-  const yTicks = [];
-  for (let i = 0; i <= 6; i++) {
-    const v = yMin + (i / 6) * yRange;
-    const y = padding.top + (1 - i / 6) * innerH;
-    yTicks.push({ v, y });
-  }
-  // X-ticks (6 datas)
-  const xTicks = [];
-  const xCount = 6;
-  for (let i = 0; i < xCount; i++) {
-    const idx = Math.round((i / (xCount - 1)) * (series.length - 1));
-    const p = pts[idx];
-    xTicks.push({ x: p.x, date: p.data });
-  }
-
-  // Pontos circulares: mostrar todos como bolinhas pequenas se série <= 30, senão somente cada N
-  const showDots = pts.length <= 30;
-  const dotEvery = pts.length <= 30 ? 1 : Math.ceil(pts.length / 30);
-
-  const first = pts[0];
-  const last = pts[pts.length - 1];
-  const variacao = ((last.valor - first.valor) / first.valor) * 100;
-  const variacaoStr = (variacao >= 0 ? '+' : '') + variacao.toFixed(2) + '%';
-  const variacaoCor = variacao >= 0 ? '#55c94f' : '#ff8585';
-
-  c.innerHTML = `
-    <div class="line-chart-wrap" style="position:relative;">
-      <svg class="line-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block; width:100%; height:auto; cursor:crosshair;">
-        <defs>
-          <linearGradient id="lc-grad-${containerId}" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
-            <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-
-        <!-- Grid horizontal + labels Y -->
-        ${yTicks.map(t => `
-          <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.07)" stroke-width="1"/>
-          <text x="${padding.left - 10}" y="${t.y + 3.5}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="end">${fmtV(t.v)}</text>
-        `).join('')}
-
-        <!-- Datas X -->
-        ${xTicks.map(t => `
-          <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="middle">${(t.date||'').slice(5)}</text>
-        `).join('')}
-
-        <!-- Área e linha -->
-        <path d="${areaPath}" fill="url(#lc-grad-${containerId})"/>
-        <path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-
-        <!-- Pontos individuais (clicáveis/hover) -->
-        ${pts.map((p, i) => {
-          if (i % dotEvery !== 0 && i !== pts.length-1) return '';
-          return `<circle class="lc-pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${showDots?2.5:1.8}" fill="${color}" data-i="${i}" style="cursor:pointer;"/>`;
-        }).join('')}
-
-        <!-- Label valor inicial -->
-        <g>
-          <rect x="${first.x - 36}" y="${first.y - 22}" width="68" height="18" rx="3" fill="rgba(8,31,46,0.85)" stroke="${color}" stroke-width="1" stroke-opacity="0.5"/>
-          <text x="${first.x + 2}" y="${first.y - 9}" font-family="JetBrains Mono" font-size="10" fill="#a8bdc9" text-anchor="middle">${fmtV(first.valor)}</text>
-        </g>
-
-        <!-- Label valor final em destaque -->
-        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="7" fill="${color}" opacity="0.25"/>
-        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4" fill="${color}"/>
-        <g>
-          <rect x="${last.x + 8}" y="${last.y - 11}" width="58" height="22" rx="3" fill="${color}" opacity="0.95"/>
-          <text x="${last.x + 37}" y="${last.y + 4}" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#081f2e" text-anchor="middle">${fmtV(last.valor)}</text>
-        </g>
-
-        <!-- Crosshair vertical (escondido até hover) -->
-        <line class="lc-cross-v" x1="0" x2="0" y1="${padding.top}" y2="${H - padding.bottom}" stroke="${color}" stroke-width="1" stroke-dasharray="3,3" opacity="0" pointer-events="none"/>
-        <!-- Bolinha destacada no hover -->
-        <circle class="lc-cross-pt" cx="-100" cy="-100" r="5" fill="${color}" stroke="#081f2e" stroke-width="2" opacity="0" pointer-events="none"/>
-
-        <!-- Faixa invisível para capturar mouse -->
-        <rect class="lc-hover-area" x="${padding.left}" y="${padding.top}" width="${innerW}" height="${innerH}" fill="transparent"/>
-      </svg>
-
-      <!-- Tooltip HTML (mais bonito que <text> SVG) -->
-      <div class="lc-tooltip" style="position:absolute; pointer-events:none; opacity:0; background:rgba(5,15,23,0.95); border:1px solid ${color}; border-radius:6px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; color:var(--be8-ice); white-space:nowrap; transition:opacity 0.1s; box-shadow:0 4px 14px rgba(0,0,0,0.5); z-index:10; min-width:130px;">
-        <div class="lc-tt-date" style="color:#5e7382; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:3px;"></div>
-        <div class="lc-tt-val" style="font-size:14px; font-weight:600; color:${color};"></div>
-        <div class="lc-tt-pct" style="font-size:10px; color:#a8bdc9; margin-top:2px;"></div>
-      </div>
-
-      <!-- Footer com primeiro/último/variação -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:11px; font-family:var(--font-mono); color:var(--be8-mist);">
-        <div><span style="color:#5e7382;">DESDE ${(first.data||'').slice(5)}:</span> ${fmtV(first.valor)}</div>
-        <div><span style="color:#5e7382;">VARIAÇÃO 90D:</span> <strong style="color:${variacaoCor};">${variacaoStr}</strong></div>
-        <div><span style="color:#5e7382;">ATUAL:</span> <strong style="color:var(--be8-ice);">${fmtV(last.valor)}</strong></div>
-      </div>
-    </div>`;
-
-  // Bind interatividade
-  const svg = c.querySelector('.line-chart-svg');
-  const tooltip = c.querySelector('.lc-tooltip');
-  const crossV = c.querySelector('.lc-cross-v');
-  const crossPt = c.querySelector('.lc-cross-pt');
-  const wrap = c.querySelector('.line-chart-wrap');
-
-  svg.addEventListener('mousemove', (ev) => {
-    const rect = svg.getBoundingClientRect();
-    // converter clientX para viewBox X
-    const xView = ((ev.clientX - rect.left) / rect.width) * W;
-    if (xView < padding.left || xView > W - padding.right) {
-      tooltip.style.opacity = 0;
-      crossV.setAttribute('opacity', 0);
-      crossPt.setAttribute('opacity', 0);
-      return;
+  for (const [name, fn] of modules) {
+    try {
+      fn();
+    } catch (err) {
+      console.error(`[BENCH-BE8] Falha no módulo ${name}:`, err);
     }
-    // achar ponto mais próximo
-    let nearest = pts[0], minDist = Infinity;
-    for (const p of pts) {
-      const d = Math.abs(p.x - xView);
-      if (d < minDist) { minDist = d; nearest = p; }
-    }
-    // posicionar tooltip (precisa converter viewBox para pixel real do wrap)
-    const scale = rect.width / W;
-    const px = nearest.x * scale;
-    const py = nearest.y * scale;
-    const ttW = tooltip.offsetWidth, wrapW = wrap.offsetWidth;
-    const ttX = px + 12 + ttW > wrapW ? px - ttW - 12 : px + 12;
-    const ttY = py - 30;
-    tooltip.style.left = ttX + 'px';
-    tooltip.style.top = Math.max(0, ttY) + 'px';
-    tooltip.style.opacity = 1;
-    const pct = ((nearest.valor - first.valor) / first.valor) * 100;
-    const pctStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% desde o início';
-    c.querySelector('.lc-tt-date').textContent = nearest.data || '';
-    c.querySelector('.lc-tt-val').textContent = fmtV(nearest.valor);
-    c.querySelector('.lc-tt-pct').textContent = pctStr;
-    crossV.setAttribute('x1', nearest.x);
-    crossV.setAttribute('x2', nearest.x);
-    crossV.setAttribute('opacity', 0.5);
-    crossPt.setAttribute('cx', nearest.x);
-    crossPt.setAttribute('cy', nearest.y);
-    crossPt.setAttribute('opacity', 1);
-  });
-  svg.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = 0;
-    crossV.setAttribute('opacity', 0);
-    crossPt.setAttribute('opacity', 0);
-  });
-}
-
-function renderMultiNormalized(containerId, seriesList) {
-  const c = $('#' + containerId);
-  if (!c) return;
-  const valid = seriesList.filter(s => s.data && s.data.length > 5);
-  if (valid.length === 0) {
-    c.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Aguardando dados…</div>';
-    return;
-  }
-  const W = c.clientWidth || 700, H = 300;
-  const padding = { top: 24, right: 110, bottom: 38, left: 44 };
-  const innerW = W - padding.left - padding.right;
-  const innerH = H - padding.top - padding.bottom;
-
-  const norm = valid.map(s => {
-    const base = s.data[0].valor;
-    return {
-      ...s,
-      norm: s.data.map(p => ({ data: p.data, valor: (p.valor / base) * 100, raw: p.valor })),
-    };
-  });
-  const len = Math.min(...norm.map(s => s.norm.length));
-  norm.forEach(s => s.norm = s.norm.slice(-len));
-
-  const allVals = norm.flatMap(s => s.norm.map(p => p.valor));
-  const yMin = Math.min(...allVals) * 0.97;
-  const yMax = Math.max(...allVals) * 1.03;
-  const yRange = yMax - yMin;
-
-  // Pontos por série
-  norm.forEach(s => {
-    s.pts = s.norm.map((p, i) => {
-      const x = padding.left + (i / (s.norm.length - 1)) * innerW;
-      const y = padding.top + (1 - (p.valor - yMin) / yRange) * innerH;
-      return { x, y, data: p.data, valor: p.valor, raw: p.raw };
-    });
-  });
-
-  let paths = '';
-  norm.forEach(s => {
-    const pathD = s.pts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
-    paths += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-    const last = s.pts[s.pts.length-1];
-    paths += `<circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="3.5" fill="${s.color}"/>`;
-    paths += `<rect x="${last.x + 6}" y="${last.y - 10}" width="98" height="20" rx="3" fill="${s.color}" opacity="0.92"/>`;
-    paths += `<text x="${last.x + 11}" y="${last.y + 4}" font-family="JetBrains Mono" font-size="10.5" font-weight="600" fill="#081f2e">${s.name} ${last.valor.toFixed(1)}</text>`;
-  });
-
-  const yTicks = [];
-  for (let i = 0; i <= 5; i++) {
-    const v = yMin + (i / 5) * yRange;
-    const y = padding.top + (1 - i / 5) * innerH;
-    yTicks.push({ v, y });
-  }
-  // Linha do 100 (base)
-  const y100 = padding.top + (1 - (100 - yMin) / yRange) * innerH;
-
-  // X-ticks (datas)
-  const refSerie = norm[0];
-  const xTicks = [];
-  const xCount = 6;
-  for (let i = 0; i < xCount; i++) {
-    const idx = Math.round((i / (xCount - 1)) * (refSerie.pts.length - 1));
-    const p = refSerie.pts[idx];
-    xTicks.push({ x: p.x, date: p.data });
   }
 
-  c.innerHTML = `
-    <div class="multi-chart-wrap" style="position:relative;">
-      <svg class="multi-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block; width:100%; height:auto; cursor:crosshair;">
-        <!-- Grid horizontal -->
-        ${yTicks.map(t => `
-          <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(168,189,201,0.06)" stroke-width="1"/>
-          <text x="${padding.left - 6}" y="${t.y + 3}" font-family="JetBrains Mono" font-size="9.5" fill="#5e7382" text-anchor="end">${t.v.toFixed(0)}</text>
-        `).join('')}
+  // Footer build timestamp
+  const buildTime = STATE.status_fontes?.ultima_atualizacao
+                 || STATE.cambio?.ultima_atualizacao
+                 || new Date().toISOString();
+  safeSetText('footer-build', 'build · ' + fmt.date(buildTime));
+  safeSetText('governance-last', 'build ' + fmt.date(buildTime));
 
-        <!-- Linha base 100 -->
-        <line x1="${padding.left}" x2="${W - padding.right}" y1="${y100}" y2="${y100}" stroke="rgba(168,189,201,0.30)" stroke-width="1" stroke-dasharray="3,3"/>
-        <text x="${W - padding.right + 4}" y="${y100 + 3.5}" font-family="JetBrains Mono" font-size="10" fill="#a8bdc9" font-weight="600">100</text>
-
-        <!-- X datas -->
-        ${xTicks.map(t => `
-          <text x="${t.x}" y="${H - padding.bottom + 18}" font-family="JetBrains Mono" font-size="10" fill="#5e7382" text-anchor="middle">${(t.date||'').slice(5)}</text>
-        `).join('')}
-
-        <!-- Linhas das séries -->
-        ${paths}
-
-        <!-- Crosshair -->
-        <line class="mc-cross-v" x1="0" x2="0" y1="${padding.top}" y2="${H - padding.bottom}" stroke="#a8bdc9" stroke-width="1" stroke-dasharray="3,3" opacity="0" pointer-events="none"/>
-
-        <!-- Bolinhas hover por série -->
-        ${norm.map((s, idx) => `<circle class="mc-cross-pt mc-cross-${idx}" cx="-100" cy="-100" r="5" fill="${s.color}" stroke="#081f2e" stroke-width="2" opacity="0" pointer-events="none"/>`).join('')}
-
-        <rect class="mc-hover-area" x="${padding.left}" y="${padding.top}" width="${innerW}" height="${innerH}" fill="transparent"/>
-      </svg>
-
-      <!-- Tooltip multi-série -->
-      <div class="mc-tooltip" style="position:absolute; pointer-events:none; opacity:0; background:rgba(5,15,23,0.95); border:1px solid rgba(168,189,201,0.30); border-radius:6px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; color:var(--be8-ice); transition:opacity 0.1s; box-shadow:0 4px 14px rgba(0,0,0,0.5); z-index:10; min-width:180px;">
-        <div class="mc-tt-date" style="color:#5e7382; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px; padding-bottom:5px; border-bottom:1px solid rgba(168,189,201,0.10);"></div>
-        <div class="mc-tt-rows"></div>
-      </div>
-    </div>`;
-
-  const svg = c.querySelector('.multi-chart-svg');
-  const tooltip = c.querySelector('.mc-tooltip');
-  const crossV = c.querySelector('.mc-cross-v');
-  const wrap = c.querySelector('.multi-chart-wrap');
-  const ttDate = c.querySelector('.mc-tt-date');
-  const ttRows = c.querySelector('.mc-tt-rows');
-
-  svg.addEventListener('mousemove', (ev) => {
-    const rect = svg.getBoundingClientRect();
-    const xView = ((ev.clientX - rect.left) / rect.width) * W;
-    if (xView < padding.left || xView > W - padding.right) {
-      tooltip.style.opacity = 0;
-      crossV.setAttribute('opacity', 0);
-      norm.forEach((_, i) => c.querySelector('.mc-cross-' + i).setAttribute('opacity', 0));
-      return;
-    }
-    // Encontrar índice mais próximo (usando primeira série como referência temporal)
-    let bestIdx = 0, minDist = Infinity;
-    refSerie.pts.forEach((p, i) => {
-      const d = Math.abs(p.x - xView);
-      if (d < minDist) { minDist = d; bestIdx = i; }
-    });
-
-    const xAt = refSerie.pts[bestIdx].x;
-    crossV.setAttribute('x1', xAt);
-    crossV.setAttribute('x2', xAt);
-    crossV.setAttribute('opacity', 0.55);
-
-    // Tooltip
-    ttDate.textContent = refSerie.pts[bestIdx].data || '';
-    ttRows.innerHTML = norm.map((s, i) => {
-      const p = s.pts[bestIdx];
-      const dot = c.querySelector('.mc-cross-' + i);
-      if (dot) { dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('opacity', 1); }
-      const pct = (p.valor - 100).toFixed(2);
-      const pctStr = (pct >= 0 ? '+' : '') + pct + '%';
-      const pctClr = pct >= 0 ? '#55c94f' : '#ff8585';
-      return `<div style="display:flex; justify-content:space-between; gap:14px; padding:2px 0;">
-        <span style="color:${s.color}; font-weight:600;">● ${s.name}</span>
-        <span style="color:var(--be8-ice); font-weight:600;">${p.valor.toFixed(2)} <span style="color:${pctClr}; font-size:9.5px;">(${pctStr})</span></span>
-      </div>`;
-    }).join('');
-
-    const scale = rect.width / W;
-    const px = xAt * scale;
-    const ttW = tooltip.offsetWidth, wrapW = wrap.offsetWidth;
-    const ttX = px + 14 + ttW > wrapW ? px - ttW - 14 : px + 14;
-    tooltip.style.left = ttX + 'px';
-    tooltip.style.top = '12px';
-    tooltip.style.opacity = 1;
-  });
-  svg.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = 0;
-    crossV.setAttribute('opacity', 0);
-    norm.forEach((_, i) => c.querySelector('.mc-cross-' + i).setAttribute('opacity', 0));
-  });
+  const t1 = performance.now();
+  console.log(`[BENCH-BE8] reloadAllData · concluído em ${(t1 - t0).toFixed(0)}ms`);
 }
 
 /* =====================================================================
-   STATUS BADGE HELPER
-   ===================================================================== */
-function setStatusBadge(id, status, label) {
-  const el = $('#' + id);
-  if (!el) return;
-  const cls = status === 'OK' ? 'src-live'
-            : status === 'PARCIAL' ? 'src-cached'
-            : status === 'PENDENTE' ? 'src-pending'
-            : 'src-error';
-  el.className = 'src-status ' + cls;
-  el.textContent = label || (status === 'OK' ? 'Live' : status === 'PARCIAL' ? 'Parcial' : status === 'PENDENTE' ? 'Pendente' : 'Erro');
-}
-
-/* =====================================================================
-   RENDER · CÂMBIO
+   RENDER · Câmbio (USD, EUR)
    ===================================================================== */
 function renderCambio() {
-  const c = STATE.cambio;
-  if (!c || c.status === 'PENDENTE' || !c.moedas || Object.keys(c.moedas).length === 0) {
-    setStatusBadge('status-usd', 'PENDENTE');
-    setStatusBadge('status-eur', 'PENDENTE');
+  const data = STATE.cambio;
+
+  // Sem dados → status indisponível e sai
+  if (!data || !validateDataSchema(data)) {
+    ['usd', 'eur'].forEach((k) => updateSourceStatus(`status-${k}`, 'indisponivel'));
     return;
   }
-  const usd = c.moedas.USD;
-  const eur = c.moedas.EUR;
-
-  if (usd && usd.cotacao_atual != null) {
-    $('#usd-value').innerHTML = fmtBRL(usd.cotacao_atual);
-    const d = usd.variacao_pct;
-    const dEl = $('#usd-delta');
-    dEl.className = 'kpi-delta delta ' + deltaClass(d);
-    dEl.textContent = fmtPct(d);
-    setStatusBadge('status-usd', 'OK');
-    renderSparkline('usd-spark', usd.serie_90d, '#0eb194');
-    renderLineChart('usd-90-chart', usd.serie_90d, '#0eb194', { decimals: 4, prefix: 'R$ ' });
-  } else {
-    setStatusBadge('status-usd', 'PENDENTE');
+  if (data.status === 'erro') {
+    ['usd', 'eur'].forEach((k) => updateSourceStatus(`status-${k}`, 'erro'));
+    return;
   }
-  if (eur && eur.cotacao_atual != null) {
-    $('#eur-value').innerHTML = fmtBRL(eur.cotacao_atual);
-    const d = eur.variacao_pct;
-    const dEl = $('#eur-delta');
-    dEl.className = 'kpi-delta delta ' + deltaClass(d);
-    dEl.textContent = fmtPct(d);
-    setStatusBadge('status-eur', 'OK');
-    renderSparkline('eur-spark', eur.serie_90d, '#55c94f');
+
+  const usd = data.dados?.usd || data.dados?.USD || {};
+  const eur = data.dados?.eur || data.dados?.EUR || {};
+
+  // USD card
+  if (usd.cotacao != null) {
+    safeSetText('usd-value', fmt.brl(usd.cotacao, 4));
+    applyDelta('usd-delta', usd.variacao_pct);
+    updateSourceStatus('status-usd', data.status === 'fallback' ? 'fallback' : 'ok', 'BCB');
   } else {
-    setStatusBadge('status-eur', 'PENDENTE');
+    updateSourceStatus('status-usd', 'indisponivel');
+  }
+
+  // EUR card
+  if (eur.cotacao != null) {
+    safeSetText('eur-value', fmt.brl(eur.cotacao, 4));
+    applyDelta('eur-delta', eur.variacao_pct);
+    updateSourceStatus('status-eur', data.status === 'fallback' ? 'fallback' : 'ok', 'BCB');
+  } else {
+    updateSourceStatus('status-eur', 'indisponivel');
   }
 }
 
 /* =====================================================================
-   RENDER · COMMODITIES
+   RENDER · Commodities (Brent, Soja, Milho, Trigo, Óleo de Soja, WTI)
    ===================================================================== */
+const COMMODITY_KEYS = ['brent', 'soja', 'milho', 'trigo', 'oleo_soja', 'wti'];
+
 function renderCommodities() {
-  const c = STATE.commodities;
-  if (!c || !c.commodities || c.commodities.length === 0) {
-    setStatusBadge('status-brent', 'PENDENTE');
-    setStatusBadge('status-soja', 'PENDENTE');
-    $('#commodities-tbody').innerHTML = '<tr><td colspan="8"><div class="empty-state" style="margin:8px 0;"><div class="ic">⊘</div>Agente Python ainda não rodou para commodities.</div></td></tr>';
+  const data = STATE.commodities;
+
+  if (!data || !validateDataSchema(data)) {
+    COMMODITY_KEYS.forEach((k) => updateSourceStatus(`status-${k}`, 'indisponivel'));
+    renderEmptyState('commodities-tbody', 'Coletor de commodities indisponível.');
     return;
   }
-  const map = {};
-  c.commodities.forEach(x => map[x.id] = x);
 
-  const setKPI = (idKey, item, fmtFn) => {
-    if (!item || item.ultimo == null) {
-      setStatusBadge('status-' + idKey, 'PENDENTE');
+  const items = data.dados || {};
+
+  COMMODITY_KEYS.forEach((k) => {
+    const it = items[k];
+    if (!it || it.cotacao == null) {
+      updateSourceStatus(`status-${k}`, 'indisponivel');
       return;
     }
-    const valEl = $('#' + idKey + '-value');
-    if (valEl) {
-      // Preserva o span de unidade se houver
-      const unitMatch = valEl.innerHTML.match(/<span class="unit">.*?<\/span>/);
-      valEl.innerHTML = fmtFn(item.ultimo) + (unitMatch ? unitMatch[0] : '');
+    // Formatação varia conforme unidade
+    const unidade = (it.unidade || '').toLowerCase();
+    let valueText;
+    if (unidade.includes('bbl') || k === 'brent' || k === 'wti') {
+      valueText = fmt.usd(it.cotacao, 2);
+    } else {
+      valueText = fmt.cent(it.cotacao, 0);
     }
-    const dEl = $('#' + idKey + '-delta');
-    if (dEl) {
-      dEl.className = 'kpi-delta delta ' + deltaClass(item.var_d_pct);
-      dEl.textContent = fmtPct(item.var_d_pct);
-    }
-    const stEl = $('#status-' + idKey);
-    if (stEl) setStatusBadge('status-' + idKey, item.status || 'OK');
-  };
-
-  setKPI('brent', map.brent, fmtUSD);
-  setKPI('wti', map.wti, fmtUSD);
-  setKPI('soja', map.soja, fmtCent);
-  setKPI('milho', map.milho, fmtCent);
-  setKPI('trigo', map.trigo, fmtCent);
-  setKPI('oleo_soja', map.oleo_soja, fmtCent);
-
-  // Sparklines + linecharts adicionais
-  if (map.brent && map.brent.serie_90d) {
-    renderSparkline('brent-spark', map.brent.serie_90d, '#d4a84b');
-    renderLineChart('brent-90-chart', map.brent.serie_90d, '#d4a84b', { decimals: 2, prefix: '$ ', suffix: ' /bbl' });
-  }
-  if (map.soja && map.soja.serie_90d) {
-    renderSparkline('soja-spark', map.soja.serie_90d, '#55c94f');
-    renderLineChart('soja-90-chart', map.soja.serie_90d, '#55c94f', { decimals: 2, prefix: '¢ ', suffix: ' /bu' });
-  }
-  if (map.oleo_soja && map.oleo_soja.serie_90d) {
-    renderLineChart('oleo-90-chart', map.oleo_soja.serie_90d, '#0eb194', { decimals: 2, prefix: '¢ ', suffix: ' /lb' });
-  }
-
-  // Tabela commodities
-  const tb = $('#commodities-tbody');
-  const fmtByMercado = (item) => {
-    if (item.unidade.includes('US$') || item.unidade.includes('MMBtu')) return fmtUSD;
-    if (item.unidade.includes('¢')) return fmtCent;
-    return v => fmtNum(v, 2);
-  };
-  tb.innerHTML = c.commodities.map(item => {
-    if (item.status !== 'OK' || item.ultimo == null) {
-      return `<tr><td><strong>${item.nome}</strong></td><td>${item.mercado||'—'}</td><td colspan="5"><span class="src-status src-error">Sem dados</span></td><td><span class="src-status src-error">Erro</span></td></tr>`;
-    }
-    const f = fmtByMercado(item);
-    return `<tr>
-      <td><strong>${item.nome}</strong></td>
-      <td>${item.mercado}</td>
-      <td class="num">${f(item.ultimo)}</td>
-      <td class="num" style="color: var(--be8-dim);">${f(item.anterior)}</td>
-      <td class="num"><span class="kpi-delta delta ${deltaClass(item.var_d_pct)}">${fmtPct(item.var_d_pct)}</span></td>
-      <td class="num">${item.var_7d_pct==null?'—':`<span class="kpi-delta delta ${deltaClass(item.var_7d_pct)}">${fmtPct(item.var_7d_pct)}</span>`}</td>
-      <td class="num">${item.var_30d_pct==null?'—':`<span class="kpi-delta delta ${deltaClass(item.var_30d_pct)}">${fmtPct(item.var_30d_pct)}</span>`}</td>
-      <td><span class="src-status src-live">Live</span></td>
-    </tr>`;
-  }).join('');
-
-  // Correlação
-  renderCorrelation();
-
-  // Tendência normalizada na Visão Executiva
-  renderTrendNormalized();
-}
-
-function renderTrendNormalized() {
-  const usd = STATE.cambio?.moedas?.USD?.serie_90d || [];
-  const cmap = {};
-  (STATE.commodities?.commodities || []).forEach(c => cmap[c.id] = c);
-  const brent = cmap.brent?.serie_90d || [];
-  const soja = cmap.soja?.serie_90d || [];
-
-  // Pegar últimos 30 pontos
-  const last30 = s => s.slice(-30);
-
-  renderMultiNormalized('trend-chart', [
-    { name: 'USD/BRL', color: '#0eb194', data: last30(usd) },
-    { name: 'Brent',   color: '#d4a84b', data: last30(brent) },
-    { name: 'Soja',    color: '#55c94f', data: last30(soja) },
-  ]);
-}
-
-function pearson(x, y) {
-  const n = Math.min(x.length, y.length);
-  if (n < 5) return null;
-  const xs = x.slice(-n), ys = y.slice(-n);
-  const mx = xs.reduce((a,b)=>a+b,0) / n;
-  const my = ys.reduce((a,b)=>a+b,0) / n;
-  let num=0, dx=0, dy=0;
-  for (let i = 0; i < n; i++) {
-    num += (xs[i]-mx)*(ys[i]-my);
-    dx += (xs[i]-mx)**2;
-    dy += (ys[i]-my)**2;
-  }
-  if (dx === 0 || dy === 0) return null;
-  return num / Math.sqrt(dx * dy);
-}
-
-function renderCorrelation() {
-  const container = $('#correlation-matrix');
-  if (!container) return;
-  const usd = (STATE.cambio?.moedas?.USD?.serie_90d || []).map(p=>p.valor);
-  const cmap = {};
-  (STATE.commodities?.commodities || []).forEach(c => cmap[c.id] = c);
-
-  if (usd.length < 10 || !cmap.brent) {
-    container.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Aguardando dados de câmbio e commodities…</div>';
-    return;
-  }
-
-  const vars = [
-    { name: 'USD/BRL',    data: usd.slice(-60) },
-    { name: 'Brent',      data: (cmap.brent?.serie_90d  || []).map(p=>p.valor).slice(-60) },
-    { name: 'Óleo Soja',  data: (cmap.oleo_soja?.serie_90d || []).map(p=>p.valor).slice(-60) },
-    { name: 'Soja',       data: (cmap.soja?.serie_90d || []).map(p=>p.valor).slice(-60) },
-    { name: 'Milho',      data: (cmap.milho?.serie_90d || []).map(p=>p.valor).slice(-60) },
-  ];
-
-  let html = '<table class="data" style="margin-top: 4px;"><thead><tr><th></th>';
-  vars.forEach(v => html += `<th class="num">${v.name}</th>`);
-  html += '</tr></thead><tbody>';
-  vars.forEach((vi, i) => {
-    html += `<tr><td><strong>${vi.name}</strong></td>`;
-    vars.forEach((vj, j) => {
-      if (i === j) {
-        html += `<td class="num" style="color:var(--be8-dim);">1.00</td>`;
-      } else {
-        const c = pearson(vi.data, vj.data);
-        if (c == null) {
-          html += `<td class="num" style="color:var(--be8-dim);">—</td>`;
-        } else {
-          const intensity = Math.abs(c);
-          const color = c > 0 ? `rgba(85,201,79,${0.10 + intensity * 0.35})` : `rgba(232,95,95,${0.10 + intensity * 0.35})`;
-          html += `<td class="num" style="background:${color};">${c.toFixed(2)}</td>`;
-        }
-      }
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-  html += `<div style="margin-top: 12px; font-size: 11px; color: var(--be8-dim); font-family: var(--font-mono); letter-spacing: 0.02em;">CORRELAÇÃO DE PEARSON · ÚLTIMOS 60 PREGÕES · -1 (vermelho) ↔ +1 (verde)</div>`;
-  container.innerHTML = html;
-}
-
-/* =====================================================================
-   RENDER · GRÃOS (CONAB)
-   ===================================================================== */
-function renderConab() {
-  const c = STATE.conab;
-  const statusEl = $('#conab-status');
-  if (!c || c.status === 'PENDENTE' || !c.safras || c.safras.length === 0) {
-    if (statusEl) setStatusBadge('conab-status', 'PENDENTE', 'CONAB · aguardando');
-    return;
-  }
-  if (statusEl) setStatusBadge('conab-status', c.status || 'OK',
-    'CONAB · ' + (c.ultima_atualizacao || '').slice(0,10));
-
-  // Agregação por cultura
-  const culturas = {};
-  c.safras.forEach(s => {
-    if (!culturas[s.cultura]) culturas[s.cultura] = { ufs: [], total: 0, total_anterior: 0 };
-    culturas[s.cultura].ufs.push(s);
-    if (s.producao_mt) culturas[s.cultura].total += s.producao_mt;
-    if (s.producao_mt_anterior) culturas[s.cultura].total_anterior += s.producao_mt_anterior;
+    safeSetText(`${k}-value`, valueText);
+    applyDelta(`${k}-delta`, it.variacao_pct);
+    updateSourceStatus(`status-${k}`, data.status === 'fallback' ? 'fallback' : 'ok', 'Yahoo');
   });
 
-  const setCultura = (culturaName, prodId, deltaId) => {
-    const ck = Object.keys(culturas).find(k => k.toLowerCase().includes(culturaName.toLowerCase()));
-    if (!ck) return null;
-    const cult = culturas[ck];
-    const total = cult.total;
-    const prev = cult.total_anterior;
-    $('#' + prodId).innerHTML = fmtNum(total, 1) + ' <span class="unit">Mt</span>';
-    if (prev && prev > 0) {
-      const d = ((total - prev) / prev) * 100;
-      const dEl = $('#' + deltaId);
-      dEl.className = 'kpi-delta delta ' + deltaClass(d);
-      dEl.textContent = fmtPct(d);
-    }
-    return cult;
-  };
-
-  setCultura('soja', 'soja-safra-prod', 'soja-safra-delta');
-  setCultura('milho', 'milho-safra-prod', 'milho-safra-delta');
-  setCultura('trigo', 'trigo-safra-prod', 'trigo-safra-delta');
-
-  // Tabela top UFs
-  const renderTopUFs = (culturaName, tbodyId, metaId) => {
-    const ck = Object.keys(culturas).find(k => k.toLowerCase().includes(culturaName.toLowerCase()));
-    const tbody = $('#' + tbodyId);
-    if (!tbody) return;
-    if (!ck) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--be8-dim); padding:24px;">Sem dados para esta cultura.</td></tr>';
-      return;
-    }
-    const cult = culturas[ck];
-    const total = cult.total || cult.ufs.reduce((a,b)=>a+(b.producao_mt||0),0);
-    const sorted = cult.ufs.slice().sort((a,b) => (b.producao_mt||0) - (a.producao_mt||0)).slice(0, 8);
-    tbody.innerHTML = sorted.map((u, i) => `
-      <tr>
-        <td class="rank">${String(i+1).padStart(2,'0')}</td>
-        <td><strong>${u.uf || '—'}</strong></td>
-        <td class="num">${fmtNum(u.producao_mt, 2)}</td>
-        <td class="num">${total ? fmtNum((u.producao_mt/total)*100, 1) + '%' : '—'}</td>
-        <td class="num">${u.area_mha != null ? fmtNum(u.area_mha, 2) : '—'}</td>
-      </tr>`).join('');
-    const metaEl = $('#' + metaId);
-    if (metaEl) metaEl.textContent = (c.safra_atual || ck) + ' · ' + (c.ultima_atualizacao || '').slice(0,10);
-  };
-  renderTopUFs('soja', 'soja-uf-tbody', 'soja-uf-meta');
-  renderTopUFs('milho', 'milho-uf-tbody', 'milho-uf-meta');
-
-  // Composição regional · soja
-  renderRegional('soja');
-
-  // Impacto biodiesel
-  renderImpactoBiodiesel(culturas);
-}
-
-function renderRegional(cultura) {
-  const c = STATE.conab;
-  if (!c || !c.safras) return;
-  const ufs = c.safras.filter(s => s.cultura && s.cultura.toLowerCase().includes(cultura));
-  const regioes = { 'CO': 0, 'S': 0, 'SE': 0, 'NE': 0, 'N': 0 };
-  const REG = {
-    'MT':'CO','MS':'CO','GO':'CO','DF':'CO',
-    'PR':'S','RS':'S','SC':'S',
-    'SP':'SE','MG':'SE','RJ':'SE','ES':'SE',
-    'BA':'NE','MA':'NE','PI':'NE','PE':'NE','CE':'NE','RN':'NE','PB':'NE','AL':'NE','SE':'NE',
-    'TO':'N','PA':'N','RO':'N','AM':'N','AC':'N','AP':'N','RR':'N'
-  };
-  ufs.forEach(u => {
-    const reg = REG[u.uf];
-    if (reg && u.producao_mt) regioes[reg] += u.producao_mt;
-  });
-  const total = Object.values(regioes).reduce((a,b)=>a+b,0);
-  if (total === 0) {
-    $('#regional-soja-viz').innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados regionais</div>';
-    return;
-  }
-  const labels = { CO: 'Centro-Oeste', S: 'Sul', SE: 'Sudeste', NE: 'Nordeste', N: 'Norte' };
-  const colors = { CO: '#0eb194', S: '#55c94f', SE: '#d4a84b', NE: '#7a9bbf', N: '#a8bdc9' };
-  const W = 800, H = 60;
-  let x = 0; let bars = ''; let legend = '';
-  Object.entries(regioes).forEach(([r, v]) => {
-    if (v <= 0) return;
-    const w = (v / total) * W;
-    bars += `<rect x="${x}" y="0" width="${w-1}" height="${H}" fill="${colors[r]}" opacity="0.9"/>`;
-    if (w > 60) {
-      bars += `<text x="${x + w/2}" y="${H/2}" fill="white" font-family="Inter Tight" font-size="13" font-weight="600" text-anchor="middle" dominant-baseline="middle">${((v/total)*100).toFixed(1)}%</text>`;
-    }
-    legend += `<div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--be8-mist);"><span style="width:12px; height:12px; background:${colors[r]}; border-radius:2px;"></span>${labels[r]} · ${fmtNum(v,1)} Mt</div>`;
-    x += w;
-  });
-  $('#regional-soja-viz').innerHTML = `
-    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-      <div style="font-size:13px; color:var(--be8-mist);">Soja — produção por região (Mt) · safra atual</div>
-      <span class="card-meta">${c.fonte || 'CONAB'}</span>
-    </div>
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%; height:60px; border-radius:4px;">${bars}</svg>
-    <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:14px;">${legend}</div>`;
-}
-
-function renderImpactoBiodiesel(culturas) {
-  const el = $('#impacto-biodiesel');
-  if (!el) return;
-  const soja = culturas['Soja'] || culturas[Object.keys(culturas).find(k=>k.toLowerCase().includes('soja'))];
-  if (!soja) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados</div>'; return; }
-  const totSoja = soja.total;
-  const oleoTaxa = 0.18; // 18% da soja vira óleo
-  const oleoEstimado = totSoja * oleoTaxa;
-  const b100Demanda2026 = 10.5; // bi L = ~9.3 Mt de óleo se 100% soja
-  // Suficiência teórica: óleo total disponível vs. demanda B100 (considerando ~70% origem soja)
-  const oleoParaB100 = oleoEstimado * 0.35; // ~35% do óleo vai para biodiesel
-  el.innerHTML = `
-    <div class="grid grid-3" style="gap:14px;">
-      <div style="padding: 14px; background: rgba(8,31,46,0.4); border-radius:6px; border: 1px solid var(--be8-border);">
-        <div style="font-size: 10.5px; color: var(--be8-mist); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px;">Soja · produção total</div>
-        <div style="font-family: var(--font-display); font-size: 28px; color: var(--be8-ice); line-height: 1;">${fmtNum(totSoja, 1)} Mt</div>
-      </div>
-      <div style="padding: 14px; background: rgba(14,177,148,0.06); border-radius:6px; border: 1px solid rgba(14,177,148,0.2);">
-        <div style="font-size: 10.5px; color: var(--be8-green-1); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px;">Óleo de soja estimado</div>
-        <div style="font-family: var(--font-display); font-size: 28px; color: var(--be8-ice); line-height: 1;">${fmtNum(oleoEstimado, 1)} Mt</div>
-        <div style="font-size: 11px; color: var(--be8-mist); margin-top: 6px;">≈ 18% da soja (taxa de extração)</div>
-      </div>
-      <div style="padding: 14px; background: rgba(85,201,79,0.06); border-radius:6px; border: 1px solid rgba(85,201,79,0.2);">
-        <div style="font-size: 10.5px; color: var(--be8-green-2); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px;">Direcionado a B100 (est.)</div>
-        <div style="font-family: var(--font-display); font-size: 28px; color: var(--be8-ice); line-height: 1;">${fmtNum(oleoParaB100, 1)} Mt</div>
-        <div style="font-size: 11px; color: var(--be8-mist); margin-top: 6px;">≈ 35% do óleo · matéria-prima B100</div>
-      </div>
-    </div>
-    <div style="margin-top:18px; padding:14px; background: rgba(212,168,75,0.05); border-left: 2px solid var(--be8-gold); border-radius:4px; font-size:12.5px; color: var(--be8-mist); line-height:1.7;">
-      <strong style="color:var(--be8-gold);">Leitura estratégica:</strong> com mistura B15 vigente e ampliação para B20 até 2030 (Lei 14.993/24), a demanda projetada B100 cresce ~7%/ano. A produção de soja no Brasil (~${fmtNum(totSoja,0)} Mt) é folgada para suportar a demanda doméstica de óleo, mas a competição com exportação (Argentina, China, Europa) define o preço de fixação da matéria-prima Be8.
-    </div>`;
-}
-
-/* =====================================================================
-   RENDER · BIODIESEL (ANP B100)
-   ===================================================================== */
-function renderBiodieselANP() {
-  const b = STATE.anp_b100;
-  if (!b || b.status === 'PENDENTE' || !b.produtores || b.produtores.length === 0) {
-    setStatusBadge('anp-b100-status', 'PENDENTE', 'ANP · aguardando');
-    renderRankingFallback();
-    renderMateriasPrimas();
-    renderBe8Context();
-    return;
-  }
-  setStatusBadge('anp-b100-status', b.status || 'OK',
-    'ANP · ' + (b.ultima_atualizacao || '').slice(0,10));
-
-  if (b.producao_total_m3 != null) {
-    $('#b100-prod-total').innerHTML = fmtNum(b.producao_total_m3, 0) + ' <span class="unit">m³/mês</span>';
-  }
-  if (b.capacidade_total_m3_ano != null) {
-    $('#b100-cap-total').innerHTML = fmtNum(b.capacidade_total_m3_ano/1e6, 2) + ' <span class="unit">M m³/ano</span>';
-    // Prefere taxa direto do JSON; senão calcula
-    let util = b.taxa_utilizacao_pct;
-    if (util == null && b.producao_total_m3) {
-      util = (b.producao_total_m3 * 12) / b.capacidade_total_m3_ano * 100;
-    }
-    if (util != null) {
-      $('#b100-util').textContent = fmtNum(util, 1) + '%';
-    }
-  }
-  // Mistura vigente e lei
-  if (b.mistura_vigente) {
-    const mistEl = $('#b100-mistura');
-    if (mistEl) mistEl.textContent = b.mistura_vigente;
-  }
-
-  // Ranking
-  const tb = $('#biodiesel-rank-tbody');
-  const sorted = b.produtores.slice().sort((a,b) => (b.market_share_pct||0) - (a.market_share_pct||0));
-  tb.innerHTML = sorted.map((p, i) => `
-    <tr>
-      <td class="rank">${String(i+1).padStart(2,'0')}</td>
-      <td><strong style="color:${(p.produtor||'').toLowerCase().includes('be8') ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${p.produtor || '—'}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${p.uf || ''} ${p.planta ? '· ' + p.planta : ''}</td>
-      <td class="num">${p.capacidade_m3_ano ? fmtNum(p.capacidade_m3_ano, 0) : '—'}</td>
-      <td class="num">${p.market_share_pct != null ? fmtNum(p.market_share_pct, 1) + '%' : '—'}</td>
-    </tr>`).join('');
-
-  renderMateriasPrimas();
-  renderBe8Context();
-}
-
-function renderRankingFallback() {
-  // Lista estrutural dos principais produtores conhecidos publicamente, com Be8 destacada
-  const producers = [
-    { name: 'Be8 (BSBIOS)',           plants: 'Passo Fundo (RS) · Marialva (PR)', cap: 1080000 },
-    { name: 'ADM do Brasil',           plants: 'Rondonópolis (MT) · Joaçaba (SC)', cap: null },
-    { name: 'Bunge',                   plants: 'Nova Mutum (MT)',                 cap: null },
-    { name: 'Granol',                  plants: 'Cachoeira do Sul (RS) · Anápolis (GO)', cap: null },
-    { name: 'Cargill',                 plants: 'Três Lagoas (MS)',                cap: null },
-    { name: 'Caramuru',                plants: 'São Simão (GO)',                  cap: null },
-    { name: 'Oleoplan',                plants: 'Veranópolis (RS)',                cap: null },
-    { name: 'Camera',                  plants: 'Ijuí (RS)',                       cap: null },
-    { name: 'Outros',                  plants: 'Diversas',                        cap: null },
-  ];
-  $('#biodiesel-rank-tbody').innerHTML = producers.map((p, i) => `
-    <tr>
-      <td class="rank">${String(i+1).padStart(2,'0')}</td>
-      <td><strong style="color:${p.name.startsWith('Be8') ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${p.name}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${p.plants}</td>
-      <td class="num">${p.cap ? fmtNum(p.cap, 0) : '<span class="src-status src-pending">ANP</span>'}</td>
-      <td class="num"><span class="src-status src-pending">ANP</span></td>
-    </tr>`).join('');
-}
-
-function renderBe8Context() {
-  const profile = STATE.be8_profile;
-  const cap = profile?.capacidade_total?.biodiesel_milhoes_l_ano || 1080;
-  const shareIndicador = profile?.indicadores_publicos?.find(i => (i.indicador||'').toLowerCase().includes('market share biodiesel brasil (2023)'));
-  const shareTxt = shareIndicador?.valor || 'Top 3';
-  $('#be8-context-viz').innerHTML = `
-    <div style="text-align: center; padding: 8px 0 24px;">
-      <div style="font-family: var(--font-display); font-size: 56px; font-weight: 300; line-height: 1; color: var(--be8-ice); letter-spacing: -0.03em;">
-        <span style="background: var(--grad-energy); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">${shareTxt}</span>
-      </div>
-      <div style="font-size: 12px; color: var(--be8-mist); margin-top: 8px; letter-spacing: 0.02em;">
-        Market share Brasil · biodiesel<br>(referência pública O Nacional · 2024)
-      </div>
-    </div>
-    <div style="border-top: 1px solid var(--be8-border); padding-top: 18px; font-size: 12px; color: var(--be8-mist); line-height: 1.7;">
-      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Capacidade total</span><strong style="color: var(--be8-ice);">${cap} M L/ano</strong></div>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Plantas operacionais</span><strong style="color: var(--be8-ice);">2 (RS + PR)</strong></div>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Posicionamento</span><strong style="color: var(--be8-green-2);">Top produtor nacional</strong></div>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Diferencial</span><strong style="color: var(--be8-ice);">Integração soja → óleo → B100</strong></div>
-    </div>`;
-}
-
-function renderMateriasPrimas() {
-  // Composição típica histórica ANP (referência pública, não inventada)
-  const mp = [
-    { name: 'Óleo de soja',      pct: 70, color: '#0eb194' },
-    { name: 'Gordura bovina',    pct: 13, color: '#55c94f' },
-    { name: 'Óleo de algodão',   pct: 5,  color: '#7ed957' },
-    { name: 'Óleos ácidos',      pct: 4,  color: '#a8bdc9' },
-    { name: 'Outros',            pct: 8,  color: '#5e7382' },
-  ];
-  const total = mp.reduce((a,b)=>a+b.pct,0);
-  const W = 800, H = 80;
-  let x = 0; let bars = ''; let legend = '';
-  mp.forEach(m => {
-    const w = (m.pct / total) * W;
-    bars += `<rect x="${x}" y="0" width="${w-1}" height="${H}" fill="${m.color}" opacity="0.85"/>`;
-    if (w > 50) {
-      bars += `<text x="${x + w/2}" y="${H/2}" fill="white" font-family="Inter Tight" font-size="13" font-weight="600" text-anchor="middle" dominant-baseline="middle">${m.pct}%</text>`;
-    }
-    legend += `<div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--be8-mist);"><span style="width:12px; height:12px; background:${m.color}; border-radius:2px;"></span>${m.name}</div>`;
-    x += w;
-  });
-  $('#materias-primas-viz').innerHTML = `
-    <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:baseline;">
-      <div style="font-size:13px; color:var(--be8-mist);">Composição típica · benchmark histórico ANP (Anuário Estatístico)</div>
-      <span class="src-status src-cached">Anuário ANP · anual</span>
-    </div>
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%; height:80px; border-radius:4px;">${bars}</svg>
-    <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:14px;">${legend}</div>
-    <div style="margin-top:16px; font-size:11px; color:var(--be8-dim); font-family:var(--font-mono); letter-spacing:0.02em; line-height:1.6;">
-      VALORES DE REFERÊNCIA · COMPOSIÇÃO HISTÓRICA. Detalhamento mensal real via planilha “Matérias-primas utilizadas na produção de biodiesel B100” do Anuário Estatístico ANP.
-    </div>`;
-}
-
-/* =====================================================================
-   RENDER · ANP COMBUSTÍVEIS
-   ===================================================================== */
-function renderANPCombustiveis() {
-  const a = STATE.anp_combustiveis;
-  if (!a || a.status === 'PENDENTE' || !a.produtos || a.produtos.length === 0) {
-    setStatusBadge('anp-status', 'PENDENTE', 'ANP · aguardando');
-    return;
-  }
-  setStatusBadge('anp-status', a.status || 'OK',
-    'ANP · ref ' + (a.data_referencia || (a.ultima_atualizacao || '').slice(0,10)));
-
-  // Mapeia produto_id (snake_case do coletor) → produto
-  const byId = {};
-  a.produtos.forEach(p => { byId[p.produto_id] = p; });
-
-  // Helper: preencher um KPI a partir do produto
-  const setKPI = (id, deltaId, prodId) => {
-    const p = byId[prodId];
-    if (!p) return;
-    const el = $('#' + id);
-    if (el) el.innerHTML = fmtBRL2(p.preco_medio_brasil) + ' <span class="unit">/L</span>';
-    if (p.variacao_semanal_pct != null) {
-      const dEl = $('#' + deltaId);
-      if (dEl) {
-        dEl.className = 'kpi-delta delta ' + deltaClass(p.variacao_semanal_pct);
-        dEl.textContent = fmtPct(p.variacao_semanal_pct);
-      }
-    }
-  };
-  // O coletor pode usar diferentes ids — tentar variações comuns
-  // ANP nomes possíveis: 'OLEO DIESEL', 'OLEO DIESEL S10', 'GASOLINA COMUM', 'ETANOL HIDRATADO'
-  // O coletor mapeia para keys; vamos descobrir por busca
-  const findByPattern = (...patterns) => {
-    for (const k of Object.keys(byId)) {
-      const ku = k.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      for (const p of patterns) {
-        const pu = p.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        if (ku.includes(pu)) return byId[k];
-      }
-    }
-    return null;
-  };
-  // Também tentar pelo "produto" textual (fallback)
-  const findByLabel = (...patterns) => {
-    for (const p of a.produtos) {
-      const lab = (p.produto || '').toUpperCase();
-      for (const pat of patterns) {
-        if (lab.includes(pat.toUpperCase())) return p;
-      }
-    }
-    return null;
-  };
-
-  const s10  = findByPattern('s10', 'diesel_s10') || findByLabel('DIESEL S10', 'S-10', 'S 10');
-  const s500 = findByPattern('s500', 'diesel_s500', 'oleo_diesel') || findByLabel('DIESEL S500', 'S500', 'ÓLEO DIESEL');
-  const gas  = findByPattern('gasolina') || findByLabel('GASOLINA COMUM', 'GASOLINA');
-  const eta  = findByPattern('etanol') || findByLabel('ETANOL HIDRATADO', 'ETANOL');
-
-  const applyKPI = (id, deltaId, p) => {
-    if (!p) return;
-    const el = $('#' + id);
-    if (el) el.innerHTML = fmtBRL2(p.preco_medio_brasil) + ' <span class="unit">/L</span>';
-    if (p.variacao_semanal_pct != null) {
-      const dEl = $('#' + deltaId);
-      if (dEl) {
-        dEl.className = 'kpi-delta delta ' + deltaClass(p.variacao_semanal_pct);
-        dEl.textContent = fmtPct(p.variacao_semanal_pct);
-      }
-    }
-  };
-  applyKPI('anp-s10',       'anp-s10-delta',       s10);
-  applyKPI('anp-s500',      'anp-s500-delta',      s500);
-  applyKPI('anp-gasolina',  'anp-gasolina-delta',  gas);
-  applyKPI('anp-etanol',    'anp-etanol-delta',    eta);
-
-  // Mapa UF → região (para mostrar coluna região no ranking)
-  const UF_REG = {
-    'AC':'N','AM':'N','AP':'N','PA':'N','RO':'N','RR':'N','TO':'N',
-    'AL':'NE','BA':'NE','CE':'NE','MA':'NE','PB':'NE','PE':'NE','PI':'NE','RN':'NE','SE':'NE',
-    'DF':'CO','GO':'CO','MT':'CO','MS':'CO',
-    'ES':'SE','MG':'SE','RJ':'SE','SP':'SE',
-    'PR':'S','RS':'S','SC':'S',
-  };
-  const REG_LABEL = { 'N':'Norte','NE':'Nordeste','CO':'Centro-Oeste','SE':'Sudeste','S':'Sul' };
-
-  // Ranking UFs (mais caras e mais baratas) com base no Diesel S10
-  if (s10 && s10.por_uf && s10.por_uf.length) {
-    const ufs = s10.por_uf.slice().filter(u => u.preco_medio != null);
-    ufs.sort((a, b) => b.preco_medio - a.preco_medio);
-    const caras = ufs.slice(0, 8);
-    const baratas = ufs.slice().reverse().slice(0, 8);
-    const brMedia = s10.preco_medio_brasil;
-
-    const renderUFs = (tbodyId, list) => {
-      const tb = $('#' + tbodyId);
-      if (!tb) return;
-      if (!list.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--be8-dim); padding:24px;">Sem dados</td></tr>'; return; }
-      tb.innerHTML = list.map((u, i) => {
-        const d = brMedia ? ((u.preco_medio - brMedia) / brMedia) * 100 : null;
+  // Tabela completa
+  const tbody = document.getElementById('commodities-tbody');
+  if (tbody) {
+    const allKeys = Object.keys(items);
+    if (allKeys.length === 0) {
+      renderEmptyState('commodities-tbody', 'Nenhum ativo coletado neste ciclo.');
+    } else {
+      tbody.innerHTML = allKeys.map((k) => {
+        const it = items[k] || {};
+        const cls = (it.variacao_pct > 0) ? 'up' : (it.variacao_pct < 0 ? 'down' : 'flat');
         return `<tr>
-          <td class="rank">${String(i+1).padStart(2,'0')}</td>
-          <td><strong>${u.uf}</strong></td>
-          <td style="color:var(--be8-mist); font-size:12px;">${REG_LABEL[UF_REG[u.uf]] || '—'}</td>
-          <td class="num">${fmtBRL2(u.preco_medio)}</td>
-          <td class="num">${d == null ? '—' : `<span class="kpi-delta delta ${deltaClass(d)}">${fmtPct(d)}</span>`}</td>
+          <td><strong>${it.nome || k.toUpperCase()}</strong></td>
+          <td>${it.mercado || '—'}</td>
+          <td class="num">${it.cotacao != null ? Number(it.cotacao).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:4}) : '—'}</td>
+          <td class="num">${it.cotacao_anterior != null ? Number(it.cotacao_anterior).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:4}) : '—'}</td>
+          <td class="num delta ${cls}">${it.variacao_pct != null ? fmt.pct(it.variacao_pct) : '—'}</td>
+          <td class="num delta ${(it.variacao_7d>0)?'up':(it.variacao_7d<0?'down':'flat')}">${it.variacao_7d != null ? fmt.pct(it.variacao_7d) : '—'}</td>
+          <td class="num delta ${(it.variacao_30d>0)?'up':(it.variacao_30d<0?'down':'flat')}">${it.variacao_30d != null ? fmt.pct(it.variacao_30d) : '—'}</td>
+          <td><span class="src-status src-live">OK</span></td>
         </tr>`;
       }).join('');
-    };
-    renderUFs('anp-s10-caras-tbody', caras);
-    renderUFs('anp-s10-baratas-tbody', baratas);
+    }
   }
-
-  // Por região — usa s10.por_regiao [{regiao, preco_medio, n_postos}]
-  if (s10 && s10.por_regiao && s10.por_regiao.length) {
-    renderANPRegioes(s10.por_regiao);
-  }
-}
-
-function renderANPRegioes(regioes) {
-  // regioes = [{regiao, preco_medio, n_postos}]
-  const el = $('#anp-regioes-viz');
-  if (!el) return;
-  if (!regioes.length) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados</div>'; return; }
-  const valid = regioes.filter(r => r.preco_medio != null && r.preco_medio > 0);
-  if (!valid.length) { el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Sem dados de Diesel S10 por região</div>'; return; }
-  const values = valid.map(r => r.preco_medio);
-  const min = Math.min(...values), max = Math.max(...values);
-  // Mapeia variantes de label
-  const labelMap = {
-    'CO': '#0eb194', 'S': '#55c94f', 'SE': '#d4a84b', 'NE': '#7a9bbf', 'N': '#a8bdc9',
-    'CENTRO-OESTE': '#0eb194', 'SUL': '#55c94f', 'SUDESTE': '#d4a84b',
-    'NORDESTE': '#7a9bbf', 'NORTE': '#a8bdc9'
-  };
-  const getColor = reg => labelMap[String(reg||'').toUpperCase()] || '#5e7382';
-
-  // ordena por preço desc
-  valid.sort((a, b) => b.preco_medio - a.preco_medio);
-
-  el.innerHTML = `
-    <div style="font-size: 13px; color: var(--be8-mist); margin-bottom: 14px;">Preço médio do Diesel S10 por região (R$/L) · ordenação: mais caro → mais barato</div>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      ${valid.map(v => {
-        const val = v.preco_medio;
-        const pct = max > min ? ((val - min) / (max - min)) * 100 : 50;
-        const c = getColor(v.regiao);
-        return `
-          <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
-              <span style="color:var(--be8-ice);">${v.regiao || '—'}${v.n_postos ? ` <span style="color:var(--be8-dim); font-size:10.5px;">(${v.n_postos} postos)</span>` : ''}</span>
-              <span style="font-family:var(--font-mono); color:var(--be8-mist);">${fmtBRL2(val)}</span>
-            </div>
-            <div style="height:10px; background:rgba(168,189,201,0.08); border-radius:5px; overflow:hidden;">
-              <div style="height:100%; width:${Math.max(pct, 5)}%; background:${c}; border-radius:5px; transition:width 0.4s;"></div>
-            </div>
-          </div>`;
-      }).join('')}
-    </div>`;
 }
 
 /* =====================================================================
-   RENDER · COMEX
+   RENDER · Charts 90d (sparklines + área)
+   Usa SVG inline puro — zero dependência externa.
    ===================================================================== */
-function renderComex() {
-  const c = STATE.comex;
-  if (!c || c.status === 'PENDENTE' || !c.fluxos || c.fluxos.length === 0) {
-    setStatusBadge('comex-status', 'PENDENTE', 'ComexStat · aguardando');
+function renderSparkline(containerId, points, color = '#7ad9c2') {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!points || points.length < 2) {
+    el.innerHTML = '';
     return;
   }
-  setStatusBadge('comex-status', c.status || 'OK',
-    'ComexStat · ' + (c.ultima_atualizacao || '').slice(0,10));
-
-  // O JSON real traz fluxos como ARRAY de { ncm, descricao, fluxo, categoria, ano_corrente: {fob_usd, kg, ...}, var_fob_pct, var_volume_pct }
-  // Mapeamos cada par (categoria, fluxo) para um card específico.
-  const map = {};
-  c.fluxos.forEach(f => {
-    const key = `${f.categoria}_${f.fluxo}`;  // ex: "biodiesel_export", "metanol_import"
-    map[key] = f;
-  });
-
-  // Formatador inteligente baseado em magnitude
-  const fmtFob = (fob) => {
-    if (!fob || fob === 0) return '<span style="color:var(--be8-dim);">US$ 0</span>';
-    if (fob >= 1e9) return fmtNum(fob/1e9, 2) + ' <span class="unit">bi US$</span>';
-    if (fob >= 1e6) return fmtNum(fob/1e6, 1) + ' <span class="unit">M US$</span>';
-    return fmtNum(fob/1e3, 0) + ' <span class="unit">k US$</span>';
-  };
-  const fmtKg = (kg) => {
-    if (!kg || kg === 0) return '<span style="color:var(--be8-dim);">0 t</span>';
-    if (kg >= 1e9) return fmtNum(kg/1e9, 2) + ' <span class="unit">Mt</span>';
-    if (kg >= 1e6) return fmtNum(kg/1e6, 1) + ' <span class="unit">kt</span>';
-    return fmtNum(kg/1e3, 0) + ' <span class="unit">t</span>';
-  };
-
-  // Renderiza um card completo: valor principal + variação YoY + preço médio
-  const renderCard = (id, item, primaryKind = 'fob') => {
-    const el = $('#' + id);
-    if (!el) return;
-    if (!item || item.erro) {
-      el.innerHTML = '<span class="src-status src-error">Sem dados</span>';
-      return;
-    }
-    const cur = item.ano_corrente || {};
-    const fob = cur.fob_usd || 0;
-    const kg = cur.kg || 0;
-    const tons = cur.toneladas || 0;
-    const precoTon = cur.preco_medio_usd_ton;
-    const varFob = item.var_fob_pct;
-    const varVol = item.var_volume_pct;
-
-    const principalHtml = primaryKind === 'fob' ? fmtFob(fob) : fmtKg(kg);
-    const secundarioLabel = primaryKind === 'fob' ? `${fmtNum(tons, 0)} t` : `US$ ${fmtNum(fob/1e6, 1)} M`;
-    const varPrincipal = primaryKind === 'fob' ? varFob : varVol;
-    const varSecundaria = primaryKind === 'fob' ? varVol : varFob;
-    const varLabel = primaryKind === 'fob' ? 'volume' : 'FOB';
-
-    el.innerHTML = `
-      <div style="font-size:24px; font-family:var(--font-display); color:var(--be8-ice); line-height:1.05;">${principalHtml}</div>
-      <div style="margin-top:6px; display:flex; gap:8px; align-items:center; font-size:11px;">
-        ${varPrincipal != null ? `<span class="kpi-delta delta ${deltaClass(varPrincipal)}">${fmtPct(varPrincipal)} YoY</span>` : '<span style="color:var(--be8-dim);">— YoY</span>'}
-        <span style="color:var(--be8-mist);">${secundarioLabel}${varSecundaria != null ? ` (${fmtPct(varSecundaria)} ${varLabel})` : ''}</span>
-      </div>
-      ${precoTon ? `<div style="margin-top:6px; font-size:10.5px; font-family:var(--font-mono); color:var(--be8-mist); letter-spacing:0.04em;">Preço médio implícito: <strong style="color:var(--be8-ice);">US$ ${fmtNum(precoTon, 0)}/t</strong></div>` : ''}
-    `;
-  };
-
-  renderCard('comex-diesel-vol',    map['combustivel_import'],  'fob');
-  renderCard('comex-oleo-vol',      map['oleo_soja_export'],    'kg');
-  renderCard('comex-biodiesel-vol', map['biodiesel_export'],    'fob');
-  renderCard('comex-farelo-vol',    map['farelo_export'],       'kg');
-  renderCard('comex-soja-vol',      map['soja_grao_export'],    'kg');
-  renderCard('comex-metanol-vol',   map['metanol_import'],      'kg');
+  const w = el.clientWidth || 240;
+  const h = el.clientHeight || 40;
+  const vals = points.map((p) => Number(p.valor || p.value || p[1] || p));
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const range = max - min || 1;
+  const stepX = w / (vals.length - 1);
+  const pts = vals.map((v, i) => `${(i * stepX).toFixed(1)},${(h - ((v - min) / range) * h * 0.85 - h * 0.075).toFixed(1)}`).join(' ');
+  el.innerHTML = `<svg width="${w}" height="${h}" style="display:block">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5"/>
+  </svg>`;
 }
 
-/* =====================================================================
-   RENDER · GOVERNANÇA
-   ===================================================================== */
-function renderGovernance() {
-  const s = STATE.status_fontes;
-  const tb = $('#governance-tbody');
-  if (!tb) return;
-  // Tabela mestra das fontes esperadas
-  const FONTES = [
-    { id: 'bcb_ptax',          nome: 'Banco Central · PTAX',       tipo: 'API REST OData',     atualizacao: 'Diária (4x)',   custo: 'Grátis',      endpoint: 'olinda.bcb.gov.br/PTAX' },
-    { id: 'commodities_yahoo', nome: 'Yahoo Finance · Commodities',tipo: 'API JSON',           atualizacao: '15min delay',   custo: 'Grátis',      endpoint: 'query1.finance.yahoo.com' },
-    { id: 'comexstat',         nome: 'MDIC · ComexStat',           tipo: 'API REST oficial',   atualizacao: 'Mensal',        custo: 'Grátis',      endpoint: 'api-comexstat.mdic.gov.br' },
-    { id: 'anp_combustiveis',  nome: 'ANP · Preços combustíveis',  tipo: 'CSV semanal',        atualizacao: 'Toda 6ª-feira', custo: 'Grátis',      endpoint: 'gov.br/anp/dados-abertos' },
-    { id: 'anp_b100',          nome: 'ANP · Produção B100',        tipo: 'XLS/CSV mensal',     atualizacao: 'Mensal',        custo: 'Grátis',      endpoint: 'gov.br/anp/dados-estatisticos' },
-    { id: 'conab',             nome: 'CONAB · Safra grãos',        tipo: 'XLS mensal',         atualizacao: 'Mensal',        custo: 'Grátis',      endpoint: 'conab.gov.br/info-agro/safras' },
-    { id: 'ibge_sidra',        nome: 'IBGE · SIDRA LSPA',          tipo: 'API REST',           atualizacao: 'Mensal',        custo: 'Grátis',      endpoint: 'apisidra.ibge.gov.br' },
-    { id: 'fred_eia',          nome: 'FRED + EIA · Energia/Macro', tipo: 'API REST + chave',   atualizacao: 'Diária',        custo: 'Grátis (key)',endpoint: 'api.stlouisfed.org · api.eia.gov' },
-    { id: 'noticias',          nome: 'Newsletter · RSS setorial',  tipo: 'RSS feeds',          atualizacao: 'Diária',        custo: 'Grátis',      endpoint: 'múltiplos RSS' },
-    { id: 'be8_profile',       nome: 'Be8 Profile · dados públicos',tipo: 'Curadoria manual',  atualizacao: 'Trimestral',    custo: 'Grátis',      endpoint: 'be8energy.com + imprensa' },
-  ];
-  const sf = (s && s.fontes) ? s.fontes : {};
-  tb.innerHTML = FONTES.map(f => {
-    const info = sf[f.id] || {};
-    const st = info.status || 'PENDENTE';
-    const cls = st === 'OK' ? 'src-live' : st === 'PARCIAL' ? 'src-cached' : st === 'PENDENTE' ? 'src-pending' : 'src-error';
-    const label = st === 'OK' ? 'Live' : st === 'PARCIAL' ? 'Parcial' : st === 'PENDENTE' ? 'Pendente' : 'Erro';
-    const ultV = info.ultima_verificacao ? info.ultima_verificacao.replace('T', ' ').slice(0, 16) : '—';
-    return `<tr>
-      <td><strong>${f.nome}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${f.tipo}</td>
-      <td style="font-family:var(--font-mono); font-size:11.5px; color:var(--be8-mist);">${f.atualizacao}</td>
-      <td style="font-family:var(--font-mono); font-size:11.5px; color:${f.custo.startsWith('Grátis') ? 'var(--be8-green-2)' : 'var(--be8-gold)'};">${f.custo}</td>
-      <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--be8-dim);">${f.endpoint}</td>
-      <td><span class="src-status ${cls}">${label}</span></td>
-      <td class="num" style="color:var(--be8-mist);">${info.linhas || '—'}</td>
-      <td style="font-size:11px; color:var(--be8-dim); font-family:var(--font-mono);">${ultV}</td>
-    </tr>`;
+function renderAreaChart(containerId, points, color = '#7ad9c2') {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!points || points.length < 2) {
+    renderEmptyState(containerId, 'Série histórica indisponível.');
+    return;
+  }
+  const w = el.clientWidth || 480;
+  const h = el.clientHeight || 220;
+  const padding = { l: 40, r: 12, t: 12, b: 26 };
+  const innerW = w - padding.l - padding.r;
+  const innerH = h - padding.t - padding.b;
+  const vals = points.map((p) => Number(p.valor || p.value || p[1] || p));
+  const labels = points.map((p) => p.data || p.date || p[0] || '');
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const range = max - min || 1;
+  const stepX = innerW / (vals.length - 1);
+
+  const ptList = vals.map((v, i) => ({
+    x: padding.l + i * stepX,
+    y: padding.t + innerH - ((v - min) / range) * innerH,
+  }));
+  const linePath = ptList.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const areaPath = linePath
+    + ` L${ptList[ptList.length - 1].x.toFixed(1)},${(padding.t + innerH).toFixed(1)}`
+    + ` L${ptList[0].x.toFixed(1)},${(padding.t + innerH).toFixed(1)} Z`;
+
+  // Labels Y (3 ticks)
+  const yTicks = [min, (min + max) / 2, max];
+  const yLabels = yTicks.map((v) => {
+    const y = padding.t + innerH - ((v - min) / range) * innerH;
+    return `<text x="${padding.l - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="#8a99a3" font-family="JetBrains Mono, monospace">${v.toFixed(2)}</text>
+            <line x1="${padding.l}" y1="${y}" x2="${w - padding.r}" y2="${y}" stroke="rgba(168,189,201,0.08)" stroke-dasharray="2 3"/>`;
   }).join('');
 
-  // Resumo no topo da Visão Executiva
-  const ok = FONTES.filter(f => (sf[f.id] || {}).status === 'OK').length;
-  $('#sources-meta').textContent = `${ok}/${FONTES.length} OK`;
-  const summary = $('#sources-summary');
-  if (summary) {
-    summary.innerHTML = FONTES.map(f => {
-      const info = sf[f.id] || {};
-      const st = info.status || 'PENDENTE';
-      const cls = st === 'OK' ? 'src-live' : st === 'PARCIAL' ? 'src-cached' : st === 'PENDENTE' ? 'src-pending' : 'src-error';
-      const label = st === 'OK' ? '✓' : st === 'PARCIAL' ? '~' : st === 'PENDENTE' ? '○' : '✕';
-      return `<div style="display:flex; justify-content:space-between; padding:3px 0;">
-        <span style="color:var(--be8-mist); font-size:11.5px;">${f.nome.split('·')[0].trim()}</span>
-        <span class="src-status ${cls}" style="padding:2px 7px;">${label}</span>
-      </div>`;
-    }).join('');
+  // Label X (extremos + meio)
+  const xIdx = [0, Math.floor(vals.length / 2), vals.length - 1];
+  const xLabels = xIdx.map((i) => {
+    const lbl = (labels[i] || '').slice(5);   // pega só MM-DD
+    const x = padding.l + i * stepX;
+    return `<text x="${x}" y="${h - 8}" text-anchor="middle" font-size="10" fill="#8a99a3" font-family="JetBrains Mono, monospace">${lbl}</text>`;
+  }).join('');
+
+  el.innerHTML = `<svg width="${w}" height="${h}" style="display:block">
+    <defs>
+      <linearGradient id="grad-${containerId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yLabels}
+    <path d="${areaPath}" fill="url(#grad-${containerId})"/>
+    <path d="${linePath}" fill="none" stroke="${color}" stroke-width="1.6"/>
+    ${xLabels}
+  </svg>`;
+}
+
+function renderCharts90d() {
+  const data = STATE.commodities;
+  const cambio = STATE.cambio;
+
+  // Sparklines dos KPIs
+  if (cambio?.dados) {
+    renderSparkline('usd-spark', cambio.dados.usd?.serie_90d, '#7ad9c2');
+    renderSparkline('eur-spark', cambio.dados.eur?.serie_90d, '#7ad9c2');
+  }
+  if (data?.dados) {
+    renderSparkline('brent-spark', data.dados.brent?.serie_90d, '#ffb86b');
+    renderSparkline('soja-spark',  data.dados.soja?.serie_90d,  '#7ad9c2');
   }
 
-  const buildEl = $('#governance-last');
-  if (buildEl && s) {
-    buildEl.textContent = 'build · ' + (s.ultima_atualizacao_global || '').replace('T',' ').slice(0,16);
-  }
+  // Charts grandes (aba 02)
+  renderAreaChart('usd-90-chart',       cambio?.dados?.usd?.serie_90d,       '#7ad9c2');
+  renderAreaChart('brent-90-chart',     data?.dados?.brent?.serie_90d,       '#ffb86b');
+  renderAreaChart('oleo_soja-90-chart', data?.dados?.oleo_soja?.serie_90d,   '#a8d57a');
+  renderAreaChart('soja-90-chart',      data?.dados?.soja?.serie_90d,        '#7ad9c2');
 }
 
 /* =====================================================================
-   RADAR IA · regras determinísticas
+   RENDER · Grãos / CONAB
    ===================================================================== */
-function buildInsights() {
-  const bulls = [];
-  const bears = [];
-  const neutrals = [];
-  const cmap = {};
-  (STATE.commodities?.commodities || []).forEach(c => cmap[c.id] = c);
-  const usd = STATE.cambio?.moedas?.USD;
-  const eur = STATE.cambio?.moedas?.EUR;
-
-  // ===== REGRAS DINÂMICAS (baseadas em dados ao vivo) =====
-
-  // Regra 1: dólar diário
-  if (usd && usd.variacao_pct != null) {
-    if (usd.variacao_pct > 0.2) {
-      bulls.push({ type: 'bull', tag: 'CÂMBIO', text: `USD/BRL em alta de ${fmtPct(usd.variacao_pct)} no fechamento (${fmtBRL(usd.cotacao_atual)}) — janela favorável a exportações de óleo e farelo de soja.` });
-    } else if (usd.variacao_pct < -0.2) {
-      bears.push({ type: 'bear', tag: 'CÂMBIO', text: `USD/BRL em queda de ${fmtPct(usd.variacao_pct)} (${fmtBRL(usd.cotacao_atual)}) — compressão de margem para exportadores; metanol importado fica mais barato.` });
-    } else {
-      neutrals.push({ type: 'neutral', tag: 'CÂMBIO', text: `USD/BRL estável em ${fmtBRL(usd.cotacao_atual)} (${fmtPct(usd.variacao_pct)}) — ambiente neutro para exportação.` });
-    }
-  }
-
-  // Regra 2: óleo soja + Brent (combinada — premium pricing biodiesel)
-  const oleo = cmap.oleo_soja, brent = cmap.brent;
-  if (oleo && brent && oleo.var_d_pct != null && brent.var_d_pct != null) {
-    if (oleo.var_d_pct > 0.5 && brent.var_d_pct > 0.5) {
-      bulls.push({ type: 'bull', tag: 'BIODIESEL', text: `Alta simultânea óleo soja (${fmtPct(oleo.var_d_pct)}) e Brent (${fmtPct(brent.var_d_pct)}) — pressão de alta no B100; ambiente favorável a repasse.` });
-    } else if (oleo.var_d_pct > 1 && brent.var_d_pct < -0.5) {
-      bears.push({ type: 'alert', tag: 'MARGEM', text: `Descolamento: óleo soja sobe ${fmtPct(oleo.var_d_pct)} enquanto Brent recua ${fmtPct(brent.var_d_pct)} — atenção à margem biodiesel vs. diesel.` });
-    } else if (oleo.var_d_pct < -0.8) {
-      bulls.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja em queda de ${fmtPct(oleo.var_d_pct)} — oportunidade de melhora de margem do B100.` });
-    }
-  }
-
-  // Regra 3: óleo soja (qualquer movimento)
-  if (oleo && oleo.var_7d_pct != null) {
-    if (oleo.var_7d_pct > 2) {
-      bears.push({ type: 'alert', tag: 'INSUMO', text: `Óleo de soja acumula ${fmtPct(oleo.var_7d_pct)} em 7 dias — custo principal do B100 sob pressão.` });
-    } else if (oleo.var_7d_pct < -2) {
-      bulls.push({ type: 'bull', tag: 'INSUMO', text: `Óleo de soja recua ${fmtPct(oleo.var_7d_pct)} em 7 dias — alívio no custo principal do B100.` });
-    }
-  }
-
-  // Regra 4: soja CBOT trend
-  const soja = cmap.soja;
-  if (soja && soja.var_30d_pct != null) {
-    if (soja.var_30d_pct > 4) {
-      bears.push({ type: 'alert', tag: 'ORIGINAÇÃO', text: `Soja CBOT acumula alta de ${fmtPct(soja.var_30d_pct)} em 30d — risco de competição por matéria-prima entre esmagamento e exportação.` });
-    } else if (soja.var_30d_pct < -4) {
-      bulls.push({ type: 'bull', tag: 'ORIGINAÇÃO', text: `Soja CBOT recua ${fmtPct(soja.var_30d_pct)} em 30d — ambiente favorável para fixação de compras.` });
-    }
-  }
-
-  // Regra 5: Brent absoluto
-  if (brent && brent.ultimo != null) {
-    if (brent.ultimo >= 90) {
-      bulls.push({ type: 'bull', tag: 'PETRÓLEO', text: `Brent em ${fmtUSD(brent.ultimo)}/bbl (acima de US$ 90) — diesel fóssil caro, janela para precificação premium do B100 nos próximos leilões.` });
-    } else if (brent.ultimo < 70) {
-      bears.push({ type: 'alert', tag: 'PETRÓLEO', text: `Brent em ${fmtUSD(brent.ultimo)}/bbl (abaixo de US$ 70) — diesel fóssil barato, pressão para baixar preço-teto dos leilões B100.` });
-    }
-  }
-
-  // Regra 6: Milho (proxy etanol concorrente)
-  const milho = cmap.milho;
-  if (milho && milho.var_30d_pct != null) {
-    if (milho.var_30d_pct > 5) {
-      neutrals.push({ type: 'neutral', tag: 'CONCORRÊNCIA', text: `Milho CBOT em alta de ${fmtPct(milho.var_30d_pct)} (30d) — pode reduzir competitividade do etanol de milho vs. biodiesel.` });
-    }
-  }
-
-  // ===== INSIGHTS ESTRUTURAIS (sempre presentes — base institucional) =====
-  bulls.push({ type: 'bull', tag: 'DEMANDA', text: 'Lei 14.993/2024 mantém trajetória B15 → B16 (mar/2026) → B20 (2030). Crescimento estrutural de demanda B100 de ~7% a.a.' });
-  bulls.push({ type: 'bull', tag: 'POSICIONAMENTO', text: 'Be8 mantém posição entre os maiores produtores nacionais com capacidade de 1.080 milhões L/ano integrada em 2 plantas (RS+PR).' });
-  bears.push({ type: 'alert', tag: 'VOLATILIDADE', text: 'Curva de óleo de soja segue como principal fonte de volatilidade da margem B100. Monitorar variação semanal CBOT.' });
-
-  // ===== GARANTIA DE MÍNIMO 3 + 3 =====
-  // Se faltar bulls, completar com positivos estruturais
-  while (bulls.length < 3) {
-    const extra = [
-      { type: 'bull', tag: 'EXPORT', text: 'Be8 Switzerland mantém canal de exportação ativo para EUA e Europa — diversifica risco de demanda interna.' },
-      { type: 'bull', tag: 'INTEGRAÇÃO', text: 'Verticalização originação → esmagamento → biodiesel reduz exposição a margens de terceiros.' },
-      { type: 'bull', tag: 'CBIO', text: 'Renovabio emite CBIOs por planta certificada — receita adicional não correlacionada com preço B100.' },
-    ];
-    const e = extra[bulls.length % extra.length];
-    if (!bulls.find(b => b.tag === e.tag)) bulls.push(e);
-    else break;
-  }
-  while (bears.length < 3) {
-    const extra = [
-      { type: 'alert', tag: 'INSUMO', text: 'Exposição estrutural ao preço do óleo de soja (≈70% do custo variável) — risco contínuo.' },
-      { type: 'alert', tag: 'REGULATÓRIO', text: 'Decisões CNPE/ANP sobre cronograma e fórmula de leilões podem alterar premissas de margem.' },
-      { type: 'alert', tag: 'CONCORRÊNCIA', text: 'Expansão de etanol de milho (Centro-Oeste) compete por share na matriz renovável.' },
-    ];
-    const e = extra[bears.length % extra.length];
-    if (!bears.find(b => b.tag === e.tag)) bears.push(e);
-    else break;
-  }
-
-  // Concatena: bulls, bears, neutrals
-  return [...bulls, ...bears, ...neutrals];
-}
-
-function renderRadarIA() {
-  const insights = buildInsights();
-  STATE.insights = insights;
-
-  // Banner sumário
-  const sum = $('#radar-summary');
-  if (sum) {
-    const tone = insights.filter(i => i.type === 'bull').length - insights.filter(i => i.type === 'bear' || i.type === 'alert').length;
-    let mood;
-    if (tone >= 2) mood = 'Cenário <strong style="color:var(--be8-green-2);">construtivo</strong> para o biodiesel no curto prazo.';
-    else if (tone <= -2) mood = 'Cenário com <strong style="color:#ff8585;">riscos elevados</strong> — atenção a margens e originação.';
-    else mood = 'Cenário <strong style="color:var(--be8-gold);">lateral / misto</strong> — monitorar gatilhos.';
-    sum.innerHTML = `${mood} Análise consolidada sobre ${insights.length} sinais ao vivo (BCB · Yahoo · ComexStat). Última atualização: ${new Date().toLocaleString('pt-BR')}.`;
-  }
-
-  // Bull / Bear
-  const renderItem = i => `<div class="insight-row ${i.type}"><span class="ic-pill">${i.tag}</span><div>${i.text}</div></div>`;
-  const bulls = insights.filter(i => i.type === 'bull');
-  const bears = insights.filter(i => i.type === 'bear' || i.type === 'alert');
-  $('#radar-bull').innerHTML = bulls.length ? bulls.map(renderItem).join('') : '<div class="empty-state" style="padding:20px;"><div class="ic">○</div>Nenhum driver positivo destacável.</div>';
-  $('#radar-bear').innerHTML = bears.length ? bears.map(renderItem).join('') : '<div class="empty-state" style="padding:20px;"><div class="ic">○</div>Nenhum risco crítico ativo.</div>';
-
-  // Ações recomendadas (gerar a partir dos insights)
-  const acoes = [];
-  bulls.forEach(b => {
-    if (b.tag === 'CÂMBIO') acoes.push({type:'bull', tag:'EXPORT', text:'Avaliar antecipação de embarques de óleo/farelo enquanto câmbio favorece receita em real.'});
-    if (b.tag === 'INSUMO') acoes.push({type:'bull', tag:'COMPRAS', text:'Janela para fixação de compras de óleo de soja para os próximos 30-60 dias.'});
-    if (b.tag === 'ORIGINAÇÃO') acoes.push({type:'bull', tag:'HEDGE', text:'Aproveitar recuo da soja para fortalecer estoque-pulmão de matéria-prima.'});
-  });
-  bears.forEach(b => {
-    if (b.tag === 'MARGEM') acoes.push({type:'alert', tag:'PRICING', text:'Reavaliar política de pricing B100 — considerar repasse para preservar margem.'});
-    if (b.tag === 'ORIGINAÇÃO') acoes.push({type:'alert', tag:'ORIGINAÇÃO', text:'Acelerar fixações antes de nova alta — disputa com exportação se intensifica.'});
-    if (b.tag === 'PETRÓLEO') acoes.push({type:'alert', tag:'COMERCIAL', text:'Aproveitar precificação premium do B100 enquanto diesel fóssil estiver caro.'});
-  });
-  if (acoes.length === 0) acoes.push({type:'neutral', tag:'POSTURA', text:'Manter postura defensiva — sem sinais fortes para ação imediata. Monitorar próximo fechamento.'});
-
-  $('#radar-acoes').innerHTML = acoes.map(renderItem).join('');
-
-  // Alertas na Visão Executiva
-  const feed = $('#alerts-feed');
-  if (feed) {
-    const alerts = insights.filter(i => i.type === 'alert' || i.type === 'bear');
-    $('#alerts-count').textContent = alerts.length + ' ativos';
-    feed.innerHTML = alerts.length === 0
-      ? '<div class="empty-state" style="padding:18px;"><div class="ic">✓</div>Nenhum alerta crítico ativo.</div>'
-      : alerts.slice(0,4).map(renderItem).join('');
-  }
-
-  // Top 3 oportunidades / riscos na Visão Executiva
-  $('#top-opportunities').innerHTML = bulls.length === 0
-    ? '<div class="empty-state" style="padding:14px;"><div class="ic">○</div>Sem oportunidades destacadas.</div>'
-    : bulls.slice(0,3).map(renderItem).join('');
-  $('#top-risks').innerHTML = bears.length === 0
-    ? '<div class="empty-state" style="padding:14px;"><div class="ic">✓</div>Sem riscos críticos.</div>'
-    : bears.slice(0,3).map(renderItem).join('');
-
-  // Resumo do dia (visão executiva)
-  const exec = $('#exec-summary');
-  if (exec) {
-    const usd = STATE.cambio?.moedas?.USD;
-    const cmap = {};
-    (STATE.commodities?.commodities || []).forEach(c => cmap[c.id] = c);
-    const parts = [];
-    if (usd?.cotacao_atual) parts.push(`USD/BRL em ${fmtBRL(usd.cotacao_atual)} (${fmtPct(usd.variacao_pct)})`);
-    if (cmap.brent?.ultimo) parts.push(`Brent ${fmtUSD(cmap.brent.ultimo)} (${fmtPct(cmap.brent.var_d_pct)})`);
-    if (cmap.soja?.ultimo) parts.push(`soja ${fmtCent(cmap.soja.ultimo)} (${fmtPct(cmap.soja.var_d_pct)})`);
-    if (cmap.oleo_soja?.ultimo) parts.push(`óleo soja ${fmtCent(cmap.oleo_soja.ultimo)} (${fmtPct(cmap.oleo_soja.var_d_pct)})`);
-    const datelabel = new Date().toLocaleDateString('pt-BR', {day:'numeric', month:'long'});
-    exec.innerHTML = parts.length > 0
-      ? `<strong>${datelabel}:</strong> ${parts.join(' · ')}. ${insights[0]?.text || ''}`
-      : `Aguardando primeira execução do agente para consolidar a leitura. Veja a página de Governança para status.`;
-  }
-}
-
-/* =====================================================================
-   TICKER
-   ===================================================================== */
-function renderTicker() {
-  const items = [];
-  const usd = STATE.cambio?.moedas?.USD;
-  const eur = STATE.cambio?.moedas?.EUR;
-  if (usd?.cotacao_atual) items.push({label:'USD/BRL', val:fmtBRL(usd.cotacao_atual), delta:fmtPct(usd.variacao_pct), cls:deltaClass(usd.variacao_pct)});
-  if (eur?.cotacao_atual) items.push({label:'EUR/BRL', val:fmtBRL(eur.cotacao_atual), delta:fmtPct(eur.variacao_pct), cls:deltaClass(eur.variacao_pct)});
-  (STATE.commodities?.commodities || []).forEach(c => {
-    if (c.ultimo == null) return;
-    const fmtF = c.unidade.includes('US$') || c.unidade.includes('MMBtu') ? fmtUSD : c.unidade.includes('¢') ? fmtCent : v => fmtNum(v, 2);
-    items.push({label: c.nome.toUpperCase(), val: fmtF(c.ultimo), delta:fmtPct(c.var_d_pct), cls:deltaClass(c.var_d_pct)});
-  });
-  if (items.length === 0) {
-    $('#ticker-track').innerHTML = '<span class="ticker-item"><span class="label">Conectando às fontes…</span></span>'.repeat(8);
+function renderConab() {
+  const data = STATE.conab;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('conab-status', 'indisponivel', 'CONAB · indisponível');
+    updateSourceStatus('status-conab-soja', 'indisponivel');
     return;
   }
-  // Dobra para loop contínuo
-  $('#ticker-track').innerHTML = items.concat(items).map(i => `
-    <span class="ticker-item">
-      <span class="label">${i.label}</span>
-      <span class="value">${i.val}</span>
-      ${i.delta ? `<span class="delta ${i.cls}">${i.delta}</span>` : ''}
-    </span>`).join('');
+  const safras = data.dados?.safras || {};
+
+  // Cards principais (soja, milho, trigo)
+  ['soja', 'milho', 'trigo'].forEach((g) => {
+    const s = safras[g];
+    if (!s) {
+      safeSetText(`${g}-safra-prod`, '—');
+      return;
+    }
+    safeSetText(`${g}-safra-prod`, fmt.num(s.producao_mt, 1));
+    applyDelta(`${g}-safra-delta`, s.variacao_pct_ano_anterior);
+  });
+
+  updateSourceStatus('conab-status', 'ok', 'CONAB · ' + (data.dados?.safra_ref || 'safra atual'));
+  updateSourceStatus('status-conab-soja', 'ok', 'CONAB');
+
+  // Rankings UF
+  const ufs = data.dados?.ufs || {};
+  ['soja', 'milho'].forEach((g) => {
+    const tbody = document.getElementById(`${g}-uf-tbody`);
+    if (!tbody) return;
+    const ranking = ufs[g] || [];
+    if (ranking.length === 0) {
+      renderEmptyState(`${g}-uf-tbody`, 'Ranking de UFs indisponível.');
+      return;
+    }
+    tbody.innerHTML = ranking.slice(0, 10).map((uf, i) =>
+      `<tr><td>${i + 1}</td><td><strong>${uf.uf}</strong></td><td class="num">${fmt.num(uf.producao_mt, 2)}</td><td class="num">${fmt.num(uf.share_pct, 1)}%</td></tr>`
+    ).join('');
+    safeSetText(`${g}-uf-meta`, `${ranking.length} UFs`);
+  });
 }
 
 /* =====================================================================
-   NEWSLETTER
+   RENDER · ANP Biodiesel B100
+   ===================================================================== */
+function renderBiodieselANP() {
+  const data = STATE.anp_b100;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('anp-b100-status', 'indisponivel');
+    renderEmptyState('biodiesel-rank-tbody', 'Coletor ANP B100 indisponível.');
+    return;
+  }
+  const d = data.dados || {};
+  safeSetText('b100-prod-total', fmt.num(d.producao_total_m3, 0) + ' m³');
+  applyDelta('b100-prod-delta', d.variacao_pct_ano_anterior);
+  safeSetText('b100-mistura', d.mistura_atual || '—');
+  safeSetText('b100-cap-total', fmt.num(d.capacidade_total_m3, 0) + ' m³');
+  safeSetText('b100-util', fmt.num(d.utilizacao_pct, 1) + '%');
+
+  // Ranking
+  const tbody = document.getElementById('biodiesel-rank-tbody');
+  if (tbody && Array.isArray(d.ranking)) {
+    if (d.ranking.length === 0) {
+      renderEmptyState('biodiesel-rank-tbody', 'Ranking ANP indisponível.');
+    } else {
+      tbody.innerHTML = d.ranking.slice(0, 15).map((p, i) =>
+        `<tr><td>${i + 1}</td><td><strong>${p.produtor}</strong></td><td>${p.uf || '—'}</td><td class="num">${fmt.num(p.producao_m3, 0)}</td><td class="num">${fmt.num(p.share_pct, 1)}%</td></tr>`
+      ).join('');
+      safeSetText('b100-rank-meta', `${d.ranking.length} produtores · ${d.ref_mes || ''}`);
+    }
+  }
+  updateSourceStatus('anp-b100-status', 'ok', 'ANP B100');
+}
+
+/* =====================================================================
+   RENDER · ANP Combustíveis (preços)
+   ===================================================================== */
+function renderANPCombustiveis() {
+  const data = STATE.anp_combustiveis;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('anp-status', 'indisponivel');
+    updateSourceStatus('status-anp-s10', 'indisponivel');
+    return;
+  }
+  const d = data.dados || {};
+
+  safeSetText('anp-s10', fmt.brl(d.diesel_s10?.preco_medio, 3));
+  applyDelta('anp-s10-delta', d.diesel_s10?.variacao_pct);
+  safeSetText('anp-s500', fmt.brl(d.diesel_s500?.preco_medio, 3));
+  applyDelta('anp-s500-delta', d.diesel_s500?.variacao_pct);
+  safeSetText('anp-gasolina', fmt.brl(d.gasolina?.preco_medio, 3));
+  applyDelta('anp-gasolina-delta', d.gasolina?.variacao_pct);
+  safeSetText('anp-etanol', fmt.brl(d.etanol?.preco_medio, 3));
+  applyDelta('anp-etanol-delta', d.etanol?.variacao_pct);
+
+  // Tabelas baratas/caras
+  const baratas = d.s10_baratas || [];
+  const caras   = d.s10_caras   || [];
+  const tbBar = document.getElementById('anp-s10-baratas-tbody');
+  const tbCar = document.getElementById('anp-s10-caras-tbody');
+  if (tbBar) {
+    tbBar.innerHTML = baratas.slice(0, 10).map((r) =>
+      `<tr><td><strong>${r.municipio}</strong></td><td>${r.uf}</td><td class="num">${fmt.brl(r.preco, 3)}</td></tr>`
+    ).join('') || `<tr><td colspan="3" style="text-align:center;color:var(--be8-dim);font-style:italic;">Sem dados</td></tr>`;
+  }
+  if (tbCar) {
+    tbCar.innerHTML = caras.slice(0, 10).map((r) =>
+      `<tr><td><strong>${r.municipio}</strong></td><td>${r.uf}</td><td class="num">${fmt.brl(r.preco, 3)}</td></tr>`
+    ).join('') || `<tr><td colspan="3" style="text-align:center;color:var(--be8-dim);font-style:italic;">Sem dados</td></tr>`;
+  }
+
+  updateSourceStatus('anp-status', 'ok', 'ANP · ' + (d.ref_semana || ''));
+  updateSourceStatus('status-anp-s10', 'ok', 'ANP');
+}
+
+/* =====================================================================
+   RENDER · ComexStat
+   ===================================================================== */
+function renderComex() {
+  const data = STATE.comex;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('comex-status', 'indisponivel');
+    return;
+  }
+  const d = data.dados || {};
+  safeSetText('comex-soja-vol',      fmt.num(d.soja?.volume_kg / 1e9, 2) + ' Mt');
+  safeSetText('comex-farelo-vol',    fmt.num(d.farelo?.volume_kg / 1e9, 2) + ' Mt');
+  safeSetText('comex-oleo-vol',      fmt.num(d.oleo?.volume_kg / 1e9, 2) + ' Mt');
+  safeSetText('comex-biodiesel-vol', fmt.num(d.biodiesel?.volume_kg / 1e6, 0) + ' kt');
+  safeSetText('comex-diesel-vol',    fmt.num(d.diesel?.volume_kg / 1e9, 2) + ' Mt');
+  safeSetText('comex-metanol-vol',   fmt.num(d.metanol?.volume_kg / 1e6, 0) + ' kt');
+  updateSourceStatus('comex-status', 'ok', 'MDIC · ' + (d.ref_ano || ''));
+}
+
+/* =====================================================================
+   RENDER · Newsletter
    ===================================================================== */
 function renderNewsletter() {
-  const n = STATE.noticias;
-  if (!n || n.status === 'PENDENTE' || !n.noticias || n.noticias.length === 0) {
-    setStatusBadge('news-status', 'PENDENTE', 'Newsletter · aguardando');
+  const data = STATE.noticias;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('news-status', 'indisponivel');
+    safeSetText('news-hero-headline', 'Coletor de notícias indisponível neste ciclo.');
+    renderEmptyState('news-top5', 'Newsletter sem coleta hoje.');
     return;
   }
-  setStatusBadge('news-status', n.status || 'OK',
-    'Newsletter · ' + (n.ultima_atualizacao || '').slice(0,10));
+  const d = data.dados || {};
 
-  $('#news-hero-eyebrow').textContent = 'EDIÇÃO DE ' + new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'}).toUpperCase() + ' · BE8 MARKET INTELLIGENCE';
-  if (n.manchete) {
-    $('#news-hero-headline').textContent = n.manchete.titulo || 'Sem manchete principal hoje';
-    $('#news-hero-meta').innerHTML = `<a href="${n.manchete.link}" target="_blank" rel="noopener">${n.manchete.fonte || 'Fonte'}</a> · ${n.manchete.data || ''} · ${n.manchete.categoria || ''}`;
+  // Hero
+  if (d.hero) {
+    safeSetText('news-hero-eyebrow', d.hero.eyebrow || 'EDIÇÃO DO DIA · BE8');
+    safeSetText('news-hero-headline', d.hero.headline || '—');
+    safeSetText('news-hero-meta', d.hero.meta || '—');
   }
 
   // Top 5
-  const top5El = $('#news-top5');
-  const top5 = (n.top5 && n.top5.length) ? n.top5 : n.noticias.slice(0, 5);
-  top5El.innerHTML = top5.map(it => renderNewsCard(it)).join('');
+  const top5El = document.getElementById('news-top5');
+  if (top5El && Array.isArray(d.top5)) {
+    if (d.top5.length === 0) {
+      renderEmptyState('news-top5', 'Nenhuma manchete coletada.');
+    } else {
+      top5El.innerHTML = d.top5.map((n, i) => renderNewsCard(n, i + 1)).join('');
+    }
+  }
 
-  // Radares por categoria
-  const RADARES = {
-    'news-radar-regulatorio':  ['regulação','regulatório','renovabio','cbio','anp','epe','mme','ccee','política'],
-    'news-radar-combustiveis': ['combustível','combustíveis','diesel','gasolina','etanol','glp','gnv','petrobras'],
-    'news-radar-agro':         ['agro','soja','milho','trigo','grão','grãos','safra','fertilizantes','conab','ibge'],
-    'news-radar-commodities':  ['petróleo','brent','wti','commodity','commodities','dólar','câmbio','cme','cbot'],
-    'news-radar-concorrentes': ['adm','bunge','cargill','granol','oleoplan','caramuru','camera','biodieselbr'],
-    'news-radar-energia':      ['energia','renovável','renováveis','solar','eólica','biocombustível','biocombustíveis','biodiesel','renovavel'],
-  };
-  Object.entries(RADARES).forEach(([id, keywords]) => {
-    const el = $('#' + id);
+  // Radares temáticos
+  const radares = ['regulatorio', 'combustiveis', 'agro', 'commodities', 'concorrentes', 'energia'];
+  radares.forEach((tema) => {
+    const id = `news-radar-${tema}`;
+    const list = d.radares?.[tema] || [];
+    const el = document.getElementById(id);
     if (!el) return;
-    const filtered = n.noticias.filter(noticia => {
-      const txt = ((noticia.titulo || '') + ' ' + (noticia.categoria || '') + ' ' + (noticia.resumo || '')).toLowerCase();
-      return keywords.some(k => txt.includes(k));
-    }).slice(0, 3);
-    el.innerHTML = filtered.length === 0
-      ? '<div style="padding: 12px; color:var(--be8-dim); font-size: 12px;">Sem notícias destacáveis hoje.</div>'
-      : filtered.map(it => renderNewsItemMini(it)).join('');
+    if (list.length === 0) {
+      renderEmptyState(id, 'Sem notícias nesta categoria.');
+    } else {
+      el.innerHTML = list.slice(0, 4).map(renderNewsItemMini).join('');
+    }
   });
 
-  // Impacto para Be8
-  const impactoEl = $('#news-impacto-be8');
-  if (impactoEl) {
-    if (n.impacto_consolidado_be8) {
-      impactoEl.innerHTML = `
-        <p>${n.impacto_consolidado_be8}</p>
-        ${n.acao_recomendada ? `<div style="margin-top:14px; padding:14px; background:rgba(14,177,148,0.06); border-left:2px solid var(--be8-green-1); border-radius:4px;"><strong style="color:var(--be8-green-1);">Ação recomendada:</strong> ${n.acao_recomendada}</div>` : ''}
-      `;
-    } else {
-      const alto = n.noticias.filter(x => x.impacto === 'alto').length;
-      const opo = n.noticias.filter(x => x.tag === 'oportunidade').length;
-      const risco = n.noticias.filter(x => x.tag === 'risco').length;
-      impactoEl.innerHTML = `
-        <p>A edição de hoje traz <strong>${n.noticias.length} notícias</strong> setoriais, das quais <strong style="color:var(--be8-red);">${alto} de alto impacto</strong> para a Be8. Tags registradas: <strong style="color:var(--be8-green-2);">${opo} oportunidades</strong> e <strong style="color:var(--be8-red);">${risco} riscos</strong>.</p>
-        <p style="margin-top:14px;">Recomendação automática: monitorar especialmente as manchetes marcadas como <em>regulatório</em> e <em>biodiesel</em>, que historicamente movem o preço do B100 de leilão e impactam diretamente a curva de demanda Be8.</p>`;
-    }
-  }
+  safeSetHTML('news-impacto-be8', d.impacto_be8 || '<em style="color:var(--be8-dim)">Análise consolidada em geração…</em>');
+  updateSourceStatus('news-status', 'ok', 'Newsletter · ' + (data.ultima_atualizacao ? fmt.date(data.ultima_atualizacao) : ''));
 }
 
-function renderNewsCard(it) {
-  // Mapeamento flexível: o coletor python usa impacto_nivel/tag, mas o frontend pode receber impacto também
-  const imp = String(it.impacto || it.impacto_nivel || 'medio').toLowerCase().replace('é', 'e');
-  const tagRaw = String(it.tag || 'neutro').toLowerCase();
-  // Tag pode vir como 'core', 'regulatorio', 'insumo' (do python) ou 'oportunidade', 'risco'
-  const tagMap = {
-    'core': { label: 'CORE BIODIESEL', color: 'var(--be8-green-2)', bg: 'rgba(85,201,79,0.12)' },
-    'regulatorio': { label: 'REGULATÓRIO', color: 'var(--be8-gold)', bg: 'rgba(212,168,75,0.12)' },
-    'insumo': { label: 'INSUMO', color: '#7ed957', bg: 'rgba(126,217,87,0.10)' },
-    'macro': { label: 'MACRO', color: 'var(--be8-mist)', bg: 'rgba(168,189,201,0.08)' },
-    'oportunidade': { label: 'OPORTUNIDADE', color: 'var(--be8-green-2)', bg: 'rgba(85,201,79,0.12)' },
-    'risco': { label: 'RISCO', color: 'var(--be8-red)', bg: 'rgba(232,95,95,0.12)' },
-    'neutro': { label: 'NEUTRO', color: 'var(--be8-mist)', bg: 'rgba(168,189,201,0.08)' },
-  };
-  const t = tagMap[tagRaw] || tagMap['neutro'];
-  const impClr = imp === 'alto' ? '#ff8585' : imp === 'medio' ? 'var(--be8-gold)' : 'var(--be8-mist)';
-  const impBg = imp === 'alto' ? 'rgba(232,95,95,0.10)' : imp === 'medio' ? 'rgba(212,168,75,0.10)' : 'rgba(168,189,201,0.08)';
-
-  // Inicial da fonte como "thumbnail" visual quando não há imagem
-  const fonteInicial = (it.fonte || 'B').charAt(0).toUpperCase();
-
-  return `
-    <div class="card news-card" style="display:flex; flex-direction:column; gap:10px; padding:18px;">
-      <div style="display:flex; gap:16px; align-items:flex-start;">
-        <!-- Thumbnail (placeholder com inicial da fonte) -->
-        <div style="flex:0 0 56px; width:56px; height:56px; border-radius:8px; background: var(--grad-energy); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:24px; font-weight:600; color:#081f2e;">${fonteInicial}</div>
-
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:8px; flex-wrap:wrap;">
-            <span style="color:var(--be8-green-1);">${(it.categoria || 'geral').toUpperCase()}</span>
-            <span style="color:var(--be8-dim);">·</span>
-            <span style="color:var(--be8-mist);">${it.fonte || 'Fonte'}</span>
-            <span style="color:var(--be8-dim);">·</span>
-            <span style="color:var(--be8-dim);">${(it.data || '').replace(/\d+:\d+:\d+.*$/, '').slice(0,16)}</span>
-          </div>
-          <h3 style="font-family:var(--font-display); font-size:18px; font-weight:500; line-height:1.3; color:var(--be8-ice); margin-bottom:6px;">
-            <a href="${it.link || '#'}" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;" onmouseover="this.style.color='var(--be8-green-1)'" onmouseout="this.style.color='var(--be8-ice)'">${it.titulo || '(sem título)'}</a>
-          </h3>
-          ${it.resumo ? `<p style="font-size:13px; color:var(--be8-mist); line-height:1.6; margin-bottom:8px;">${it.resumo.length > 280 ? it.resumo.slice(0, 280) + '…' : it.resumo}</p>` : ''}
-
-          <!-- Tags -->
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-            <span style="font-size:10px; padding:3px 9px; border-radius:3px; font-weight:600; color:${impClr}; background:${impBg}; letter-spacing:0.05em;">IMPACTO ${imp.toUpperCase()}</span>
-            <span style="font-size:10px; padding:3px 9px; border-radius:3px; color:${t.color}; background:${t.bg}; letter-spacing:0.05em; font-weight:600;">${t.label}</span>
-          </div>
-        </div>
+function renderNewsCard(n, idx) {
+  return `<div class="news-item">
+    <div class="news-rank">#${idx}</div>
+    <div class="news-body">
+      <div class="news-tag">${n.tag || 'NOTÍCIA'}</div>
+      <div class="news-headline"><strong>${n.titulo || '—'}</strong></div>
+      <div class="news-desc">${n.resumo || ''}</div>
+      <div class="news-foot">
+        <span class="news-source">${n.fonte || '—'} · ${n.data || ''}</span>
+        ${n.url ? `<a href="${n.url}" target="_blank" rel="noopener" class="news-link">Abrir notícia →</a>` : ''}
       </div>
-
-      ${it.impacto_be8 ? `<div style="margin-top:4px; padding:10px 14px; border-left:3px solid var(--be8-green-1); background:rgba(14,177,148,0.05); border-radius:0 6px 6px 0; font-size:12px; color:var(--be8-mist); line-height:1.55;"><strong style="color:var(--be8-green-1); letter-spacing:0.03em;">▸ Impacto Be8:</strong> ${it.impacto_be8}</div>` : ''}
-
-      ${it.link ? `<a href="${it.link}" target="_blank" rel="noopener" style="display:inline-flex; align-self:flex-start; align-items:center; gap:6px; margin-top:4px; padding:7px 14px; background:rgba(14,177,148,0.08); border:1px solid rgba(14,177,148,0.25); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:var(--be8-green-1); letter-spacing:0.05em; transition:all 0.15s;" onmouseover="this.style.background='rgba(14,177,148,0.18)';this.style.borderColor='var(--be8-green-1)'" onmouseout="this.style.background='rgba(14,177,148,0.08)';this.style.borderColor='rgba(14,177,148,0.25)'">ABRIR NOTÍCIA <span style="font-size:14px;">→</span></a>` : ''}
-    </div>`;
+    </div>
+  </div>`;
 }
 
-function renderNewsItemMini(it) {
-  const imp = String(it.impacto || it.impacto_nivel || 'medio').toLowerCase();
-  const impDot = imp === 'alto' ? '#ff8585' : imp === 'medio' ? 'var(--be8-gold)' : 'var(--be8-green-1)';
-  return `<a href="${it.link || '#'}" target="_blank" rel="noopener" style="display:block; padding:12px 14px; border-left:2px solid ${impDot}; background:rgba(8,31,46,0.4); border-radius:0 6px 6px 0; transition: all 0.15s ease; text-decoration:none;" onmouseover="this.style.background='rgba(14,177,148,0.08)';this.style.transform='translateX(2px)';" onmouseout="this.style.background='rgba(8,31,46,0.4)';this.style.transform='translateX(0)';">
-    <div style="font-size:13px; color:var(--be8-ice); line-height:1.4; font-weight:500;">${it.titulo || '(sem título)'}</div>
-    <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-family:var(--font-mono); font-size:10px; color:var(--be8-dim); letter-spacing:0.04em;">${it.fonte || ''} · ${(it.data || '').slice(0,10)}</span>
-      <span style="font-family:var(--font-mono); font-size:10px; color:var(--be8-green-1);">abrir →</span>
+function renderNewsItemMini(n) {
+  return `<div class="news-mini">
+    <div class="news-mini-title">${n.titulo || '—'}</div>
+    <div class="news-mini-foot">
+      <span>${n.fonte || '—'} · ${n.data || ''}</span>
+      ${n.url ? `<a href="${n.url}" target="_blank" rel="noopener">↗</a>` : ''}
     </div>
-  </a>`;
+  </div>`;
 }
 
 /* =====================================================================
-   BE8 PROFILE
+   RENDER · Governança (tabela de fontes)
+   ===================================================================== */
+function renderGovernance() {
+  const data = STATE.governance;
+  const tbody = document.getElementById('governance-tbody');
+  if (!tbody) return;
+
+  if (!data || !data.fontes || !Array.isArray(data.fontes)) {
+    renderEmptyState('governance-tbody', 'Manifesto de governança indisponível.');
+    return;
+  }
+
+  tbody.innerHTML = data.fontes.map((f) => {
+    const statusCls = {
+      ok:           'src-live',
+      fallback:     'src-fallback',
+      erro:         'src-error',
+      indisponivel: 'src-na',
+      pendente:     'src-pending',
+    }[f.status] || 'src-pending';
+    const statusTxt = {
+      ok:           'AO VIVO',
+      fallback:     'FALLBACK',
+      erro:         'ERRO',
+      indisponivel: 'INDISPONÍVEL',
+      pendente:     'EM DEV',
+    }[f.status] || '—';
+    return `<tr>
+      <td><strong>${f.fonte}</strong></td>
+      <td>${f.tipo}</td>
+      <td>${f.atualizacao}</td>
+      <td>${f.custo}</td>
+      <td><code style="font-size:11px;">${f.endpoint || '—'}</code></td>
+      <td><span class="src-status ${statusCls}">${statusTxt}</span></td>
+      <td class="num">${f.linhas != null ? fmt.num(f.linhas, 0) : '—'}</td>
+      <td>${f.ultima_verificacao ? fmt.date(f.ultima_verificacao) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* =====================================================================
+   RENDER · Be8 Profile
    ===================================================================== */
 function renderBe8Profile() {
-  const p = STATE.be8_profile;
-  if (!p || p.status === 'PENDENTE') return;
+  const data = STATE.be8_profile;
+  if (!data || !data.dados) return;
+  const d = data.dados;
+  // Mapeamento campo→ID
+  const map = {
+    'profile-tagline':         d.tagline,
+    'profile-headline':        d.headline,
+    'profile-summary':         d.summary,
+    'profile-fundacao':        d.fundacao,
+    'profile-fundacao-ctx':    d.fundacao_contexto,
+    'profile-sede':            d.sede,
+    'profile-capacidade':      d.capacidade,
+    'profile-share':           d.share_mercado,
+    'profile-share-ctx':       d.share_contexto,
+    'profile-presenca':        d.presenca,
+    'profile-missao':          d.missao,
+    'profile-posicionamento':  d.posicionamento,
+    'profile-papel':           d.papel_estrategico,
+    'be8-cap':                 d.capacidade,
+  };
+  Object.entries(map).forEach(([id, val]) => safeSetText(id, val));
 
-  $('#profile-tagline').textContent = p.tagline || 'Energia que move o Brasil';
-  if (p.identidade) {
-    $('#profile-headline').textContent = p.identidade.razao_social_atual || 'Be8';
-    $('#profile-summary').innerHTML = `
-      A Be8 (anteriormente <strong>BSBIOS</strong>) é uma das principais produtoras de biodiesel do Brasil, fundada em ${p.identidade.data_fundacao || '2005'}, com sede em ${p.identidade.sede || 'Passo Fundo (RS)'}. 
-      Controlada pelo ${p.identidade.controlador || 'ECB Group'}, integra esmagamento de soja, produção de B100, comercialização de óleo, farelo e glicerina, com operações de exportação via Be8 Switzerland.
-    `;
-    $('#profile-fundacao').textContent = p.identidade.ano_fundacao || '2005';
-    $('#profile-fundacao-ctx').textContent = 'Início produção: ' + (p.identidade.inicio_producao || '2007');
-    $('#profile-sede').textContent = (p.identidade.sede || '').split('·')[0].trim();
-  }
-  if (p.capacidade_total) {
-    $('#profile-capacidade').innerHTML = fmtNum(p.capacidade_total.biodiesel_milhoes_l_ano, 0) + ' <span class="unit">M L/ano</span>';
-  }
-  const shareInd = p.indicadores_publicos?.find(i => (i.indicador||'').toLowerCase().includes('market share biodiesel brasil (2023)'));
-  if (shareInd) {
-    $('#profile-share').textContent = shareInd.valor;
-    $('#profile-share-ctx').textContent = shareInd.fonte;
-  }
-
-  // Plantas
-  const plantasEl = $('#profile-plantas');
-  if (plantasEl && p.plantas_industriais) {
-    plantasEl.innerHTML = p.plantas_industriais.map(pl => `
-      <div class="card">
-        <div class="card-header">
-          <div class="card-label">${pl.unidade}</div>
-          <span class="card-meta">desde ${pl.ano_inicio}</span>
-        </div>
-        <div style="margin-top:10px; font-size:13px; color:var(--be8-mist); line-height:1.6;">
-          <div><strong style="color:var(--be8-ice);">Tipo:</strong> ${pl.tipo}</div>
-          ${pl.capacidade_biodiesel_litros_ano ? `<div><strong style="color:var(--be8-ice);">Cap. B100:</strong> ${fmtNum(pl.capacidade_biodiesel_litros_ano/1e6, 0)} M L/ano</div>` : ''}
-          ${pl.capacidade_esmagamento_t_ano ? `<div><strong style="color:var(--be8-ice);">Cap. esmagamento:</strong> ${fmtNum(pl.capacidade_esmagamento_t_ano/1e6, 2)} M t/ano</div>` : ''}
-          ${pl.observacao ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--be8-border); color:var(--be8-dim); font-size:11.5px;">${pl.observacao}</div>` : ''}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  // Cadeia de valor — HERO (imagem) + cards numerados abaixo
-  const cadeiaEl = $('#profile-cadeia');
-  if (cadeiaEl) {
-    const imgHTML = p.cadeia_valor_imagem ? `
-      <div style="margin-bottom:24px; border-radius:10px; overflow:hidden; border:1px solid var(--be8-border-2); box-shadow: 0 4px 24px rgba(0,0,0,0.4); background:#0e1a25;">
-        <img src="${p.cadeia_valor_imagem}" alt="Cadeia de Valor Be8" style="display:block; width:100%; height:auto;">
-        ${p.cadeia_valor_legenda ? `<div style="padding:14px 18px; background: rgba(8,31,46,0.6); font-size:11.5px; color:var(--be8-mist); line-height:1.6; border-top:1px solid var(--be8-border);"><strong style="color:var(--be8-ice);">▸ Leitura visual:</strong> ${p.cadeia_valor_legenda}</div>` : ''}
-      </div>` : '';
-
-    let cardsHTML = '';
-    if (p.cadeia_valor && Array.isArray(p.cadeia_valor) && p.cadeia_valor.length > 0) {
-      cardsHTML = `
-        <div style="font-family:var(--font-mono); font-size:11px; color:var(--be8-green-1); letter-spacing:0.1em; margin-bottom:14px; text-transform:uppercase;">Sumário navegável · 10 etapas-chave</div>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
-          ${p.cadeia_valor.map((etapa, i) => `
-            <div style="padding:14px; background:linear-gradient(155deg, rgba(14,177,148,0.06) 0%, rgba(8,31,46,0.2) 50%); border:1px solid var(--be8-border-2); border-radius:8px;">
-              <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--be8-green-1); letter-spacing:0.12em; margin-bottom:6px;">${String(i+1).padStart(2,'0')}</div>
-              <div style="font-size:13px; color:var(--be8-ice); font-weight:500; line-height:1.4;">${etapa}</div>
-            </div>
-          `).join('')}
-        </div>`;
-    }
-    cadeiaEl.innerHTML = imgHTML + cardsHTML;
-  }
-
-  // Timeline
-  if (p.linha_do_tempo) {
-    $('#profile-timeline').innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        ${p.linha_do_tempo.map(item => `
-          <div style="display:flex; gap:18px; align-items:flex-start;">
-            <div style="font-family:var(--font-display); font-size:22px; color:var(--be8-green-2); font-weight:400; min-width:75px;">${item.ano}</div>
-            <div style="flex:1; padding-top:5px; padding-bottom:14px; border-bottom:1px solid var(--be8-border); font-size:13.5px; color:var(--be8-mist); line-height:1.55;">
-              ${item.evento}
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-  }
-
-  // Sustentabilidade (aceita lista direta ou objeto.destaques)
-  const sustent = p.sustentabilidade_inovacao
-                || (p.sustentabilidade && p.sustentabilidade.destaques)
-                || null;
-  if (sustent && Array.isArray(sustent)) {
-    $('#profile-sustentabilidade').innerHTML = '<ul style="margin-left:18px;">' +
-      sustent.map(s => `<li style="margin-bottom:8px;">${s}</li>`).join('') +
-      '</ul>';
-  }
-
-  // Posicionamento (aceita lista pronta ou estruturada)
-  const posList = p.posicionamento_competitivo_lista
-               || (p.posicionamento_competitivo && p.posicionamento_competitivo.vantagens)
-               || null;
-  if (posList && Array.isArray(posList)) {
-    $('#profile-posicionamento').innerHTML = '<ul style="margin-left:18px;">' +
-      posList.map(s => `<li style="margin-bottom:8px;">${s}</li>`).join('') +
-      '</ul>';
-  }
-
-  // Fontes
-  if (p.fontes_referencia) {
-    $('#profile-fontes').innerHTML = p.fontes_referencia.map(url => `<li><a href="${url}" target="_blank" rel="noopener" style="color:var(--be8-green-1);">${url}</a></li>`).join('');
-  }
-
-  // === NOVAS SEÇÕES ENRIQUECIDAS ===
-
-  // Indicadores Públicos (tabela com fontes auditáveis)
-  const indEl = $('#profile-indicadores');
-  if (indEl && p.indicadores_publicos && p.indicadores_publicos.length) {
-    indEl.innerHTML = `
-      <table class="data">
-        <thead><tr><th>Indicador</th><th>Valor</th><th>Fonte</th><th>Observação</th></tr></thead>
-        <tbody>
-          ${p.indicadores_publicos.map(i => `
-            <tr>
-              <td><strong>${i.indicador || '—'}</strong></td>
-              <td class="num" style="font-family:var(--font-mono); color:var(--be8-green-1); font-weight:600;">${i.valor || '—'}</td>
-              <td style="font-size:11.5px; color:var(--be8-mist);">${i.fonte || '—'}</td>
-              <td style="font-size:11.5px; color:var(--be8-dim);">${i.observacao || ''}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
-  }
-
-  // Papel estratégico (parágrafo)
-  const papelEl = $('#profile-papel');
-  if (papelEl && p.papel_estrategico) {
-    papelEl.innerHTML = `
-      <div style="padding: 18px 20px; background: linear-gradient(135deg, rgba(14,177,148,0.06) 0%, rgba(8,31,46,0.3) 100%); border-left: 3px solid var(--be8-green-1); border-radius: 0 8px 8px 0; font-size: 14px; line-height: 1.7; color: var(--be8-ice);">
-        ${p.papel_estrategico}
-      </div>`;
-  }
-
-  // Portfólio de produtos
-  const prodEl = $('#profile-produtos');
-  if (prodEl && p.produtos && p.produtos.length) {
-    prodEl.innerHTML = p.produtos.map(prod => `
-      <div style="padding:14px; background:rgba(8,31,46,0.4); border:1px solid var(--be8-border); border-radius:8px;">
-        <div style="font-family:var(--font-display); font-size:15px; color:var(--be8-green-2); font-weight:500; margin-bottom:4px;">${prod.produto}</div>
-        <div style="font-size:12px; color:var(--be8-mist); line-height:1.5;">${prod.descricao}</div>
-      </div>`).join('');
-  }
-
-  // Presença geográfica
-  const presEl = $('#profile-presenca');
-  if (presEl && p.presenca_geografica && p.presenca_geografica.length) {
-    presEl.innerHTML = p.presenca_geografica.map(loc => `
-      <div style="display:flex; gap:12px; align-items:flex-start; padding:12px 14px; background:rgba(14,177,148,0.04); border-left:2px solid var(--be8-green-1); border-radius:0 6px 6px 0; margin-bottom:8px;">
-        <div style="color:var(--be8-green-1); font-size:18px; line-height:1;">◉</div>
-        <div style="flex:1;">
-          <div style="font-size:13px; color:var(--be8-ice); font-weight:500;">${loc.localidade}</div>
-          <div style="margin-top:3px; font-size:11px; color:var(--be8-mist); font-family:var(--font-mono); letter-spacing:0.03em;">${loc.tipo}</div>
-        </div>
-      </div>`).join('');
-  }
-
-  // Frentes de atuação (missão)
-  const missaoEl = $('#profile-missao');
-  if (missaoEl && p.missao_atuacao && p.missao_atuacao.length) {
-    missaoEl.innerHTML = `
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        ${p.missao_atuacao.map(m => `
-          <span style="padding:8px 14px; background:rgba(85,201,79,0.08); border:1px solid rgba(85,201,79,0.25); border-radius:20px; font-size:12px; color:var(--be8-green-2); font-weight:500;">${m}</span>
-        `).join('')}
-      </div>`;
-  }
+  // Listas richas (HTML)
+  const listas = {
+    'profile-plantas':         d.plantas_html,
+    'profile-produtos':        d.produtos_html,
+    'profile-indicadores':     d.indicadores_html,
+    'profile-timeline':        d.timeline_html,
+    'profile-cadeia':          d.cadeia_html,
+    'profile-sustentabilidade': d.sustentabilidade_html,
+    'profile-fontes':          d.fontes_html,
+  };
+  Object.entries(listas).forEach(([id, html]) => safeSetHTML(id, html));
 }
 
 /* =====================================================================
-   MODO TV
+   RENDER · Vendas & Mapa (aba 11)
    ===================================================================== */
-const TV_DEFAULT_CONFIG = {
-  pages: [
-    { id: 'executive',         label: '01 · Visão Executiva',   enabled: true,  duration: 45, scroll: false },
-    { id: 'cambio-commodities',label: '02 · Câmbio & Commod.',  enabled: true,  duration: 50, scroll: true  },
-    { id: 'graos',             label: '03 · Grãos & Safra',     enabled: true,  duration: 50, scroll: true  },
-    { id: 'biodiesel',         label: '04 · Biodiesel',         enabled: true,  duration: 50, scroll: true  },
-    { id: 'combustiveis',      label: '05 · Combustíveis ANP',  enabled: true,  duration: 45, scroll: true  },
-    { id: 'comex',             label: '06 · Comércio Exterior', enabled: true,  duration: 40, scroll: false },
-    { id: 'radar',             label: '07 · Radar IA',          enabled: true,  duration: 45, scroll: false },
-    { id: 'governanca',        label: '08 · Governança',        enabled: false, duration: 30, scroll: false },
-    { id: 'newsletter',        label: '09 · Newsletter',        enabled: true,  duration: 75, scroll: true  },
-    { id: 'be8-profile',       label: '10 · Be8 Profile',       enabled: true,  duration: 50, scroll: true  },
-  ]
-};
+function renderVendasMapa() {
+  const data = STATE.anp_vendas;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('vendas-status', 'indisponivel');
+    renderEmptyState('vendas-rank-tbody', 'Coletor de vendas ANP indisponível.');
+    return;
+  }
+  const d = data.dados || {};
 
-const TV = {
-  active: false,
+  // KPIs por produto
+  safeSetText('vendas-diesel-total',   fmt.num(d.diesel_b?.total_m3 / 1e3, 1) + ' mil m³');
+  safeSetText('vendas-diesel-preco',   fmt.brl(d.diesel_b?.preco_medio, 3));
+  safeSetText('vendas-gasolina-total', fmt.num(d.gasolina?.total_m3 / 1e3, 1) + ' mil m³');
+  safeSetText('vendas-gasolina-preco', fmt.brl(d.gasolina?.preco_medio, 3));
+  safeSetText('vendas-etanol-total',   fmt.num(d.etanol?.total_m3 / 1e3, 1) + ' mil m³');
+  safeSetText('vendas-etanol-preco',   fmt.brl(d.etanol?.preco_medio, 3));
+
+  // Ranking distribuidoras
+  const ranking = d.ranking_distribuidoras || [];
+  const tbody = document.getElementById('vendas-rank-tbody');
+  if (tbody) {
+    if (ranking.length === 0) {
+      renderEmptyState('vendas-rank-tbody', 'Ranking indisponível neste ciclo.');
+    } else {
+      tbody.innerHTML = ranking.slice(0, 10).map((p, i) =>
+        `<tr><td>${i + 1}</td><td><strong>${p.distribuidora}</strong></td><td class="num">${fmt.num(p.volume_m3 / 1e3, 1)}</td><td class="num">${fmt.num(p.share_pct, 1)}%</td></tr>`
+      ).join('');
+      safeSetText('vendas-rank-meta', `${ranking.length} distribuidoras · ${d.ref_mes || ''}`);
+    }
+  }
+
+  updateSourceStatus('vendas-status', 'ok', 'ANP · ' + (d.ref_mes || ''));
+}
+
+/* =====================================================================
+   RENDER · USDA Benchmark Global (aba 12)
+   ===================================================================== */
+function renderUSDA() {
+  const data = STATE.usda;
+  if (!data || !validateDataSchema(data) || data.status === 'erro') {
+    updateSourceStatus('usda-status', 'indisponivel');
+    renderEmptyState('usda-rank-soja-tbody', 'USDA WASDE indisponível.');
+    renderEmptyState('usda-rank-biod-tbody', 'USDA Biodiesel indisponível.');
+    return;
+  }
+  const d = data.dados || {};
+  safeSetText('usda-safra-ref', d.safra_ref || '—');
+  safeSetText('usda-soja-mundo',   fmt.num(d.soja_mundo_mt, 1) + ' Mt');
+  safeSetText('usda-brasil-soja',  fmt.num(d.brasil_soja_mt, 1) + ' Mt');
+  safeSetText('usda-brasil-soja-ctx', d.brasil_soja_contexto || '');
+  safeSetText('usda-biod-mundo',   fmt.num(d.biodiesel_mundo_mt, 1) + ' Mt');
+  safeSetText('usda-brasil-biod',  fmt.num(d.brasil_biodiesel_mt, 1) + ' Mt');
+  safeSetText('usda-brasil-biod-ctx', d.brasil_biodiesel_contexto || '');
+
+  // Rankings
+  const sojaRk = d.ranking_soja || [];
+  const biodRk = d.ranking_biodiesel || [];
+  const tbSoja = document.getElementById('usda-rank-soja-tbody');
+  const tbBiod = document.getElementById('usda-rank-biod-tbody');
+  if (tbSoja) {
+    tbSoja.innerHTML = sojaRk.length
+      ? sojaRk.map((p, i) => `<tr style="${p.pais === 'Brasil' ? 'background:rgba(122,217,194,0.07)' : ''}"><td>${i + 1}</td><td><strong>${p.pais}</strong></td><td class="num">${fmt.num(p.producao_mt, 1)}</td><td class="num">${fmt.num(p.share_pct, 1)}%</td></tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;color:var(--be8-dim);font-style:italic;">Sem dados</td></tr>`;
+  }
+  if (tbBiod) {
+    tbBiod.innerHTML = biodRk.length
+      ? biodRk.map((p, i) => `<tr style="${p.pais === 'Brasil' ? 'background:rgba(122,217,194,0.07)' : ''}"><td>${i + 1}</td><td><strong>${p.pais}</strong></td><td class="num">${fmt.num(p.producao_mt, 1)}</td><td class="num">${fmt.num(p.share_pct, 1)}%</td></tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;color:var(--be8-dim);font-style:italic;">Sem dados</td></tr>`;
+  }
+
+  updateSourceStatus('usda-status', 'ok', 'USDA · ' + (d.safra_ref || ''));
+}
+
+/* =====================================================================
+   RENDER · Resumo Executivo + Radar IA
+   ===================================================================== */
+function renderExecutiveSummary() {
+  const summary = STATE.status_fontes?.exec_summary
+              || STATE.noticias?.dados?.impacto_be8
+              || 'Aguardando consolidação de dados…';
+  safeSetText('exec-summary', stripHtml(summary));
+
+  // Status das fontes (lateral)
+  renderSourcesSummary();
+}
+
+function stripHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/<[^>]+>/g, '');
+}
+
+function renderSourcesSummary() {
+  const el = document.getElementById('sources-summary');
+  if (!el) return;
+  const fontes = STATE.governance?.fontes || [];
+  if (fontes.length === 0) {
+    el.innerHTML = '<div style="color:var(--be8-dim);font-style:italic;">Aguardando governança…</div>';
+    safeSetText('sources-meta', '—');
+    return;
+  }
+  const counts = fontes.reduce((acc, f) => {
+    acc[f.status] = (acc[f.status] || 0) + 1;
+    return acc;
+  }, {});
+  const total = fontes.length;
+  const ok = counts.ok || 0;
+
+  el.innerHTML = fontes.slice(0, 8).map((f) => {
+    const dot = {
+      ok: '#7ad9c2', fallback: '#ffb86b', erro: '#ff8585',
+      indisponivel: '#8a99a3', pendente: '#a8bdc9',
+    }[f.status] || '#a8bdc9';
+    return `<div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+      <span style="color:var(--be8-ice);font-size:11.5px;">${f.fonte}</span>
+      <span style="color:${dot};font-size:10.5px;font-family:var(--font-mono);text-transform:uppercase;">${f.status}</span>
+    </div>`;
+  }).join('');
+
+  safeSetText('sources-meta', `${ok}/${total} ao vivo`);
+}
+
+function renderRadarIA() {
+  // Regras de inferência aplicadas sobre STATE.commodities + STATE.cambio
+  const c = STATE.commodities?.dados || {};
+  const cb = STATE.cambio?.dados || {};
+  const bull = [];
+  const bear = [];
+  const acoes = [];
+
+  // Regra 1: óleo soja sobe + Brent sobe → pressão B100 alta
+  if (c.oleo_soja?.variacao_pct > 0.5 && c.brent?.variacao_pct > 0.5) {
+    bear.push({ titulo: 'Pressão de alta no B100', desc: 'Óleo soja e Brent simultaneamente em alta.' });
+    acoes.push({ titulo: 'Repassar custo via contrato', desc: 'Avaliar contratos com cláusula de repasse.' });
+  }
+  // Regra 2: USD/BRL sobe → janela de exportação
+  if (cb.usd?.variacao_pct > 0.3) {
+    bull.push({ titulo: 'Janela favorável a exportação', desc: 'USD/BRL em alta — competitividade externa melhora.' });
+    acoes.push({ titulo: 'Acelerar contratos de exportação', desc: 'Aproveitar real desvalorizado.' });
+  }
+  // Regra 3: Brent cai + óleo soja sobe → compressão de margem
+  if (c.brent?.variacao_pct < -0.3 && c.oleo_soja?.variacao_pct > 0.3) {
+    bear.push({ titulo: 'Compressão de margem B100', desc: 'Brent em queda reduz competitividade do biodiesel.' });
+  }
+  // Regra 4: soja sobe forte → originação concorrida
+  if (c.soja?.variacao_pct > 1) {
+    bull.push({ titulo: 'Produtores em posição vendedora', desc: 'Soja CBOT em alta forte estimula venda.' });
+    bear.push({ titulo: 'Originação mais cara', desc: 'Disputa com exportação encarece insumo.' });
+  }
+  // Regra 5: USD/BRL cai → importação favorecida
+  if (cb.usd?.variacao_pct < -0.3) {
+    bull.push({ titulo: 'Importação de insumos favorecida', desc: 'Real apreciado barateia metanol importado.' });
+  }
+
+  const renderList = (id, items, emptyMsg) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (items.length === 0) {
+      el.innerHTML = `<div style="color:var(--be8-dim);font-style:italic;font-size:13px;padding:8px 0;">${emptyMsg}</div>`;
+      return;
+    }
+    el.innerHTML = items.map((it) =>
+      `<div class="radar-item"><div class="radar-title">${it.titulo}</div><div class="radar-desc">${it.desc}</div></div>`
+    ).join('');
+  };
+
+  renderList('radar-bull',  bull,  'Sem drivers positivos relevantes neste ciclo.');
+  renderList('radar-bear',  bear,  'Sem riscos significativos neste ciclo.');
+  renderList('radar-acoes', acoes, 'Sem ações urgentes recomendadas.');
+
+  const synth = bull.length + bear.length > 0
+    ? `${bull.length} driver(s) positivo(s) e ${bear.length} risco(s) detectado(s) cruzando câmbio e commodities.`
+    : 'Mercado lateral — sem sinais fortes cruzando câmbio e commodities neste ciclo.';
+  safeSetText('radar-summary', synth);
+}
+
+/* =====================================================================
+   RENDER · Ticker rolante (topo)
+   ===================================================================== */
+function renderTicker() {
+  const el = document.getElementById('ticker-track');
+  if (!el) return;
+  const items = [];
+  const cb = STATE.cambio?.dados;
+  const cm = STATE.commodities?.dados;
+  if (cb?.usd?.cotacao) items.push(`USD ${fmt.brl(cb.usd.cotacao, 4)} ${fmt.pct(cb.usd.variacao_pct)}`);
+  if (cb?.eur?.cotacao) items.push(`EUR ${fmt.brl(cb.eur.cotacao, 4)} ${fmt.pct(cb.eur.variacao_pct)}`);
+  if (cm?.brent?.cotacao) items.push(`Brent ${fmt.usd(cm.brent.cotacao, 2)} ${fmt.pct(cm.brent.variacao_pct)}`);
+  if (cm?.soja?.cotacao)  items.push(`Soja ${fmt.cent(cm.soja.cotacao, 0)} ${fmt.pct(cm.soja.variacao_pct)}`);
+  if (cm?.milho?.cotacao) items.push(`Milho ${fmt.cent(cm.milho.cotacao, 0)} ${fmt.pct(cm.milho.variacao_pct)}`);
+  if (cm?.oleo_soja?.cotacao) items.push(`Óleo soja ${fmt.cent(cm.oleo_soja.cotacao, 0)} ${fmt.pct(cm.oleo_soja.variacao_pct)}`);
+  if (cm?.wti?.cotacao)   items.push(`WTI ${fmt.usd(cm.wti.cotacao, 2)} ${fmt.pct(cm.wti.variacao_pct)}`);
+
+  if (items.length === 0) {
+    el.innerHTML = '<span style="color:var(--be8-dim);font-style:italic;">Aguardando coleta…</span>';
+    return;
+  }
+  // Duplicar pra rolagem infinita
+  const html = items.concat(items).map((t) => `<span class="ticker-item">${t}</span>`).join('');
+  el.innerHTML = html;
+}
+
+/* =====================================================================
+   MODO TV · rotação automática entre páginas
+   ===================================================================== */
+const TV_STATE = {
+  running: false,
   paused: false,
-  config: null,
-  cycle: [],
-  cycleIdx: 0,
-  pageStart: 0,
-  pageDuration: 30,
+  idx: 0,
+  pages: [],
   timer: null,
   scrollTimer: null,
 };
 
+function defaultTVConfig() {
+  return $$('.nav-tab').map((b) => ({
+    page: b.dataset.page,
+    label: b.textContent.trim(),
+    on: true,
+    seconds: 18,
+    scroll: true,
+  }));
+}
+
 function loadTVConfig() {
   try {
     const raw = localStorage.getItem('be8_tv_config');
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return JSON.parse(JSON.stringify(TV_DEFAULT_CONFIG));
+    if (!raw) return defaultTVConfig();
+    const cfg = JSON.parse(raw);
+    if (!Array.isArray(cfg) || cfg.length === 0) return defaultTVConfig();
+    return cfg;
+  } catch { return defaultTVConfig(); }
 }
+
 function saveTVConfig(cfg) {
   localStorage.setItem('be8_tv_config', JSON.stringify(cfg));
 }
 
-function renderTVConfigOverlay() {
-  TV.config = loadTVConfig();
-  const tbody = $('#tv-config-tbody');
-  tbody.innerHTML = TV.config.pages.map((p, i) => `
-    <tr data-idx="${i}">
-      <td>${p.label}</td>
-      <td><input type="checkbox" data-field="enabled" ${p.enabled?'checked':''}></td>
-      <td><input type="number" data-field="duration" min="10" max="300" value="${p.duration}"></td>
-      <td><input type="checkbox" data-field="scroll" ${p.scroll?'checked':''}></td>
-      <td><input type="number" data-field="order" min="1" max="20" value="${i+1}" style="width:50px;"></td>
-    </tr>`).join('');
-  $('#tv-config-overlay').classList.add('show');
+function buildTVConfigUI() {
+  const tbody = document.getElementById('tv-config-tbody');
+  if (!tbody) return;
+  const cfg = loadTVConfig();
+  tbody.innerHTML = cfg.map((row, i) => `<tr>
+    <td>${row.label}</td>
+    <td><input type="checkbox" data-i="${i}" data-k="on" ${row.on ? 'checked' : ''}></td>
+    <td><input type="number" min="5" max="120" value="${row.seconds}" data-i="${i}" data-k="seconds" style="width:60px;"></td>
+    <td><input type="checkbox" data-i="${i}" data-k="scroll" ${row.scroll ? 'checked' : ''}></td>
+    <td>${i + 1}</td>
+  </tr>`).join('');
 }
 
-function readTVConfigFromOverlay() {
-  const rows = $$('#tv-config-tbody tr');
-  const items = rows.map(tr => {
-    const idx = +tr.dataset.idx;
-    const orig = TV.config.pages[idx];
-    return {
-      ...orig,
-      enabled:  tr.querySelector('[data-field="enabled"]').checked,
-      duration: +tr.querySelector('[data-field="duration"]').value || 30,
-      scroll:   tr.querySelector('[data-field="scroll"]').checked,
-      _order:   +tr.querySelector('[data-field="order"]').value || (idx+1),
-    };
+function readTVConfigFromUI() {
+  const cfg = loadTVConfig();
+  $$('#tv-config-tbody input').forEach((inp) => {
+    const i = +inp.dataset.i;
+    const k = inp.dataset.k;
+    if (inp.type === 'checkbox') cfg[i][k] = inp.checked;
+    else cfg[i][k] = Number(inp.value) || 18;
   });
-  items.sort((a,b) => a._order - b._order);
-  items.forEach(i => delete i._order);
-  return { pages: items };
+  return cfg;
 }
 
 function startTV() {
-  TV.config = loadTVConfig();
-  TV.cycle = TV.config.pages.filter(p => p.enabled);
-  if (TV.cycle.length === 0) {
-    alert('Habilite ao menos uma página no Modo TV.');
+  const cfg = loadTVConfig().filter((c) => c.on);
+  if (cfg.length === 0) {
+    alert('Selecione ao menos uma página no Modo TV.');
     return;
   }
-  TV.active = true;
-  TV.paused = false;
-  TV.cycleIdx = 0;
-  document.body.classList.add('tv-mode');
+  TV_STATE.pages = cfg;
+  TV_STATE.idx = 0;
+  TV_STATE.running = true;
+  TV_STATE.paused = false;
   $('#tv-bar').style.display = 'flex';
-  // Tentar fullscreen
-  if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
-  tvShowCurrent();
+  document.body.classList.add('tv-mode');
+  goToTVPage();
 }
 
 function stopTV() {
-  TV.active = false;
-  document.body.classList.remove('tv-mode');
+  TV_STATE.running = false;
+  TV_STATE.paused = false;
+  clearTimeout(TV_STATE.timer);
+  clearInterval(TV_STATE.scrollTimer);
   $('#tv-bar').style.display = 'none';
-  if (TV.timer) { clearInterval(TV.timer); TV.timer = null; }
-  if (TV.scrollTimer) { clearInterval(TV.scrollTimer); TV.scrollTimer = null; }
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  document.body.classList.remove('tv-mode');
 }
 
-function tvShowCurrent() {
-  const page = TV.cycle[TV.cycleIdx];
-  if (!page) return;
-  setActivePage(page.id);
-  TV.pageStart = Date.now();
-  TV.pageDuration = page.duration * 1000;
-  $('#tv-page-label').textContent = 'PÁGINA · ' + page.label;
+function goToTVPage() {
+  if (!TV_STATE.running) return;
+  const cur = TV_STATE.pages[TV_STATE.idx];
+  if (!cur) return;
+  const btn = $$('.nav-tab').find((b) => b.dataset.page === cur.page);
+  if (btn) btn.click();
+  safeSetText('tv-page-label', `PÁGINA · ${cur.label.toUpperCase()}`);
 
-  if (TV.timer) clearInterval(TV.timer);
-  if (TV.scrollTimer) clearInterval(TV.scrollTimer);
-
-  // Tick de progresso + avanço
-  TV.timer = setInterval(() => {
-    if (TV.paused) return;
-    const elapsed = Date.now() - TV.pageStart;
-    const pct = Math.min(elapsed / TV.pageDuration, 1) * 100;
-    $('#tv-fill').style.width = pct + '%';
-    if (elapsed >= TV.pageDuration) tvNext();
-  }, 200);
-
-  // Rolagem automática
-  if (page.scroll) {
-    const docH = document.documentElement.scrollHeight;
-    const winH = window.innerHeight;
-    const maxScroll = docH - winH;
-    if (maxScroll > 50) {
-      const stepInterval = 100; // ms
-      const totalSteps = Math.floor((TV.pageDuration * 0.85) / stepInterval); // termina rolagem antes do fim
-      const scrollStep = maxScroll / totalSteps;
-      let stepIdx = 0;
-      window.scrollTo({top: 0, behavior: 'instant'});
-      TV.scrollTimer = setInterval(() => {
-        if (TV.paused) return;
-        stepIdx++;
-        window.scrollTo({top: stepIdx * scrollStep, behavior: 'instant'});
-        if (stepIdx >= totalSteps) clearInterval(TV.scrollTimer);
-      }, stepInterval);
-    }
-  } else {
-    window.scrollTo({top: 0, behavior: 'instant'});
+  const fillEl = $('#tv-fill');
+  if (fillEl) {
+    fillEl.style.transition = 'none';
+    fillEl.style.width = '0%';
+    requestAnimationFrame(() => {
+      fillEl.style.transition = `width ${cur.seconds}s linear`;
+      fillEl.style.width = '100%';
+    });
   }
-}
 
-function tvNext() {
-  TV.cycleIdx = (TV.cycleIdx + 1) % TV.cycle.length;
-  tvShowCurrent();
-}
-
-function tvPause() {
-  TV.paused = !TV.paused;
-  $('#tv-pause').textContent = TV.paused ? '▶ Retomar' : '⏸ Pausar';
-  if (TV.paused) {
-    // congela barra
-  } else {
-    // ao retomar, ajustar pageStart pra continuar de onde parou
-    const elapsed = parseFloat($('#tv-fill').style.width) / 100 * TV.pageDuration;
-    TV.pageStart = Date.now() - elapsed;
+  // Auto-scroll suave
+  clearInterval(TV_STATE.scrollTimer);
+  if (cur.scroll) {
+    const dur = cur.seconds * 1000;
+    const start = performance.now();
+    TV_STATE.scrollTimer = setInterval(() => {
+      if (TV_STATE.paused) return;
+      const elapsed = performance.now() - start;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo(0, (elapsed / dur) * max);
+      if (elapsed >= dur) clearInterval(TV_STATE.scrollTimer);
+    }, 30);
   }
+
+  clearTimeout(TV_STATE.timer);
+  TV_STATE.timer = setTimeout(() => {
+    if (TV_STATE.paused) return;
+    TV_STATE.idx = (TV_STATE.idx + 1) % TV_STATE.pages.length;
+    goToTVPage();
+  }, cur.seconds * 1000);
 }
 
 function bindTVControls() {
-  $('#tv-toggle').addEventListener('click', () => {
-    if (TV.active) stopTV();
-    else startTV();
+  $('#tv-toggle')?.addEventListener('click', () => {
+    buildTVConfigUI();
+    $('#tv-config-overlay').classList.add('active');
   });
-  $('#tv-config-btn').addEventListener('click', renderTVConfigOverlay);
-  $('#tv-config-cancel').addEventListener('click', () => $('#tv-config-overlay').classList.remove('show'));
-  $('#tv-config-save').addEventListener('click', () => {
-    const cfg = readTVConfigFromOverlay();
-    saveTVConfig(cfg);
-    TV.config = cfg;
-    $('#tv-config-overlay').classList.remove('show');
+  $('#tv-config-cancel')?.addEventListener('click', () => {
+    $('#tv-config-overlay').classList.remove('active');
+  });
+  $('#tv-config-save')?.addEventListener('click', () => {
+    saveTVConfig(readTVConfigFromUI());
+    $('#tv-config-overlay').classList.remove('active');
     startTV();
   });
-  $('#tv-pause').addEventListener('click', tvPause);
-  $('#tv-next').addEventListener('click', tvNext);
-  $('#tv-exit').addEventListener('click', stopTV);
-
-  // ESC sai do modo TV
+  $('#tv-exit')?.addEventListener('click', stopTV);
+  $('#tv-pause')?.addEventListener('click', () => {
+    TV_STATE.paused = !TV_STATE.paused;
+    const btn = $('#tv-pause');
+    if (btn) btn.textContent = TV_STATE.paused ? '▶ Retomar' : '⏸ Pausar';
+  });
+  $('#tv-next')?.addEventListener('click', () => {
+    TV_STATE.idx = (TV_STATE.idx + 1) % TV_STATE.pages.length;
+    goToTVPage();
+  });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && TV.active) stopTV();
-    if (TV.active && e.key === ' ') { e.preventDefault(); tvPause(); }
-    if (TV.active && e.key === 'ArrowRight') tvNext();
+    if (e.key === 'Escape' && TV_STATE.running) stopTV();
   });
 }
 
 /* =====================================================================
-   ORQUESTRAÇÃO
+   SNAPSHOT (impressão do navegador)
    ===================================================================== */
-async function reloadAllData() {
-  const btn = $('#refresh-all');
-  if (btn) { btn.disabled = true; btn.textContent = '↻ atualizando…'; }
-  try {
-    const [cambio, commodities, conab, anpComb, anpB100, anpVendas, comex, noticias, profile, status, usda] = await Promise.all([
-      loadJSON('data/cambio.json'),
-      loadJSON('data/commodities.json'),
-      loadJSON('data/conab_graos.json'),
-      loadJSON('data/anp_combustiveis.json'),
-      loadJSON('data/anp_b100.json'),
-      loadJSON('data/anp_vendas.json'),
-      loadJSON('data/comex.json'),
-      loadJSON('data/noticias.json'),
-      loadJSON('data/be8_profile.json'),
-      loadJSON('data/status_fontes.json'),
-      loadJSON('data/usda_benchmarks.json'),
-    ]);
-    STATE.cambio = cambio;
-    STATE.commodities = commodities;
-    STATE.conab = conab;
-    STATE.anp_combustiveis = anpComb;
-    STATE.anp_b100 = anpB100;
-    STATE.anp_vendas = anpVendas;
-    STATE.comex = comex;
-    STATE.noticias = noticias;
-    STATE.be8_profile = profile;
-    STATE.status_fontes = status;
-    STATE.usda = usda;
-
-    renderCambio();
-    renderCommodities();
-    renderTicker();
-    renderConab();
-    renderBiodieselANP();
-    renderANPCombustiveis();
-    renderComex();
-    renderGovernance();
-    renderNewsletter();
-    renderBe8Profile();
-    renderRadarIA();
-    renderVendasMapa();
-    renderUSDA();
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '↻ Atualizar'; }
-  }
-}
-
-async function snapshotPNG() {
-  const btn = $('#export-snapshot');
-  if (btn) { btn.disabled = true; btn.textContent = '↓ capturando…'; }
-  try {
-    // Encontrar a página ativa
-    const page = document.querySelector('.page.active');
-    if (!page) {
-      alert('Nenhuma página ativa para capturar.');
-      return;
-    }
-    // Estratégia: usar html2canvas via CDN se disponível; caso contrário, fallback para print
-    if (!window.html2canvas) {
-      // Carregar dinamicamente
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      }).catch(() => null);
-    }
-    if (window.html2canvas) {
-      const canvas = await window.html2canvas(page, {
-        backgroundColor: '#050f17',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        windowWidth: document.documentElement.scrollWidth,
-      });
-      const tabName = (document.querySelector('.nav-tab.active')?.textContent || 'painel').trim().replace(/\s+/g, '_').toLowerCase();
-      const date = new Date().toISOString().slice(0,10);
-      const link = document.createElement('a');
-      link.download = `be8_${tabName}_${date}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } else {
-      // Fallback: abrir diálogo de impressão (usuário salva como PDF)
-      window.print();
-    }
-  } catch (e) {
-    console.error('snapshot falhou:', e);
-    alert('Não foi possível gerar snapshot. Use Ctrl+P (imprimir → salvar como PDF) como alternativa.');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '↓ Snapshot'; }
-  }
+function snapshotPNG() {
+  // Versão pragmática: usa window.print(). O usuário escolhe "Salvar como PDF"
+  // no diálogo do navegador. Sem dependência externa.
+  window.print();
 }
 
 /* =====================================================================
-   RENDER · MAPA DO BRASIL (página 11)
+   BOOT
    ===================================================================== */
-
-// Geometria simplificada do Brasil: posições x,y de cada UF num grid
-// Inspirado em "tile maps" (Bloomberg/FT). Cada UF ocupa uma célula 60x60.
-const BR_UF_GRID = {
-  // [col, row, regiao]
-  'RR': [3, 0, 'N'],  'AP': [5, 0, 'N'],
-  'AM': [2, 1, 'N'],  'PA': [4, 1, 'N'],  'MA': [5, 1, 'NE'], 'CE': [6, 1, 'NE'], 'RN': [7, 1, 'NE'],
-  'AC': [1, 2, 'N'],  'RO': [2, 2, 'N'],  'TO': [4, 2, 'N'],  'PI': [5, 2, 'NE'], 'PB': [7, 2, 'NE'], 'PE': [7, 3, 'NE'],
-  'MT': [3, 3, 'CO'], 'GO': [4, 3, 'CO'], 'BA': [6, 3, 'NE'], 'AL': [8, 3, 'NE'], 'SE': [8, 4, 'NE'],
-  'MS': [3, 4, 'CO'], 'DF': [5, 4, 'CO'], 'MG': [6, 4, 'SE'], 'ES': [7, 4, 'SE'],
-  'PR': [4, 5, 'S'],  'SP': [5, 5, 'SE'], 'RJ': [6, 5, 'SE'],
-  'SC': [4, 6, 'S'],
-  'RS': [4, 7, 'S'],
-};
-
-const UF_NOMES = {
-  AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia', CE:'Ceará',
-  DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás', MA:'Maranhão',
-  MT:'Mato Grosso', MS:'Mato Grosso do Sul', MG:'Minas Gerais', PA:'Pará',
-  PB:'Paraíba', PR:'Paraná', PE:'Pernambuco', PI:'Piauí', RJ:'Rio de Janeiro',
-  RN:'Rio Grande do Norte', RS:'Rio Grande do Sul', RO:'Rondônia', RR:'Roraima',
-  SC:'Santa Catarina', SP:'São Paulo', SE:'Sergipe', TO:'Tocantins'
-};
-
-const REG_NOMES = {N:'Norte', NE:'Nordeste', CO:'Centro-Oeste', SE:'Sudeste', S:'Sul'};
-
-function renderVendasMapa() {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos) {
-    setStatusBadge('vendas-status', 'PENDENTE', 'Vendas · aguardando');
-    return;
-  }
-  setStatusBadge('vendas-status', v.status || 'OK',
-    `ANP · ano ${v.ano_referencia || ''}`);
-
-  // KPIs globais (volume)
-  if (v.produtos.diesel_b) $('#vendas-diesel-total').innerHTML =
-    fmtNum(v.produtos.diesel_b.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
-  if (v.produtos.gasolina_c) $('#vendas-gasolina-total').innerHTML =
-    fmtNum(v.produtos.gasolina_c.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
-  if (v.produtos.etanol_hidratado) $('#vendas-etanol-total').innerHTML =
-    fmtNum(v.produtos.etanol_hidratado.total_anual_m3 / 1e6, 2) + ' <span class="unit">M m³/ano</span>';
-
-  // KPIs de preço (se disponíveis)
-  ['diesel_b', 'gasolina_c', 'etanol_hidratado'].forEach(k => {
-    const elPreco = $(`#vendas-${k.replace('_c','').replace('_b','').replace('_hidratado','')}-preco`);
-    if (!elPreco) return;
-    const prod = v.produtos[k];
-    if (prod && prod.preco_medio_brasil_l != null) {
-      elPreco.innerHTML = `R$ ${fmtNum(prod.preco_medio_brasil_l, 3)} <span class="unit">/L</span>`;
-    } else {
-      elPreco.innerHTML = '— <span class="unit">aguardando ANP</span>';
-    }
-  });
-
-  // Estado de modo ativo (volume ou preco)
-  const modo = STATE.vendas_modo_ativo || 'volume';
-  renderMapaProduto(STATE.vendas_produto_ativo, modo).catch(e => {
-    console.error('Erro ao renderizar mapa Leaflet:', e);
-    $('#brasil-mapa').innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Mapa Leaflet não pôde ser carregado · verifique conexão com CDN unpkg.com</div>';
-  });
-  renderRankingVendas(STATE.vendas_produto_ativo);
-  renderRegionalVendas(STATE.vendas_produto_ativo);
-  renderPrecoTopRankings(STATE.vendas_produto_ativo);
-  renderPrecoRegional(STATE.vendas_produto_ativo);
-}
-
-// Carrega mapa de novo quando entra na página 11 (corrige bug do tamanho 0 no boot)
-function ensureMapaOnPageEntry() {
-  if (window.STATE && STATE.anp_vendas && document.querySelector('.page.active')?.id === 'page-vendas-mapa') {
-    // Se o mapa não existe ou está com tamanho zero, força re-render
-    if (!LEAFLET_MAP || !$('#leaflet-map')) {
-      renderMapaProduto(STATE.vendas_produto_ativo, STATE.vendas_modo_ativo || 'volume');
-    } else {
-      // Apenas recalcula tamanho (caso a página estivesse oculta)
-      setTimeout(() => {
-        try { LEAFLET_MAP.invalidateSize(); } catch(e){}
-        try { LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] }); } catch(e){}
-      }, 50);
-    }
-  }
-}
-
-// Render: ranking de UFs mais caras / mais baratas
-function renderPrecoTopRankings(prodKey) {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos[prodKey]) return;
-  const prod = v.produtos[prodKey];
-  const tbCaros = $('#precos-caros-tbody');
-  const tbBaratos = $('#precos-baratos-tbody');
-  if (!tbCaros || !tbBaratos) return;
-
-  if (!prod.top_mais_caros || prod.top_mais_caros.length === 0) {
-    tbCaros.innerHTML = '<tr><td colspan="4" style="color:var(--be8-mist); text-align:center; padding:14px 0;">Preço por UF aguardando coletor ANP</td></tr>';
-    tbBaratos.innerHTML = '<tr><td colspan="4" style="color:var(--be8-mist); text-align:center; padding:14px 0;">Preço por UF aguardando coletor ANP</td></tr>';
-    return;
-  }
-
-  const precoBR = prod.preco_medio_brasil_l;
-
-  tbCaros.innerHTML = prod.top_mais_caros.map((u, i) => {
-    const delta = precoBR ? ((u.preco_l / precoBR - 1) * 100) : null;
-    const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
-    return `<tr>
-      <td class="rank">${String(i+1).padStart(2,'0')}</td>
-      <td><strong>${u.uf}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
-      <td class="num"><strong style="color:#d4a84b;">R$ ${fmtNum(u.preco_l, 3)}</strong>${delta != null ? `<br><span style="font-size:10px; color:${corDelta};">${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}%</span>` : ''}</td>
-    </tr>`;
-  }).join('');
-
-  tbBaratos.innerHTML = prod.top_mais_baratos.map((u, i) => {
-    const delta = precoBR ? ((u.preco_l / precoBR - 1) * 100) : null;
-    const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
-    return `<tr>
-      <td class="rank">${String(i+1).padStart(2,'0')}</td>
-      <td><strong>${u.uf}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
-      <td class="num"><strong style="color:#55c94f;">R$ ${fmtNum(u.preco_l, 3)}</strong>${delta != null ? `<br><span style="font-size:10px; color:${corDelta};">${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}%</span>` : ''}</td>
-    </tr>`;
-  }).join('');
-}
-
-// Render: preço médio por região (cards)
-function renderPrecoRegional(prodKey) {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos[prodKey]) return;
-  const prod = v.produtos[prodKey];
-  const el = $('#preco-regional-cards');
-  if (!el) return;
-
-  const temPreco = prod.por_regiao.some(r => r.preco_medio_l != null);
-  if (!temPreco) {
-    el.innerHTML = '<div class="empty-state"><div class="ic">⊘</div>Preço regional aguardando coletor ANP de preços</div>';
-    return;
-  }
-
-  const precoBR = prod.preco_medio_brasil_l;
-  const cores = { N:'#a8bdc9', NE:'#7a9bbf', CO:'#0eb194', SE:'#d4a84b', S:'#55c94f' };
-
-  el.innerHTML = '<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;">' +
-    prod.por_regiao.map(r => {
-      const preco = r.preco_medio_l;
-      const c = cores[r.regiao_sigla] || '#5e7382';
-      const delta = (precoBR && preco != null) ? ((preco / precoBR - 1) * 100) : null;
-      const corDelta = delta != null && delta > 0 ? '#ff6b8a' : '#55c94f';
-      return `
-        <div style="padding:14px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border); border-top: 3px solid ${c};">
-          <div style="font-family:'JetBrains Mono'; font-size:10px; color:${c}; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">${r.regiao_nome}</div>
-          <div style="font-family:'Fraunces'; font-size:24px; color:var(--be8-ice);">${preco != null ? 'R$ ' + fmtNum(preco, 3) : '—'}</div>
-          <div style="font-size:11px; color:var(--be8-mist); margin-top:4px;">por litro · ${fmtNum(r.share_pct, 1)}% volume</div>
-          ${delta != null ? `<div style="font-family:'JetBrains Mono'; font-size:11px; color:${corDelta}; margin-top:4px;">${delta > 0 ? '+' : ''}${fmtNum(delta, 2)}% vs. Brasil</div>` : ''}
-        </div>`;
-    }).join('') + '</div>';
-}
-
-// ===== CONFIGURAÇÃO LEAFLET =====
-// Variáveis globais do mapa para permitir reuso/destruição
-let LEAFLET_MAP = null;
-let LEAFLET_LAYER = null;
-let LEAFLET_LEGEND = null;
-let LEAFLET_GEOJSON = null;  // cache do GeoJSON carregado
-
-async function loadLeafletAndGeoJSON() {
-  // Carrega Leaflet (CSS + JS) e GeoJSON do Brasil
-  if (!window.L) {
-    await new Promise((res, rej) => {
-      const css = document.createElement('link');
-      css.rel = 'stylesheet';
-      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      css.crossOrigin = '';
-      document.head.appendChild(css);
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.crossOrigin = '';
-      script.onload = res;
-      script.onerror = rej;
-      document.head.appendChild(script);
-    });
-  }
-  if (!LEAFLET_GEOJSON) {
-    const resp = await fetch('assets/brasil-uf.geojson');
-    LEAFLET_GEOJSON = await resp.json();
-  }
-}
-
-function getColorForValue(val, max) {
-  if (!val || val <= 0) return '#1a2935';
-  const ratio = Math.min(val / max, 1);
-  // Escala de cores: cinza → verde Be8 → dourado
-  if (ratio < 0.15) return '#1f3a4a';
-  if (ratio < 0.30) return '#1f5a6a';
-  if (ratio < 0.45) return '#1d7a78';
-  if (ratio < 0.60) return '#0eb194';
-  if (ratio < 0.75) return '#55c94f';
-  if (ratio < 0.90) return '#86d44f';
-  return '#d4a84b';
-}
-
-async function renderMapaProduto(prodKey, modo = 'volume') {
-  // modo: 'volume' (default) ou 'preco' — define qual métrica colorir
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos || !v.produtos[prodKey]) return;
-
-  await loadLeafletAndGeoJSON();
-
-  const prod = v.produtos[prodKey];
-  const ufData = {};
-  prod.por_uf.forEach(u => { ufData[u.uf] = u; });
-
-  // Métrica ativa: volume mensal OU preço R$/L
-  const temPreco = prod.por_uf.some(u => u.preco_medio_l != null);
-  const metricKey = (modo === 'preco' && temPreco) ? 'preco_medio_l' : 'volume_medio_mensal_m3';
-  const metricLabel = (modo === 'preco' && temPreco) ? 'preço médio (R$/L)' : 'volume médio mensal (m³)';
-  const metricUnit  = (modo === 'preco' && temPreco) ? 'R$/L' : 'm³';
-
-  const ufVal = {};
-  prod.por_uf.forEach(u => { if (u[metricKey] != null) ufVal[u.uf] = u[metricKey]; });
-
-  const maxVal = Math.max(...Object.values(ufVal));
-  const minVal = Math.min(...Object.values(ufVal));
-
-  const labels = { diesel_b: 'Diesel B', gasolina_c: 'Gasolina C', etanol_hidratado: 'Etanol Hidratado' };
-  $('#mapa-titulo').textContent = `${labels[prodKey]} · ${metricLabel} · clique numa UF para detalhes`;
-
-  // Estado ativo do modo (para reconstruir ao filtrar)
-  STATE.vendas_modo_ativo = modo;
-
-  // Container Leaflet
-  const container = $('#brasil-mapa');
-  // Só recria o div se ainda não existe (evita destruir mapa entre toggles)
-  if (!$('#leaflet-map')) {
-    container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
-  }
-
-  // Destruir mapa antigo (sempre)
-  if (LEAFLET_MAP) {
-    try { LEAFLET_MAP.remove(); } catch(e){}
-    LEAFLET_MAP = null;
-    LEAFLET_LAYER = null;
-    LEAFLET_LEGEND = null;
-    // Re-criar o div pois L.map.remove() esvazia o conteúdo
-    container.innerHTML = '<div id="leaflet-map" style="height:560px; width:100%; border-radius:8px; background:#0a1a25;"></div>';
-  }
-
-  // Criar mapa
-  LEAFLET_MAP = L.map('leaflet-map', {
-    zoomControl: true,
-    scrollWheelZoom: false,
-    attributionControl: false,
-    minZoom: 3.5,
-    maxZoom: 7,
-  }).setView([-14.5, -54], 4);
-
-  function styleUF(feature) {
-    const sigla = feature.properties.sigla;
-    const val = ufVal[sigla] != null ? ufVal[sigla] : 0;
-    return {
-      fillColor: getColorForValue(val, maxVal),
-      weight: 0.8,
-      opacity: 1,
-      color: '#0a1a25',
-      fillOpacity: 0.88,
-    };
-  }
-
-  function highlightFeature(e) {
-    e.target.setStyle({
-      weight: 2.5,
-      color: '#a8efe0',
-      fillOpacity: 1,
-    });
-    e.target.bringToFront();
-  }
-
-  function resetHighlight(e) {
-    LEAFLET_LAYER.resetStyle(e.target);
-  }
-
-  function clickUF(e) {
-    const sigla = e.target.feature.properties.sigla;
-    const name = e.target.feature.properties.name;
-    showUFDrilldown(prodKey, sigla, name);
-    // Zoom suave na UF clicada
-    try {
-      LEAFLET_MAP.fitBounds(e.target.getBounds(), { padding: [40, 40], maxZoom: 6 });
-    } catch (err) {}
-  }
-
-  function onEachFeature(feature, layer) {
-    const sigla = feature.properties.sigla;
-    const name = feature.properties.name;
-    const u = ufData[sigla];
-    const precoStr = u && u.preco_medio_l != null ? `R$ ${fmtNum(u.preco_medio_l, 3)}/L` : '—';
-    const tip = `
-      <div style="font-family:'Inter Tight', sans-serif; min-width:200px;">
-        <div style="font-family:'Fraunces', serif; font-size:16px; font-weight:600; color:#fff; margin-bottom:6px;">${name} <span style="color:#0eb194;">(${sigla})</span></div>
-        <div style="display:grid; grid-template-columns:auto auto; gap:4px 14px; font-size:11px;">
-          <span style="color:#a8bdc9;">Volume mensal:</span>
-          <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_medio_mensal_m3, 0) : '—'} m³</strong>
-          <span style="color:#a8bdc9;">Anual:</span>
-          <strong style="color:#fff; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.volume_anual_m3/1e3, 0) : '—'}k m³</strong>
-          <span style="color:#a8bdc9;">Share BR:</span>
-          <strong style="color:#55c94f; font-family:'JetBrains Mono', monospace;">${u ? fmtNum(u.share_pct, 2) : '—'}%</strong>
-          <span style="color:#a8bdc9;">Preço médio:</span>
-          <strong style="color:#d4a84b; font-family:'JetBrains Mono', monospace;">${precoStr}</strong>
-          <span style="color:#a8bdc9;">Região:</span>
-          <strong style="color:#0eb194;">${u ? (REG_NOMES[u.regiao] || '—') : '—'}</strong>
-        </div>
-        <div style="margin-top:8px; font-size:10px; color:#7a9bbf; font-style:italic;">› Clique para ver detalhes</div>
-      </div>`;
-    layer.bindTooltip(tip, {
-      sticky: true,
-      direction: 'top',
-      className: 'be8-map-tooltip',
-      opacity: 1,
-    });
-    layer.on({
-      mouseover: highlightFeature,
-      mouseout: resetHighlight,
-      click: clickUF,
-    });
-  }
-
-  LEAFLET_LAYER = L.geoJSON(LEAFLET_GEOJSON, {
-    style: styleUF,
-    onEachFeature: onEachFeature,
-  }).addTo(LEAFLET_MAP);
-
-  // Ajustar visualização
-  try {
-    LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] });
-  } catch (e) {}
-
-  // Forçar recálculo de tamanho após inserção
-  // CRÍTICO: se a página estava oculta no boot, Leaflet inicializa com tamanho 0
-  setTimeout(() => {
-    if (LEAFLET_MAP) {
-      LEAFLET_MAP.invalidateSize();
-      try { LEAFLET_MAP.fitBounds(LEAFLET_LAYER.getBounds(), { padding: [20, 20] }); } catch(e){}
-    }
-  }, 100);
-
-  // Legenda
-  if (LEAFLET_LEGEND) {
-    try { LEAFLET_LEGEND.remove(); } catch(e){}
-  }
-  LEAFLET_LEGEND = L.control({ position: 'bottomright' });
-  LEAFLET_LEGEND.onAdd = () => {
-    const div = L.DomUtil.create('div', 'be8-map-legend');
-    const stops = [0.05, 0.20, 0.35, 0.50, 0.65, 0.80, 1.0];
-    let html = `<div style="background:rgba(5,15,23,0.92); border:1px solid #1f3a4a; border-radius:6px; padding:10px 12px; font-family:'JetBrains Mono', monospace; font-size:10px; color:#a8bdc9;">
-      <div style="margin-bottom:6px; color:#fff; font-weight:600; letter-spacing:0.06em;">${metricLabel.toUpperCase()}</div>`;
-    stops.forEach(s => {
-      const val = s * maxVal;
-      const c = getColorForValue(val, maxVal);
-      const valStr = (modo === 'preco') ? `R$ ${fmtNum(val, 2)}` : `${fmtNum(val/1000, 0)}k`;
-      html += `<div style="display:flex; align-items:center; gap:8px; margin:2px 0;">
-        <span style="display:inline-block; width:18px; height:12px; background:${c}; border-radius:2px;"></span>
-        <span>${valStr}</span>
-      </div>`;
-    });
-    html += '</div>';
-    div.innerHTML = html;
-    return div;
-  };
-  LEAFLET_LEGEND.addTo(LEAFLET_MAP);
-}
-
-/* =====================================================================
-   DRILLDOWN POR UF (modal-card inline)
-   ===================================================================== */
-function showUFDrilldown(prodKey, uf, ufName) {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos[prodKey]) return;
-  const prod = v.produtos[prodKey];
-  const u = prod.por_uf.find(x => x.uf === uf);
-  if (!u) return;
-  const reg = prod.por_regiao.find(r => r.regiao_sigla === u.regiao);
-
-  const labels = { diesel_b: 'Diesel B', gasolina_c: 'Gasolina C', etanol_hidratado: 'Etanol Hidratado' };
-
-  // Ranking nacional desta UF
-  const sortedByVol = [...prod.por_uf].sort((a, b) => b.volume_anual_m3 - a.volume_anual_m3);
-  const rankNacional = sortedByVol.findIndex(x => x.uf === uf) + 1;
-
-  let rankPrecoStr = '—';
-  if (u.preco_medio_l != null) {
-    const sortedByPreco = prod.por_uf
-      .filter(x => x.preco_medio_l != null)
-      .sort((a, b) => b.preco_medio_l - a.preco_medio_l);
-    const rk = sortedByPreco.findIndex(x => x.uf === uf) + 1;
-    rankPrecoStr = `${rk}º de ${sortedByPreco.length}`;
-  }
-
-  const precoStr = u.preco_medio_l != null ? `R$ ${fmtNum(u.preco_medio_l, 3)}` : '—';
-  const precoBrasil = prod.preco_medio_brasil_l;
-  let precoDeltaStr = '';
-  if (u.preco_medio_l != null && precoBrasil) {
-    const delta = ((u.preco_medio_l / precoBrasil) - 1) * 100;
-    const cor = delta > 0 ? '#ff6b8a' : '#55c94f';
-    const sinal = delta > 0 ? '+' : '';
-    precoDeltaStr = `<span style="color:${cor}; font-family:'JetBrains Mono'; font-size:12px;">${sinal}${fmtNum(delta, 2)}% vs. Brasil</span>`;
-  }
-
-  const html = `
-    <div style="border:1px solid var(--be8-green-1); border-radius:8px; padding:18px 20px; background:linear-gradient(135deg, rgba(14,177,148,0.08), rgba(8,31,46,0.6));">
-      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:14px;">
-        <div>
-          <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--be8-green-1); letter-spacing:0.12em; text-transform:uppercase;">DRILLDOWN · ${labels[prodKey]}</div>
-          <div style="font-family:'Fraunces', serif; font-size:28px; color:var(--be8-ice); margin-top:4px;">${ufName} <span style="color:var(--be8-green-1);">(${uf})</span></div>
-          <div style="font-size:12px; color:var(--be8-mist); margin-top:4px;">${REG_NOMES[u.regiao] || u.regiao} · ${rankNacional}º maior consumidor nacional</div>
-        </div>
-        <button id="drilldown-close" style="background:transparent; border:1px solid var(--be8-border); color:var(--be8-mist); width:32px; height:32px; border-radius:6px; cursor:pointer; font-size:18px;">×</button>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px;">
-        <div style="padding:12px 14px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
-          <div style="font-size:10px; color:var(--be8-mist); letter-spacing:0.08em; text-transform:uppercase;">VOLUME ANUAL</div>
-          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.volume_anual_m3/1e3, 0)}k <span style="font-size:13px; color:var(--be8-mist);">m³</span></div>
-        </div>
-        <div style="padding:12px 14px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
-          <div style="font-size:10px; color:var(--be8-mist); letter-spacing:0.08em; text-transform:uppercase;">VOLUME MENSAL</div>
-          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.volume_medio_mensal_m3, 0)} <span style="font-size:13px; color:var(--be8-mist);">m³</span></div>
-        </div>
-        <div style="padding:12px 14px; background:rgba(212,168,75,0.06); border-radius:6px; border:1px solid rgba(212,168,75,0.25);">
-          <div style="font-size:10px; color:var(--be8-gold); letter-spacing:0.08em; text-transform:uppercase;">PREÇO MÉDIO R$/L</div>
-          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${precoStr}</div>
-          ${precoDeltaStr ? `<div style="margin-top:4px;">${precoDeltaStr}</div>` : ''}
-        </div>
-        <div style="padding:12px 14px; background:rgba(85,201,79,0.06); border-radius:6px; border:1px solid rgba(85,201,79,0.25);">
-          <div style="font-size:10px; color:var(--be8-green-2); letter-spacing:0.08em; text-transform:uppercase;">SHARE BRASIL</div>
-          <div style="font-family:'Fraunces'; font-size:22px; color:var(--be8-ice); margin-top:4px;">${fmtNum(u.share_pct, 2)}<span style="font-size:13px; color:var(--be8-mist);">%</span></div>
-          <div style="font-size:11px; color:var(--be8-mist); margin-top:4px;">Rank preço: ${rankPrecoStr}</div>
-        </div>
-      </div>
-
-      ${reg ? `<div style="margin-top:14px; padding:12px 14px; background:rgba(8,31,46,0.4); border-radius:6px; border-left: 2px solid var(--be8-green-1); font-size:12px; color:var(--be8-mist);">
-        <strong style="color:var(--be8-ice);">Região ${reg.regiao_nome}</strong> · volume total ${fmtNum(reg.volume_anual_m3/1e6, 2)} M m³/ano (${fmtNum(reg.share_pct, 1)}% nacional)${reg.preco_medio_l != null ? ` · preço médio R$ ${fmtNum(reg.preco_medio_l, 3)}/L` : ''}
-      </div>` : ''}
-    </div>`;
-
-  const slot = $('#vendas-drilldown');
-  if (slot) {
-    slot.innerHTML = html;
-    slot.style.display = 'block';
-    setTimeout(() => slot.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
-    $('#drilldown-close')?.addEventListener('click', () => {
-      slot.style.display = 'none';
-      slot.innerHTML = '';
-    });
-  }
-}
-
-function renderRankingVendas(prodKey) {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos[prodKey]) return;
-  const prod = v.produtos[prodKey];
-  const tb = $('#vendas-rank-tbody');
-  if (!tb) return;
-  const temPreco = prod.por_uf.some(u => u.preco_medio_l != null);
-  tb.innerHTML = prod.por_uf.slice(0, 10).map((u, i) => `
-    <tr>
-      <td class="rank">${String(i+1).padStart(2,'0')}</td>
-      <td><strong>${u.uf}</strong></td>
-      <td style="color:var(--be8-mist); font-size:12px;">${REG_NOMES[u.regiao] || '—'}</td>
-      <td class="num">${fmtNum(u.volume_medio_mensal_m3, 0)}</td>
-      <td class="num">${fmtNum(u.share_pct, 1)}%</td>
-      ${temPreco ? `<td class="num"><strong style="color:#d4a84b;">${u.preco_medio_l != null ? 'R$ ' + fmtNum(u.preco_medio_l, 3) : '—'}</strong></td>` : ''}
-    </tr>`).join('');
-
-  // Header dinâmico com coluna preço
-  const thead = tb.closest('table')?.querySelector('thead tr');
-  if (thead) {
-    if (temPreco && !thead.querySelector('th[data-preco]')) {
-      thead.insertAdjacentHTML('beforeend', '<th class="num" data-preco>PREÇO R$/L</th>');
-    } else if (!temPreco) {
-      thead.querySelector('th[data-preco]')?.remove();
-    }
-  }
-
-  $('#vendas-rank-meta').textContent = `Total: ${fmtNum(prod.total_medio_mensal_m3/1e3, 0)}k m³/mês${prod.preco_medio_brasil_l ? ` · Brasil R$ ${fmtNum(prod.preco_medio_brasil_l, 3)}/L` : ''}`;
-}
-
-function renderRegionalVendas(prodKey) {
-  const v = STATE.anp_vendas;
-  if (!v || !v.produtos[prodKey]) return;
-  const prod = v.produtos[prodKey];
-  const el = $('#vendas-regional-viz');
-  if (!el || !prod.por_regiao) return;
-
-  const max = Math.max(...prod.por_regiao.map(r => r.volume_anual_m3));
-  const colors = { N: '#a8bdc9', NE: '#7a9bbf', CO: '#0eb194', SE: '#d4a84b', S: '#55c94f' };
-
-  el.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
-      ${prod.por_regiao.map(r => {
-        const pct = (r.volume_anual_m3 / max) * 100;
-        const c = colors[r.regiao_sigla] || '#5e7382';
-        return `
-          <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;">
-              <span style="color:var(--be8-ice);"><strong>${r.regiao_nome}</strong> (${r.share_pct}%)</span>
-              <span style="font-family:var(--font-mono); color:var(--be8-mist);">${fmtNum(r.volume_anual_m3/1e6, 2)} M m³/ano</span>
-            </div>
-            <div style="height:10px; background:rgba(168,189,201,0.08); border-radius:5px; overflow:hidden;">
-              <div style="height:100%; width:${pct}%; background:${c}; border-radius:5px; transition:width 0.4s;"></div>
-            </div>
-          </div>`;
-      }).join('')}
-    </div>`;
-}
-
-function bindVendasFilters() {
-  // Filtro de produto
-  $$('.vendas-filter[data-prod]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $$('.vendas-filter[data-prod]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      STATE.vendas_produto_ativo = btn.getAttribute('data-prod');
-      const modo = STATE.vendas_modo_ativo || 'volume';
-      renderMapaProduto(STATE.vendas_produto_ativo, modo);
-      renderRankingVendas(STATE.vendas_produto_ativo);
-      renderRegionalVendas(STATE.vendas_produto_ativo);
-      renderPrecoTopRankings(STATE.vendas_produto_ativo);
-      renderPrecoRegional(STATE.vendas_produto_ativo);
-    });
-  });
-
-  // Toggle volume / preço
-  $$('.vendas-modo[data-modo]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $$('.vendas-modo[data-modo]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      STATE.vendas_modo_ativo = btn.getAttribute('data-modo');
-      renderMapaProduto(STATE.vendas_produto_ativo, STATE.vendas_modo_ativo);
-    });
-  });
-}
-
-/* =====================================================================
-   RENDER · BENCHMARK GLOBAL USDA (página 12)
-   ===================================================================== */
-function renderUSDA() {
-  const u = STATE.usda;
-  if (!u || !u.soja_mundial) {
-    setStatusBadge('usda-status', 'PENDENTE', 'USDA · aguardando');
-    return;
-  }
-  setStatusBadge('usda-status', u.status || 'OK',
-    'USDA · ' + (u.release || u.safra_referencia || ''));
-
-  const sm = u.soja_mundial;
-  const bm = u.biodiesel_mundial;
-
-  $('#usda-soja-mundo').innerHTML = fmtNum(sm.producao_total_mt, 1) + ' <span class="unit">Mt</span>';
-  $('#usda-brasil-soja').innerHTML = fmtNum(sm.brasil_share_pct, 1) + ' <span class="unit">%</span>';
-  $('#usda-brasil-soja-ctx').textContent = sm.brasil_lideranca ? 'Líder mundial · 1º lugar' : 'Vice-líder mundial';
-
-  $('#usda-biod-mundo').innerHTML = fmtNum(bm.producao_total_bilhoes_l, 1) + ' <span class="unit">bi L</span>';
-  $('#usda-brasil-biod').innerHTML = (bm.brasil_posicao || '—') + 'º <span class="unit">lugar</span>';
-  $('#usda-brasil-biod-ctx').textContent = `${bm.brasil_share_pct}% share mundial`;
-
-  $('#usda-safra-ref').textContent = u.safra_referencia || '2025/26';
-
-  // Tabela soja
-  const tbSoja = $('#usda-rank-soja-tbody');
-  if (tbSoja) {
-    tbSoja.innerHTML = sm.ranking.map((r, i) => `
-      <tr>
-        <td class="rank">${String(i+1).padStart(2,'0')}</td>
-        <td><strong style="color:${r.destaque ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${r.pais}</strong></td>
-        <td class="num">${fmtNum(r.producao_mt, 1)}</td>
-        <td class="num">${fmtNum(r.share_pct, 1)}%</td>
-      </tr>`).join('');
-  }
-
-  // Tabela biodiesel
-  const tbBiod = $('#usda-rank-biod-tbody');
-  if (tbBiod) {
-    tbBiod.innerHTML = bm.ranking.map((r, i) => `
-      <tr>
-        <td class="rank">${String(i+1).padStart(2,'0')}</td>
-        <td><strong style="color:${r.destaque ? 'var(--be8-green-2)' : 'var(--be8-ice)'};">${r.pais}</strong></td>
-        <td class="num">${fmtNum(r.producao_bilhoes_l, 2)}</td>
-        <td class="num">${fmtNum(r.share_pct, 1)}%</td>
-      </tr>`).join('');
-  }
-
-  // Estoques globais (gráfico de barras horizontais)
-  const estEl = $('#usda-estoques-viz');
-  if (estEl && u.estoques_globais_soja_mt) {
-    const entries = Object.entries(u.estoques_globais_soja_mt);
-    const max = Math.max(...entries.map(([_, v]) => v));
-    estEl.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        ${entries.map(([safra, vol]) => `
-          <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">
-              <span style="color:var(--be8-ice);">Safra ${safra}</span>
-              <span style="font-family:var(--font-mono); color:var(--be8-green-1); font-weight:600;">${fmtNum(vol, 1)} Mt</span>
-            </div>
-            <div style="height:18px; background:rgba(168,189,201,0.06); border-radius:3px; overflow:hidden;">
-              <div style="height:100%; width:${(vol/max)*100}%; background:linear-gradient(90deg, var(--be8-green-1), var(--be8-green-2)); border-radius:3px;"></div>
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-  }
-
-  // Preço Chicago
-  const precoEl = $('#usda-preco-viz');
-  if (precoEl && u.preco_soja_chicago) {
-    const p = u.preco_soja_chicago;
-    precoEl.innerHTML = `
-      <div style="text-align:center; padding:14px 0;">
-        <div style="font-family:var(--font-display); font-size:48px; color:var(--be8-green-2); font-weight:300;">$${fmtNum(p.atual, 2)}</div>
-        <div style="margin-top:4px; font-family:var(--font-mono); font-size:12px; color:var(--be8-mist);">USD por bushel</div>
-      </div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:14px;">
-        <div style="padding:10px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
-          <div style="font-size:10.5px; color:var(--be8-mist); text-transform:uppercase; letter-spacing:0.06em;">vs. mês anterior</div>
-          <div style="margin-top:4px; font-family:var(--font-mono); font-size:15px; color:${p.vs_mes_anterior_pct >= 0 ? 'var(--be8-green-2)' : 'var(--be8-red)'};"><strong>${fmtPct(p.vs_mes_anterior_pct)}</strong></div>
-        </div>
-        <div style="padding:10px 12px; background:rgba(8,31,46,0.5); border-radius:6px; border:1px solid var(--be8-border);">
-          <div style="font-size:10.5px; color:var(--be8-mist); text-transform:uppercase; letter-spacing:0.06em;">vs. ano anterior</div>
-          <div style="margin-top:4px; font-family:var(--font-mono); font-size:15px; color:${p.vs_ano_anterior_pct >= 0 ? 'var(--be8-green-2)' : 'var(--be8-red)'};"><strong>${fmtPct(p.vs_ano_anterior_pct)}</strong></div>
-        </div>
-      </div>`;
-  }
-}
-
-
 async function boot() {
+  console.log('[BENCH-BE8] boot · v2.4');
+
+  bindNavigation();
+  bindTVControls();
   setSessionClock();
   setInterval(setSessionClock, 1000);
 
-  // Carregar todos os JSONs em paralelo
   await reloadAllData();
 
-  // Bind controles
-  bindTVControls();
-  bindVendasFilters();
-  $('#refresh-all')?.addEventListener('click', reloadAllData);
+  $('#refresh-all')?.addEventListener('click', () => {
+    console.log('[BENCH-BE8] refresh manual disparado');
+    reloadAllData();
+  });
   $('#export-snapshot')?.addEventListener('click', snapshotPNG);
+
+  console.log('[BENCH-BE8] boot · pronto');
 }
 
 document.addEventListener('DOMContentLoaded', boot);

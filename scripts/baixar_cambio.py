@@ -1,105 +1,97 @@
 """
-Coletor BCB PTAX — câmbio oficial Brasil.
-Fonte: olinda.bcb.gov.br/PTAX (API REST OData, gratuita, sem chave).
-Produz: data/cambio.json
+BENCH-BE8 · baixar_cambio.py
+---------------------------------------------------------------------
+Coletor BCB PTAX (Banco Central) — USD/BRL e EUR/BRL.
+API oficial, sem chave, sem CORS.
+
+Endpoint:
+  olinda.bcb.gov.br/olinda/servico/PTAX/v1/odata/CotacaoMoedaPeriodo
 """
 from __future__ import annotations
-import datetime as dt
-from utils import (http_get_json, save_json, mark_source_ok, mark_source_error,
-                   DATA_DIR, log, now_iso, pct)
 
-BASE = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata"
+from datetime import date, timedelta
 
-def _fmt(d: dt.date) -> str:
-    return f"{d.month:02d}-{d.day:02d}-{d.year}"
+from utils import get_logger, http_get, save_json, pct_change
 
-def fetch_last_quotation(moeda: str) -> dict | None:
-    """Busca a cotação mais recente disponível (varre até 14 dias úteis para trás)."""
-    today = dt.date.today()
-    for i in range(15):
-        d = today - dt.timedelta(days=i)
-        if moeda == "USD":
-            url = f"{BASE}/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='{_fmt(d)}'&$format=json"
-        else:
-            url = f"{BASE}/CotacaoMoedaDia(moeda=@moeda,dataCotacao=@dataCotacao)?@moeda='{moeda}'&@dataCotacao='{_fmt(d)}'&$format=json"
-        try:
-            j = http_get_json(url, timeout=15, retries=2)
-            if j.get("value"):
-                last = j["value"][-1]
-                return {
-                    "data_cotacao": last.get("dataHoraCotacao"),
-                    "compra": last.get("cotacaoCompra"),
-                    "venda": last.get("cotacaoVenda"),
-                    "tipo_boletim": last.get("tipoBoletim", "Fechamento"),
-                }
-        except Exception as e:
-            log.debug(f"BCB {moeda} {_fmt(d)}: {e}")
-            continue
-    return None
+log = get_logger("baixar_cambio")
 
-def fetch_period(moeda: str, dias: int = 90) -> list[dict]:
-    end = dt.date.today()
-    start = end - dt.timedelta(days=dias)
-    if moeda == "USD":
-        url = (f"{BASE}/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
-               f"?@dataInicial='{_fmt(start)}'&@dataFinalCotacao='{_fmt(end)}'&$format=json")
-    else:
-        url = (f"{BASE}/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
-               f"?@moeda='{moeda}'&@dataInicial='{_fmt(start)}'&@dataFinalCotacao='{_fmt(end)}'&$format=json")
-    j = http_get_json(url, timeout=30)
-    series = []
-    for row in j.get("value", []):
-        tipo = (row.get("tipoBoletim") or "").strip()
-        if "Fechamento" in tipo or tipo == "":
-            data = (row.get("dataHoraCotacao") or "")[:10]
-            venda = row.get("cotacaoVenda")
-            if data and venda is not None:
-                series.append({"data": data, "valor": float(venda)})
-    # Dedupe por data (mantém último)
-    seen = {}
-    for p in series:
-        seen[p["data"]] = p
-    return sorted(seen.values(), key=lambda x: x["data"])
+BASE = (
+    "https://olinda.bcb.gov.br/olinda/servico/PTAX/v1/odata/"
+    "CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,"
+    "dataFinalCotacao=@dataFinalCotacao)"
+)
 
-def run() -> None:
-    out = {
-        "ultima_atualizacao": now_iso(),
-        "fonte": "Banco Central do Brasil · PTAX",
-        "endpoint": BASE,
-        "status": "OK",
-        "moedas": {},
+
+def baixar_moeda(moeda: str, dias: int = 95) -> dict | None:
+    fim    = date.today()
+    inicio = fim - timedelta(days=dias)
+    params = {
+        "@moeda":            f"'{moeda}'",
+        "@dataInicial":      f"'{inicio.strftime('%m-%d-%Y')}'",
+        "@dataFinalCotacao": f"'{fim.strftime('%m-%d-%Y')}'",
+        "$format":           "json",
+        "$select":           "cotacaoVenda,dataHoraCotacao",
     }
+    r = http_get(BASE, params=params, timeout=30)
+    if not r:
+        log.warning("%s · falha HTTP", moeda)
+        return None
     try:
-        for moeda, label in [("USD", "Dólar Americano"), ("EUR", "Euro")]:
-            try:
-                last = fetch_last_quotation(moeda)
-                serie = fetch_period(moeda, dias=90)
-                prev = serie[-2]["valor"] if len(serie) >= 2 else None
-                cur = serie[-1]["valor"] if serie else (last["venda"] if last else None)
-                out["moedas"][moeda] = {
-                    "codigo": moeda,
-                    "nome": label,
-                    "cotacao_atual": cur,
-                    "cotacao_anterior": prev,
-                    "variacao_pct": pct(cur, prev) if (cur and prev) else None,
-                    "data_referencia": last["data_cotacao"] if last else None,
-                    "serie_90d": serie,
-                }
-                log.info(f"BCB {moeda}: {cur} (Δ={out['moedas'][moeda]['variacao_pct']}) · {len(serie)} pontos")
-            except Exception as e:
-                log.error(f"Falha BCB {moeda}: {e}")
-                out["moedas"][moeda] = {
-                    "codigo": moeda, "nome": label,
-                    "cotacao_atual": None, "serie_90d": [], "erro": str(e)[:200],
-                }
-        save_json(DATA_DIR / "cambio.json", out)
-        total_pontos = sum(len(m.get("serie_90d", [])) for m in out["moedas"].values())
-        mark_source_ok("bcb_ptax", rows=total_pontos,
-                       note=f"USD + EUR · {total_pontos} fechamentos", endpoint=BASE)
+        rows = r.json().get("value", [])
     except Exception as e:
-        log.exception(f"Erro fatal BCB: {e}")
-        mark_source_error("bcb_ptax", str(e), endpoint=BASE)
-        raise
+        log.warning("%s · falha JSON: %s", moeda, e)
+        return None
+    if not rows:
+        return None
+
+    # série temporal
+    serie = [
+        {"data": row["dataHoraCotacao"][:10], "valor": float(row["cotacaoVenda"])}
+        for row in rows if row.get("cotacaoVenda")
+    ]
+    # ordena cronologicamente, dedup por data
+    seen = {}
+    for it in serie:
+        seen[it["data"]] = it["valor"]
+    serie_clean = [{"data": d, "valor": v} for d, v in sorted(seen.items())]
+
+    if len(serie_clean) < 2:
+        return None
+
+    cotacao  = serie_clean[-1]["valor"]
+    anterior = serie_clean[-2]["valor"]
+
+    return {
+        "cotacao":           cotacao,
+        "cotacao_anterior":  anterior,
+        "variacao_pct":      pct_change(cotacao, anterior),
+        "data_ref":          serie_clean[-1]["data"],
+        "serie_90d":         serie_clean[-90:],
+    }
+
+
+def main():
+    log.info("iniciando · BCB PTAX")
+    try:
+        usd = baixar_moeda("USD")
+        eur = baixar_moeda("EUR")
+        if not usd and not eur:
+            save_json("cambio.json", "BCB PTAX", "erro",
+                      erro="Ambas as moedas falharam")
+            log.error("USD e EUR falharam")
+            return 1
+        status = "ok" if (usd and eur) else "fallback"
+        save_json("cambio.json", "BCB PTAX", status,
+                  dados={"usd": usd, "eur": eur})
+        log.info("ok · USD=%s · EUR=%s",
+                 usd["cotacao"] if usd else "—",
+                 eur["cotacao"] if eur else "—")
+        return 0
+    except Exception as e:
+        log.exception("falha inesperada")
+        save_json("cambio.json", "BCB PTAX", "erro", erro=str(e))
+        return 1
+
 
 if __name__ == "__main__":
-    run()
+    raise SystemExit(main())

@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/styles-v24-patch.css">
 <link rel="icon" href="assets/logo-be8.svg" type="image/svg+xml">
 </head>
 <body>
@@ -150,7 +151,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-label">Milho CBOT</div>
-        <span class="src-status src-pending">—</span>
+        <span class="src-status src-pending" id="status-milho">—</span>
       </div>
       <div class="kpi-value count-up" id="milho-value">¢ —<span class="unit">/bu</span></div>
       <div class="kpi-delta-row">
@@ -161,7 +162,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-label">Trigo CBOT</div>
-        <span class="src-status src-pending">—</span>
+        <span class="src-status src-pending" id="status-trigo">—</span>
       </div>
       <div class="kpi-value count-up" id="trigo-value">¢ —<span class="unit">/bu</span></div>
       <div class="kpi-delta-row">
@@ -172,7 +173,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-label">Óleo de Soja CBOT</div>
-        <span class="src-status src-pending">—</span>
+        <span class="src-status src-pending" id="status-oleo_soja">—</span>
       </div>
       <div class="kpi-value count-up" id="oleo_soja-value">¢ —<span class="unit">/lb</span></div>
       <div class="kpi-delta-row">
@@ -183,7 +184,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-label">WTI Crude</div>
-        <span class="src-status src-pending">—</span>
+        <span class="src-status src-pending" id="status-wti">—</span>
       </div>
       <div class="kpi-value count-up" id="wti-value">$ —<span class="unit">/bbl</span></div>
       <div class="kpi-delta-row">
@@ -268,7 +269,7 @@
         <div class="card-label">Óleo de Soja · série 90 dias</div>
         <span class="card-meta">CBOT · insumo-chave B100</span>
       </div>
-      <div class="chart-area" id="oleo-90-chart"></div>
+      <div class="chart-area" id="oleo_soja-90-chart"></div>
     </div>
     <div class="card col-span-6">
       <div class="card-header">
@@ -859,22 +860,23 @@
       </div>
       <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
         <li>IBGE/SIDRA · área plantada</li>
-        <li>FRED + EIA · estoques globais</li>
         <li>ANP · produção B100 mensal</li>
         <li>Painel ANP biodiesel · scraping</li>
         <li>USDA FAS · benchmark global</li>
+        <li>Notícias Agrícolas · RSS</li>
+        <li>CEPEA/ESALQ · widget grãos R$/sc</li>
       </ul>
     </div>
     <div class="card">
       <div class="card-header">
-        <div class="card-label" style="color: var(--be8-mist);">○ FASE 3 · Premium</div>
+        <div class="card-label" style="color: var(--be8-dim);">○ FASE 3 · Em desenvolvimento</div>
       </div>
       <ul style="margin-left: 18px; color: var(--be8-mist); font-size: 12.5px; line-height: 1.9;">
-        <li>CEPEA/ESALQ · widget oficial</li>
+        <li>FRED · estoques EUA (req. API key)</li>
+        <li>EIA · energia global (req. API key)</li>
         <li>SIFRECA · benchmark frete</li>
         <li>ANTT · piso mínimo</li>
         <li>Modelos ML preditivos B100</li>
-        <li>LLM (Claude/GPT) · resumos automáticos</li>
       </ul>
     </div>
   </div>
@@ -1290,8 +1292,8 @@
      FOOTER
      ========================================================================= -->
 <footer>
-  <div><strong style="color: var(--be8-mist);">BE8 · MARKET INTELLIGENCE PLATFORM</strong> · v2.0 · atualização automática 07h e 13h</div>
-  <div>Fontes: BCB · ANP · CONAB · MDIC/ComexStat · IBGE · CME · Yahoo · FRED · EIA</div>
+  <div><strong style="color: var(--be8-mist);">BE8 · MARKET INTELLIGENCE PLATFORM</strong> · v2.4 · atualização automática 07h e 13h</div>
+  <div>Fontes: BCB · ANP · CONAB · MDIC/ComexStat · IBGE · CME · Yahoo · USDA · CEPEA · Notícias Agrícolas</div>
   <div id="footer-build">build · —</div>
   <div style="width:100%; text-align:center; padding-top:8px; color: var(--be8-dim); border-top: 1px solid var(--be8-border); margin-top: 4px;">
     Desenvolvido por Lucas L. Diogo para Be8 · Market Intelligence Platform · 2026
