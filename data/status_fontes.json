@@ -2,99 +2,99 @@
   "fontes": {
     "be8_profile": {
       "status": "OK",
-      "ultima_atualizacao_ok": "2026-05-26T13:20:58",
+      "ultima_atualizacao_ok": "2026-05-26T18:27:07",
       "linhas": 11,
       "nota": "perfil curado · fontes públicas validadas",
       "endpoint": "be8energy.com + fontes",
-      "ultima_verificacao": "2026-05-26T13:20:58"
+      "ultima_verificacao": "2026-05-26T18:27:07"
     },
     "conab_graos": {
       "status": "OK",
       "nota": "safra 2025/26 · 3 culturas",
       "linhas": 81,
       "endpoint": "https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.txt",
-      "ultima_verificacao": "2026-05-26T13:19:09",
-      "ultima_atualizacao_ok": "2026-05-26T13:19:09"
+      "ultima_verificacao": "2026-05-26T18:25:34",
+      "ultima_atualizacao_ok": "2026-05-26T18:25:34"
     },
     "anp_b100": {
       "status": "PARCIAL",
       "nota": "planilha capturada · snapshot base",
       "linhas": 13,
       "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls",
-      "ultima_verificacao": "2026-05-26T13:19:00"
+      "ultima_verificacao": "2026-05-26T18:25:23"
     },
     "ibge_sidra": {
       "status": "OK",
       "nota": "3 culturas · 61 UFs · PAM 1612 (prod+área)",
       "linhas": 61,
       "endpoint": "https://apisidra.ibge.gov.br/values",
-      "ultima_verificacao": "2026-05-26T13:19:14",
-      "ultima_atualizacao_ok": "2026-05-26T13:19:14"
+      "ultima_verificacao": "2026-05-26T18:25:41",
+      "ultima_atualizacao_ok": "2026-05-26T18:25:41"
     },
     "anp_vendas": {
       "status": "PARCIAL",
       "nota": "snapshot Anuário ANP 2024 + preços R$/L (CSV ao vivo indisponível)",
       "linhas": 81,
       "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb",
-      "ultima_verificacao": "2026-05-26T13:19:07"
+      "ultima_verificacao": "2026-05-26T18:25:31"
     },
     "usda_benchmarks": {
       "status": "PARCIAL",
       "nota": "WASDE WASDE-jan-2026 · 8 países soja · 8 biodiesel",
       "linhas": 16,
       "endpoint": "https://www.usda.gov/oce/commodity/wasde",
-      "ultima_verificacao": "2026-05-26T13:20:00"
+      "ultima_verificacao": "2026-05-26T18:26:11"
     },
     "bcb_ptax": {
       "status": "OK",
-      "ultima_atualizacao_ok": "2026-05-26T13:18:46",
+      "ultima_atualizacao_ok": "2026-05-26T18:25:04",
       "linhas": 124,
       "nota": "USD + EUR · 124 fechamentos",
       "endpoint": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata",
-      "ultima_verificacao": "2026-05-26T13:18:46"
+      "ultima_verificacao": "2026-05-26T18:25:04"
     },
     "commodities_yahoo": {
       "status": "OK",
-      "ultima_atualizacao_ok": "2026-05-26T13:18:50",
+      "ultima_atualizacao_ok": "2026-05-26T18:25:06",
       "linhas": 8,
       "nota": "todas as commodities OK",
       "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart",
-      "ultima_verificacao": "2026-05-26T13:18:50"
+      "ultima_verificacao": "2026-05-26T18:25:06"
     },
     "anp_combustiveis": {
       "status": "OK",
-      "ultima_atualizacao_ok": "2026-05-26T13:18:57",
+      "ultima_atualizacao_ok": "2026-05-26T18:25:20",
       "linhas": 44931,
       "nota": "ref 28/02/2026 · 3 produtos",
       "endpoint": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan/2026/02-cados-abertos-preco-gasolina-etanol.csv",
-      "ultima_verificacao": "2026-05-26T13:18:58"
+      "ultima_verificacao": "2026-05-26T18:25:20"
     },
     "comex": {
       "status": "PARCIAL",
-      "nota": "5 falhas / 8",
-      "linhas": 3,
+      "nota": "3 falhas / 8",
+      "linhas": 5,
       "endpoint": "https://api-comexstat.mdic.gov.br/general",
-      "ultima_verificacao": "2026-05-26T13:20:00"
+      "ultima_verificacao": "2026-05-26T18:26:11"
     },
     "fred_eia": {
       "status": "PARCIAL",
       "nota": "Aguardando configuração de chaves (opcional)",
       "linhas": 0,
       "endpoint": "fred.stlouisfed.org + api.eia.gov",
-      "ultima_verificacao": "2026-05-26T13:20:00"
+      "ultima_verificacao": "2026-05-26T18:26:11"
     },
     "noticias_rss": {
       "status": "PARCIAL",
       "nota": "3 feeds falharam",
-      "linhas": 15,
+      "linhas": 13,
       "endpoint": "RSS agregado",
-      "ultima_verificacao": "2026-05-26T13:20:58"
+      "ultima_verificacao": "2026-05-26T18:27:07"
     }
   },
-  "ultima_atualizacao_global": "2026-05-26T13:20:58",
+  "ultima_atualizacao_global": "2026-05-26T18:27:07",
   "ultima_execucao": {
-    "timestamp": "2026-05-26T13:20:58",
-    "duracao_segundos": 134.0,
+    "timestamp": "2026-05-26T18:27:07",
+    "duracao_segundos": 125.0,
     "coletores_ok": 12,
     "coletores_erro": 0,
     "detalhes": [
@@ -102,49 +102,49 @@
         "modulo": "baixar_cambio",
         "label": "BCB · Câmbio PTAX",
         "status": "OK",
-        "duracao_s": 2.0
+        "duracao_s": 2.3
       },
       {
         "modulo": "baixar_commodities",
         "label": "Yahoo Finance · Commodities",
         "status": "OK",
-        "duracao_s": 4.4
+        "duracao_s": 1.5
       },
       {
         "modulo": "baixar_anp_combustiveis",
         "label": "ANP · Preços combustíveis",
         "status": "OK",
-        "duracao_s": 7.1
+        "duracao_s": 14.0
       },
       {
         "modulo": "baixar_anp_b100",
         "label": "ANP · Biodiesel B100",
         "status": "OK",
-        "duracao_s": 2.4
+        "duracao_s": 3.2
       },
       {
         "modulo": "baixar_anp_vendas",
         "label": "ANP · Vendas por UF/distribuidora",
         "status": "OK",
-        "duracao_s": 6.8
+        "duracao_s": 7.8
       },
       {
         "modulo": "baixar_conab",
         "label": "CONAB · Safras",
         "status": "OK",
-        "duracao_s": 2.2
+        "duracao_s": 3.0
       },
       {
         "modulo": "baixar_ibge_sidra",
         "label": "IBGE SIDRA · LSPA",
         "status": "OK",
-        "duracao_s": 5.4
+        "duracao_s": 6.7
       },
       {
         "modulo": "baixar_comex",
         "label": "ComexStat · Comércio exterior",
         "status": "OK",
-        "duracao_s": 45.9
+        "duracao_s": 30.7
       },
       {
         "modulo": "baixar_fred_eia",
@@ -162,7 +162,7 @@
         "modulo": "gerar_noticias",
         "label": "Notícias setoriais (RSS)",
         "status": "OK",
-        "duracao_s": 57.8
+        "duracao_s": 55.7
       },
       {
         "modulo": "gerar_be8_profile",

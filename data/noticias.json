@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T13:20:00",
+  "ultima_atualizacao": "2026-05-26T18:26:11",
   "fonte": "Agregação de feeds RSS públicos",
   "status": "PARCIAL",
   "noticias": [
@@ -16,26 +16,38 @@
       "impacto_be8": "Movimento competitivo direto."
     },
     {
-      "titulo": "Ministério Público do Trabalho pede proibição total do glifosato no Brasil",
+      "titulo": "Avião brasileiro vai transportar alimentos entre cidades bolivianas",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 14:04:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/aviao-brasileiro-vai-transportar-alimentos-entre-cidades-bolivianas",
+      "resumo": "O Brasil vai transportar internamente alimentos entre as cidades bolivianas de Santa Cruz de La Sierra, região mais baixa do país, até a capital La Paz. A ajuda humanitária ocorre em meio aos protestos pela renúncia do presidente Rodrigo Paz. A operação, ainda sem data prevista, …",
+      "categoria": "combustíveis",
+      "tag": "macro",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+    },
+    {
+      "titulo": "Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira",
       "fonte": "Canal Rural",
       "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:26:28 +0000",
-      "link": "https://www.canalrural.com.br/agricultura/ministerio-publico-do-trabalho-pede-proibicao-total-do-glifosato-no-brasil/",
-      "resumo": "Foto: Pixabay Processo movido contra a União e a Anvisa pede suspensão imediata de registros e vendas do herbicida, que é o mais utilizado nas lavouras do país O post Ministério Público do Trabalho pede proibição total do glifosato no Brasil apareceu primeiro em Canal Rural .",
+      "data": "Tue, 26 May 2026 17:52:54 +0000",
+      "link": "https://www.canalrural.com.br/agricultura/machadinho-sedia-festa-da-colheita-da-erva-mate-nesta-quinta-feira/",
+      "resumo": "Evento no Nordeste do Rio Grande do Sul reúne fórum técnico sobre manejo da cultura e ato simbólico de abertura da safra 2026 O post Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira apareceu primeiro em Canal Rural .",
       "categoria": "safra",
       "tag": "originação",
       "impacto_nivel": "alto",
       "impacto_be8": "Contexto macro · monitorar."
     },
     {
-      "titulo": "Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo",
+      "titulo": "El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria",
       "fonte": "Canal Rural",
       "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:40:50 +0000",
-      "link": "https://www.canalrural.com.br/agricultura/mapa-determina-recolhimento-de-lote-de-azeite-de-oliva-da-marca-san-paolo/",
-      "resumo": "Análise laboratorial identificou mistura de outros óleos vegetais no produto vendido como extravirgem; lote foi considerado impróprio para consumo humano. O post Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo apareceu primeiro em Canal Rural .",
-      "categoria": "biodiesel",
-      "tag": "core",
+      "data": "Tue, 26 May 2026 18:12:28 +0000",
+      "link": "https://www.canalrural.com.br/agricultura/projeto-soja-brasil/el-nino-pode-ser-vilao-para-a-soja-brasileira-na-proxima-safra-aponta-consultoria/",
+      "resumo": "Foto: Unsplash/reprodução Fenômeno climático favorece safra dos EUA neste momento, mas pode trazer irregularidade de chuvas e perdas produtivas para o Brasil O post El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria apareceu primeiro em Canal Rural…",
+      "categoria": "agro · soja",
+      "tag": "insumo",
       "impacto_nivel": "alto",
       "impacto_be8": "Afeta diretamente preço/originação do B100."
     },
@@ -81,23 +93,11 @@
       "fonte_id": "agencia_brasil_economia",
       "data": "Tue, 26 May 2026 11:02:00 -0300",
       "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/brasil-do-futuro-depende-dos-jovens-negros-diz-pnud",
-      "resumo": "“Quem sustentará o Brasil do futuro é um jovem negro, não é um jovem branco\". A ponderação é da coordenadora da Unidade de Desenvolvimento Humano do Programa das Nações Unidas para o Desenvolvimento (Pnud) Brasil, Betina Barbosa que vai além: \"É fundamental colocar essas pessoas …",
+      "resumo": "O Pnud Brasil divulgou, nesta terça-feira (26), a pesquisa Radar IDHM , que apresenta os dados do Índice de Desenvolvimento Humano Municipal (IDHM). Os números mostram as desigualdades que ainda existem no Brasil e apontam para o alto grau de desenvolvimento das pessoas brancas, …",
       "categoria": "energia",
       "tag": "regulatorio",
       "impacto_nivel": "médio",
       "impacto_be8": "Contexto macro · monitorar."
-    },
-    {
-      "titulo": "Operação contra Castro mira aportes de R$ 3,6 bi em fundos do Master",
-      "fonte": "Agência Brasil · Últimas",
-      "fonte_id": "agencia_brasil_geral",
-      "data": "Tue, 26 May 2026 11:59:00 -0300",
-      "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/operacao-contra-castro-mira-aportes-de-r-36-bi-em-fundos-do-master",
-      "resumo": "A oitava fase da Operação Compliance Zero foi deflagrada nesta terça-feira (26) pela Polícia Federal (PF) e investiga o envolvimento do ex-governador Cláudio Castro na aplicação irregular de R$ 3,6 bilhões da previdência dos servidores fluminenses em Letras de Crédito e fundos do…",
-      "categoria": "câmbio",
-      "tag": "macro",
-      "impacto_nivel": "médio",
-      "impacto_be8": "Afeta paridade exportação/importação."
     },
     {
       "titulo": "Déficit nas contas externas fica em R$ 1,8 bilhão em abril",
@@ -112,41 +112,65 @@
       "impacto_be8": "Afeta paridade exportação/importação."
     },
     {
-      "titulo": "Após 8 semanas de queda, preço do etanol volta a subir, aponta Cepea",
-      "fonte": "Canal Rural",
-      "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:36:00 +0000",
-      "link": "https://www.canalrural.com.br/etanol-acucar/apos-8-semanas-de-queda-preco-do-etanol-volta-a-subir-aponta-cepea/",
-      "resumo": "Foto: Freepik Chuvas atrapalham a produção do combustível, enquanto compradores seguem cautelosos nas negociações O post Após 8 semanas de queda, preço do etanol volta a subir, aponta Cepea apareceu primeiro em Canal Rural .",
+      "titulo": "Líder do Irã convoca países islâmicos contra EUA e Israel",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 13:07:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/lider-do-ira-convoca-paises-islamicos-contra-eua-e-israel",
+      "resumo": "O líder supremo do Irã, Sayyid Mojtaba Khamenei, convocou os países islâmicos a se unirem com o país persa na luta por uma nova ordem na região sem a presença militar dos Estados Unidos (EUA) e sem Israel. A declaração, publicada em carta nesta terça-feira (26), foi dirigida aos …",
       "categoria": "energia",
       "tag": "regulatorio",
       "impacto_nivel": "médio",
       "impacto_be8": "Contexto macro · monitorar."
     },
     {
-      "titulo": "Plantio de trigo avança para 61% da área no Paraná, informa Deral",
+      "titulo": "Estudo mapeia 13 perfis de jovens mais vulneráveis a desigualdades",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 14:01:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/estudo-mapeia-13-perfis-de-jovens-mais-vulneraveis-desigualdades",
+      "resumo": "Dificuldade de continuar os estudos, trabalhos informais, violência urbana e cyberbullying são alguns dos desafios enfrentados por jovens vulneráveis de diferentes grupos, segundo o estudo Juventudes Brasileiras Minorizadas , divulgado nesta terça-feira (26). O trabalho reúne 14 …",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "Caso Henry: celular da babá levou polícia a descobrir agressões",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 14:18:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/caso-henry-celular-da-baba-levou-policia-descobrir-agressoes",
+      "resumo": "O delegado Edson Henrique Damasceno, então titular da delegacia policial que investigou a morte do Henry Borel, de 4 anos, em março de 2021, afirmou nesta terça-feira (26) que a análise de prints (reproduções) de mensagens de celular da babá do menino levaram a descobrir o que ch…",
+      "categoria": "câmbio",
+      "tag": "macro",
+      "impacto_nivel": "médio",
+      "impacto_be8": "Afeta paridade exportação/importação."
+    },
+    {
+      "titulo": "FAAP e ABIEC abrem inscrições para curso sobre cadeia da carne bovina",
       "fonte": "Canal Rural",
       "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:56:28 +0000",
-      "link": "https://www.canalrural.com.br/agricultura/plantio-de-trigo-avanca-para-61-da-area-no-parana-informa-deral/",
-      "resumo": "Boletim também mostra milho safrinha com 79% das lavouras em boas condições, apesar de registros pontuais de geadas, estiagem, pragas e doenças O post Plantio de trigo avança para 61% da área no Paraná, informa Deral apareceu primeiro em Canal Rural .",
-      "categoria": "agro · milho",
-      "tag": "insumo",
+      "data": "Tue, 26 May 2026 17:19:21 +0000",
+      "link": "https://www.canalrural.com.br/pecuaria/faap-e-abiec-abrem-inscricoes-para-curso-sobre-cadeia-da-carne-bovina/",
+      "resumo": "Formação híbrida terá 60 horas a partir de agosto de 2026 e abordará produção, exportação, logística, sustentabilidade e acesso a mercados O post FAAP e ABIEC abrem inscrições para curso sobre cadeia da carne bovina apareceu primeiro em Canal Rural .",
+      "categoria": "comércio exterior",
+      "tag": "macro",
       "impacto_nivel": "médio",
       "impacto_be8": "Contexto macro · monitorar."
     }
   ],
   "manchete_dia": {
-    "titulo": "Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo",
-    "fonte": "Canal Rural",
-    "fonte_id": "canal_rural",
-    "data": "Tue, 26 May 2026 15:40:50 +0000",
-    "link": "https://www.canalrural.com.br/agricultura/mapa-determina-recolhimento-de-lote-de-azeite-de-oliva-da-marca-san-paolo/",
-    "resumo": "Análise laboratorial identificou mistura de outros óleos vegetais no produto vendido como extravirgem; lote foi considerado impróprio para consumo humano. O post Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo apareceu primeiro em Canal Rural .",
-    "categoria": "biodiesel",
-    "tag": "core",
+    "titulo": "BRB: Celina Leão vai ao STF pedir aval para empréstimo bilionário",
+    "fonte": "Agência Brasil · Economia",
+    "fonte_id": "agencia_brasil_economia",
+    "data": "Tue, 26 May 2026 11:08:00 -0300",
+    "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/brb-celina-leao-vai-ao-stf-pedir-aval-para-emprestimo-bilionario",
+    "resumo": "A governadora do Distrito Federal, Celina Leão, tem audiência marcada na tarde desta terça-feira (26), no Supremo Tribunal Federal (STF), com representantes do governo federal, para discutir uma autorização do Tesouro Nacional para um empréstimo bilionário para salvar o Banco Reg…",
+    "categoria": "concorrentes",
+    "tag": "concorrente",
     "impacto_nivel": "alto",
-    "impacto_be8": "Afeta diretamente preço/originação do B100."
+    "impacto_be8": "Movimento competitivo direto."
   },
   "radares": {
     "concorrentes": [
@@ -163,30 +187,44 @@
         "impacto_be8": "Movimento competitivo direto."
       }
     ],
+    "combustíveis": [
+      {
+        "titulo": "Avião brasileiro vai transportar alimentos entre cidades bolivianas",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Tue, 26 May 2026 14:04:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/aviao-brasileiro-vai-transportar-alimentos-entre-cidades-bolivianas",
+        "resumo": "O Brasil vai transportar internamente alimentos entre as cidades bolivianas de Santa Cruz de La Sierra, região mais baixa do país, até a capital La Paz. A ajuda humanitária ocorre em meio aos protestos pela renúncia do presidente Rodrigo Paz. A operação, ainda sem data prevista, …",
+        "categoria": "combustíveis",
+        "tag": "macro",
+        "impacto_nivel": "alto",
+        "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+      }
+    ],
     "safra": [
       {
-        "titulo": "Ministério Público do Trabalho pede proibição total do glifosato no Brasil",
+        "titulo": "Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira",
         "fonte": "Canal Rural",
         "fonte_id": "canal_rural",
-        "data": "Tue, 26 May 2026 15:26:28 +0000",
-        "link": "https://www.canalrural.com.br/agricultura/ministerio-publico-do-trabalho-pede-proibicao-total-do-glifosato-no-brasil/",
-        "resumo": "Foto: Pixabay Processo movido contra a União e a Anvisa pede suspensão imediata de registros e vendas do herbicida, que é o mais utilizado nas lavouras do país O post Ministério Público do Trabalho pede proibição total do glifosato no Brasil apareceu primeiro em Canal Rural .",
+        "data": "Tue, 26 May 2026 17:52:54 +0000",
+        "link": "https://www.canalrural.com.br/agricultura/machadinho-sedia-festa-da-colheita-da-erva-mate-nesta-quinta-feira/",
+        "resumo": "Evento no Nordeste do Rio Grande do Sul reúne fórum técnico sobre manejo da cultura e ato simbólico de abertura da safra 2026 O post Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira apareceu primeiro em Canal Rural .",
         "categoria": "safra",
         "tag": "originação",
         "impacto_nivel": "alto",
         "impacto_be8": "Contexto macro · monitorar."
       }
     ],
-    "biodiesel": [
+    "agro · soja": [
       {
-        "titulo": "Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo",
+        "titulo": "El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria",
         "fonte": "Canal Rural",
         "fonte_id": "canal_rural",
-        "data": "Tue, 26 May 2026 15:40:50 +0000",
-        "link": "https://www.canalrural.com.br/agricultura/mapa-determina-recolhimento-de-lote-de-azeite-de-oliva-da-marca-san-paolo/",
-        "resumo": "Análise laboratorial identificou mistura de outros óleos vegetais no produto vendido como extravirgem; lote foi considerado impróprio para consumo humano. O post Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo apareceu primeiro em Canal Rural .",
-        "categoria": "biodiesel",
-        "tag": "core",
+        "data": "Tue, 26 May 2026 18:12:28 +0000",
+        "link": "https://www.canalrural.com.br/agricultura/projeto-soja-brasil/el-nino-pode-ser-vilao-para-a-soja-brasileira-na-proxima-safra-aponta-consultoria/",
+        "resumo": "Foto: Unsplash/reprodução Fenômeno climático favorece safra dos EUA neste momento, mas pode trazer irregularidade de chuvas e perdas produtivas para o Brasil O post El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria apareceu primeiro em Canal Rural…",
+        "categoria": "agro · soja",
+        "tag": "insumo",
         "impacto_nivel": "alto",
         "impacto_be8": "Afeta diretamente preço/originação do B100."
       }
@@ -217,24 +255,36 @@
         "impacto_be8": "Afeta paridade exportação/importação."
       },
       {
-        "titulo": "Operação contra Castro mira aportes de R$ 3,6 bi em fundos do Master",
-        "fonte": "Agência Brasil · Últimas",
-        "fonte_id": "agencia_brasil_geral",
-        "data": "Tue, 26 May 2026 11:59:00 -0300",
-        "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/operacao-contra-castro-mira-aportes-de-r-36-bi-em-fundos-do-master",
-        "resumo": "A oitava fase da Operação Compliance Zero foi deflagrada nesta terça-feira (26) pela Polícia Federal (PF) e investiga o envolvimento do ex-governador Cláudio Castro na aplicação irregular de R$ 3,6 bilhões da previdência dos servidores fluminenses em Letras de Crédito e fundos do…",
-        "categoria": "câmbio",
-        "tag": "macro",
-        "impacto_nivel": "médio",
-        "impacto_be8": "Afeta paridade exportação/importação."
-      },
-      {
         "titulo": "Déficit nas contas externas fica em R$ 1,8 bilhão em abril",
         "fonte": "Agência Brasil · Economia",
         "fonte_id": "agencia_brasil_economia",
         "data": "Tue, 26 May 2026 12:05:00 -0300",
         "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/deficit-nas-contas-externas-fica-em-r-18-bilhao-em-abril",
         "resumo": "As contas externas do Brasil tiveram saldo negativo de US$ 1,765 bilhão em abril, informou nesta terça-feira (24) o Banco Central (BC) . O valor é pouco maior que o registrado no mesmo período de 2025, quando o déficit alcançou US$ 1,636 bilhão nas transações correntes, que se re…",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Estudo mapeia 13 perfis de jovens mais vulneráveis a desigualdades",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Tue, 26 May 2026 14:01:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/direitos-humanos/noticia/2026-05/estudo-mapeia-13-perfis-de-jovens-mais-vulneraveis-desigualdades",
+        "resumo": "Dificuldade de continuar os estudos, trabalhos informais, violência urbana e cyberbullying são alguns dos desafios enfrentados por jovens vulneráveis de diferentes grupos, segundo o estudo Juventudes Brasileiras Minorizadas , divulgado nesta terça-feira (26). O trabalho reúne 14 …",
+        "categoria": "câmbio",
+        "tag": "macro",
+        "impacto_nivel": "médio",
+        "impacto_be8": "Afeta paridade exportação/importação."
+      },
+      {
+        "titulo": "Caso Henry: celular da babá levou polícia a descobrir agressões",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Tue, 26 May 2026 14:18:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-05/caso-henry-celular-da-baba-levou-policia-descobrir-agressoes",
+        "resumo": "O delegado Edson Henrique Damasceno, então titular da delegacia policial que investigou a morte do Henry Borel, de 4 anos, em março de 2021, afirmou nesta terça-feira (26) que a análise de prints (reproduções) de mensagens de celular da babá do menino levaram a descobrir o que ch…",
         "categoria": "câmbio",
         "tag": "macro",
         "impacto_nivel": "médio",
@@ -260,35 +310,35 @@
         "fonte_id": "agencia_brasil_economia",
         "data": "Tue, 26 May 2026 11:02:00 -0300",
         "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/brasil-do-futuro-depende-dos-jovens-negros-diz-pnud",
-        "resumo": "“Quem sustentará o Brasil do futuro é um jovem negro, não é um jovem branco\". A ponderação é da coordenadora da Unidade de Desenvolvimento Humano do Programa das Nações Unidas para o Desenvolvimento (Pnud) Brasil, Betina Barbosa que vai além: \"É fundamental colocar essas pessoas …",
+        "resumo": "O Pnud Brasil divulgou, nesta terça-feira (26), a pesquisa Radar IDHM , que apresenta os dados do Índice de Desenvolvimento Humano Municipal (IDHM). Os números mostram as desigualdades que ainda existem no Brasil e apontam para o alto grau de desenvolvimento das pessoas brancas, …",
         "categoria": "energia",
         "tag": "regulatorio",
         "impacto_nivel": "médio",
         "impacto_be8": "Contexto macro · monitorar."
       },
       {
-        "titulo": "Após 8 semanas de queda, preço do etanol volta a subir, aponta Cepea",
-        "fonte": "Canal Rural",
-        "fonte_id": "canal_rural",
-        "data": "Tue, 26 May 2026 15:36:00 +0000",
-        "link": "https://www.canalrural.com.br/etanol-acucar/apos-8-semanas-de-queda-preco-do-etanol-volta-a-subir-aponta-cepea/",
-        "resumo": "Foto: Freepik Chuvas atrapalham a produção do combustível, enquanto compradores seguem cautelosos nas negociações O post Após 8 semanas de queda, preço do etanol volta a subir, aponta Cepea apareceu primeiro em Canal Rural .",
+        "titulo": "Líder do Irã convoca países islâmicos contra EUA e Israel",
+        "fonte": "Agência Brasil · Últimas",
+        "fonte_id": "agencia_brasil_geral",
+        "data": "Tue, 26 May 2026 13:07:00 -0300",
+        "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/lider-do-ira-convoca-paises-islamicos-contra-eua-e-israel",
+        "resumo": "O líder supremo do Irã, Sayyid Mojtaba Khamenei, convocou os países islâmicos a se unirem com o país persa na luta por uma nova ordem na região sem a presença militar dos Estados Unidos (EUA) e sem Israel. A declaração, publicada em carta nesta terça-feira (26), foi dirigida aos …",
         "categoria": "energia",
         "tag": "regulatorio",
         "impacto_nivel": "médio",
         "impacto_be8": "Contexto macro · monitorar."
       }
     ],
-    "agro · milho": [
+    "comércio exterior": [
       {
-        "titulo": "Plantio de trigo avança para 61% da área no Paraná, informa Deral",
+        "titulo": "FAAP e ABIEC abrem inscrições para curso sobre cadeia da carne bovina",
         "fonte": "Canal Rural",
         "fonte_id": "canal_rural",
-        "data": "Tue, 26 May 2026 15:56:28 +0000",
-        "link": "https://www.canalrural.com.br/agricultura/plantio-de-trigo-avanca-para-61-da-area-no-parana-informa-deral/",
-        "resumo": "Boletim também mostra milho safrinha com 79% das lavouras em boas condições, apesar de registros pontuais de geadas, estiagem, pragas e doenças O post Plantio de trigo avança para 61% da área no Paraná, informa Deral apareceu primeiro em Canal Rural .",
-        "categoria": "agro · milho",
-        "tag": "insumo",
+        "data": "Tue, 26 May 2026 17:19:21 +0000",
+        "link": "https://www.canalrural.com.br/pecuaria/faap-e-abiec-abrem-inscricoes-para-curso-sobre-cadeia-da-carne-bovina/",
+        "resumo": "Formação híbrida terá 60 horas a partir de agosto de 2026 e abordará produção, exportação, logística, sustentabilidade e acesso a mercados O post FAAP e ABIEC abrem inscrições para curso sobre cadeia da carne bovina apareceu primeiro em Canal Rural .",
+        "categoria": "comércio exterior",
+        "tag": "macro",
         "impacto_nivel": "médio",
         "impacto_be8": "Contexto macro · monitorar."
       }
@@ -305,7 +355,7 @@
       "fonte": "Agência Brasil · Últimas",
       "id": "agencia_brasil_geral",
       "status": "OK",
-      "noticias": 5
+      "noticias": 4
     },
     {
       "fonte": "Notícias Agrícolas",
@@ -317,7 +367,7 @@
       "fonte": "Canal Rural",
       "id": "canal_rural",
       "status": "OK",
-      "noticias": 4
+      "noticias": 3
     },
     {
       "fonte": "EPBR · Energia",
@@ -333,30 +383,18 @@
     }
   ],
   "manchete": {
-    "titulo": "Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo",
-    "fonte": "Canal Rural",
-    "fonte_id": "canal_rural",
-    "data": "Tue, 26 May 2026 15:40:50 +0000",
-    "link": "https://www.canalrural.com.br/agricultura/mapa-determina-recolhimento-de-lote-de-azeite-de-oliva-da-marca-san-paolo/",
-    "resumo": "Análise laboratorial identificou mistura de outros óleos vegetais no produto vendido como extravirgem; lote foi considerado impróprio para consumo humano. O post Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo apareceu primeiro em Canal Rural .",
-    "categoria": "biodiesel",
-    "tag": "core",
+    "titulo": "BRB: Celina Leão vai ao STF pedir aval para empréstimo bilionário",
+    "fonte": "Agência Brasil · Economia",
+    "fonte_id": "agencia_brasil_economia",
+    "data": "Tue, 26 May 2026 11:08:00 -0300",
+    "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/brb-celina-leao-vai-ao-stf-pedir-aval-para-emprestimo-bilionario",
+    "resumo": "A governadora do Distrito Federal, Celina Leão, tem audiência marcada na tarde desta terça-feira (26), no Supremo Tribunal Federal (STF), com representantes do governo federal, para discutir uma autorização do Tesouro Nacional para um empréstimo bilionário para salvar o Banco Reg…",
+    "categoria": "concorrentes",
+    "tag": "concorrente",
     "impacto_nivel": "alto",
-    "impacto_be8": "Afeta diretamente preço/originação do B100."
+    "impacto_be8": "Movimento competitivo direto."
   },
   "top5": [
-    {
-      "titulo": "Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo",
-      "fonte": "Canal Rural",
-      "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:40:50 +0000",
-      "link": "https://www.canalrural.com.br/agricultura/mapa-determina-recolhimento-de-lote-de-azeite-de-oliva-da-marca-san-paolo/",
-      "resumo": "Análise laboratorial identificou mistura de outros óleos vegetais no produto vendido como extravirgem; lote foi considerado impróprio para consumo humano. O post Mapa determina recolhimento de lote de azeite de oliva da marca San Paolo apareceu primeiro em Canal Rural .",
-      "categoria": "biodiesel",
-      "tag": "core",
-      "impacto_nivel": "alto",
-      "impacto_be8": "Afeta diretamente preço/originação do B100."
-    },
     {
       "titulo": "BRB: Celina Leão vai ao STF pedir aval para empréstimo bilionário",
       "fonte": "Agência Brasil · Economia",
@@ -370,16 +408,40 @@
       "impacto_be8": "Movimento competitivo direto."
     },
     {
-      "titulo": "Ministério Público do Trabalho pede proibição total do glifosato no Brasil",
+      "titulo": "Avião brasileiro vai transportar alimentos entre cidades bolivianas",
+      "fonte": "Agência Brasil · Últimas",
+      "fonte_id": "agencia_brasil_geral",
+      "data": "Tue, 26 May 2026 14:04:00 -0300",
+      "link": "https://agenciabrasil.ebc.com.br/internacional/noticia/2026-05/aviao-brasileiro-vai-transportar-alimentos-entre-cidades-bolivianas",
+      "resumo": "O Brasil vai transportar internamente alimentos entre as cidades bolivianas de Santa Cruz de La Sierra, região mais baixa do país, até a capital La Paz. A ajuda humanitária ocorre em meio aos protestos pela renúncia do presidente Rodrigo Paz. A operação, ainda sem data prevista, …",
+      "categoria": "combustíveis",
+      "tag": "macro",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Afeta spread biodiesel × diesel fóssil."
+    },
+    {
+      "titulo": "Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira",
       "fonte": "Canal Rural",
       "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 15:26:28 +0000",
-      "link": "https://www.canalrural.com.br/agricultura/ministerio-publico-do-trabalho-pede-proibicao-total-do-glifosato-no-brasil/",
-      "resumo": "Foto: Pixabay Processo movido contra a União e a Anvisa pede suspensão imediata de registros e vendas do herbicida, que é o mais utilizado nas lavouras do país O post Ministério Público do Trabalho pede proibição total do glifosato no Brasil apareceu primeiro em Canal Rural .",
+      "data": "Tue, 26 May 2026 17:52:54 +0000",
+      "link": "https://www.canalrural.com.br/agricultura/machadinho-sedia-festa-da-colheita-da-erva-mate-nesta-quinta-feira/",
+      "resumo": "Evento no Nordeste do Rio Grande do Sul reúne fórum técnico sobre manejo da cultura e ato simbólico de abertura da safra 2026 O post Machadinho sedia Festa da Colheita da Erva-Mate nesta quinta-feira apareceu primeiro em Canal Rural .",
       "categoria": "safra",
       "tag": "originação",
       "impacto_nivel": "alto",
       "impacto_be8": "Contexto macro · monitorar."
+    },
+    {
+      "titulo": "El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria",
+      "fonte": "Canal Rural",
+      "fonte_id": "canal_rural",
+      "data": "Tue, 26 May 2026 18:12:28 +0000",
+      "link": "https://www.canalrural.com.br/agricultura/projeto-soja-brasil/el-nino-pode-ser-vilao-para-a-soja-brasileira-na-proxima-safra-aponta-consultoria/",
+      "resumo": "Foto: Unsplash/reprodução Fenômeno climático favorece safra dos EUA neste momento, mas pode trazer irregularidade de chuvas e perdas produtivas para o Brasil O post El Niño pode ser vilão para a soja brasileira na próxima safra, aponta consultoria apareceu primeiro em Canal Rural…",
+      "categoria": "agro · soja",
+      "tag": "insumo",
+      "impacto_nivel": "alto",
+      "impacto_be8": "Afeta diretamente preço/originação do B100."
     },
     {
       "titulo": "Caixa paga Bolsa Família a beneficiários com NIS de final 7",
@@ -392,20 +454,8 @@
       "tag": "regulatorio",
       "impacto_nivel": "médio",
       "impacto_be8": "Contexto macro · monitorar."
-    },
-    {
-      "titulo": "Brasil do futuro depende dos jovens negros, mostra estudo do Pnud",
-      "fonte": "Agência Brasil · Economia",
-      "fonte_id": "agencia_brasil_economia",
-      "data": "Tue, 26 May 2026 11:02:00 -0300",
-      "link": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-05/brasil-do-futuro-depende-dos-jovens-negros-diz-pnud",
-      "resumo": "“Quem sustentará o Brasil do futuro é um jovem negro, não é um jovem branco\". A ponderação é da coordenadora da Unidade de Desenvolvimento Humano do Programa das Nações Unidas para o Desenvolvimento (Pnud) Brasil, Betina Barbosa que vai além: \"É fundamental colocar essas pessoas …",
-      "categoria": "energia",
-      "tag": "regulatorio",
-      "impacto_nivel": "médio",
-      "impacto_be8": "Contexto macro · monitorar."
     }
   ],
-  "impacto_consolidado_be8": "A edição de hoje traz 11 manchetes setoriais, sendo 3 de alto impacto para a Be8. Destaque para 1 notícias diretamente relacionadas ao biodiesel/B100 e 3 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
+  "impacto_consolidado_be8": "A edição de hoje traz 13 manchetes setoriais, sendo 4 de alto impacto para a Be8. Destaque para 0 notícias diretamente relacionadas ao biodiesel/B100 e 3 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
   "acao_recomendada": "Monitorar especialmente as manchetes do eixo regulatório (resoluções CNPE/ANP podem alterar cronograma B15→B20) e acompanhar movimentos da soja CBOT, que definem a curva de custo do óleo nos próximos 30-60 dias. Considerar antecipar fixação de compras se houver sinal de alta sustentada."
 }
