@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "2026-05-26T08:57:26",
+  "ultima_atualizacao": "2026-05-26T09:25:33",
   "fonte": "Agregação de feeds RSS públicos",
   "status": "PARCIAL",
   "noticias": [
@@ -146,18 +146,6 @@
       "tag": "macro",
       "impacto_nivel": "médio",
       "impacto_be8": "Afeta paridade exportação/importação."
-    },
-    {
-      "titulo": "Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado",
-      "fonte": "Canal Rural",
-      "fonte_id": "canal_rural",
-      "data": "Tue, 26 May 2026 08:45:00 +0000",
-      "link": "https://www.canalrural.com.br/economia/petroleo-em-queda-e-inflacao-em-alta-podcast-destaca-o-que-esperar-do-mercado/",
-      "resumo": "Parceria do PicPay com o Canal Rural, o podcast Diário Econômico traz tudo o que você precisa saber sobre economia para começar bem o dia O post Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado apareceu primeiro em Canal Rural .",
-      "categoria": "petróleo",
-      "tag": "macro",
-      "impacto_nivel": "médio",
-      "impacto_be8": "Contexto macro · monitorar."
     },
     {
       "titulo": "Bolsas da Ásia caem após ataque dos EUA no sul do Irã",
@@ -351,18 +339,6 @@
     ],
     "petróleo": [
       {
-        "titulo": "Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado",
-        "fonte": "Canal Rural",
-        "fonte_id": "canal_rural",
-        "data": "Tue, 26 May 2026 08:45:00 +0000",
-        "link": "https://www.canalrural.com.br/economia/petroleo-em-queda-e-inflacao-em-alta-podcast-destaca-o-que-esperar-do-mercado/",
-        "resumo": "Parceria do PicPay com o Canal Rural, o podcast Diário Econômico traz tudo o que você precisa saber sobre economia para começar bem o dia O post Petróleo em queda e inflação em alta: podcast destaca o que esperar do mercado apareceu primeiro em Canal Rural .",
-        "categoria": "petróleo",
-        "tag": "macro",
-        "impacto_nivel": "médio",
-        "impacto_be8": "Contexto macro · monitorar."
-      },
-      {
         "titulo": "Bolsas da Ásia caem após ataque dos EUA no sul do Irã",
         "fonte": "Canal Rural",
         "fonte_id": "canal_rural",
@@ -435,7 +411,7 @@
       "fonte": "Canal Rural",
       "id": "canal_rural",
       "status": "OK",
-      "noticias": 5
+      "noticias": 4
     },
     {
       "fonte": "EPBR · Energia",
@@ -524,6 +500,6 @@
       "impacto_be8": "Afeta paridade exportação/importação."
     }
   ],
-  "impacto_consolidado_be8": "A edição de hoje traz 17 manchetes setoriais, sendo 2 de alto impacto para a Be8. Destaque para 0 notícias diretamente relacionadas ao biodiesel/B100 e 2 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
+  "impacto_consolidado_be8": "A edição de hoje traz 16 manchetes setoriais, sendo 2 de alto impacto para a Be8. Destaque para 0 notícias diretamente relacionadas ao biodiesel/B100 e 2 no eixo regulatório. O fluxo informacional do dia mantém o foco em commodities agrícolas, combustíveis e marco normativo — variáveis que impactam diretamente custo da matéria-prima, preço de leilão B100 e posicionamento competitivo.",
   "acao_recomendada": "Monitorar especialmente as manchetes do eixo regulatório (resoluções CNPE/ANP podem alterar cronograma B15→B20) e acompanhar movimentos da soja CBOT, que definem a curva de custo do óleo nos próximos 30-60 dias. Considerar antecipar fixação de compras se houver sinal de alta sustentada."
 }

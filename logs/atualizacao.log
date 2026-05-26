@@ -100,96 +100,120 @@
 2026-05-26 04:08:13 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
 2026-05-26 04:08:17 [be8] INFO · ANP Vendas · sem preços disponíveis ainda (anp_combustiveis vazio)
 2026-05-26 04:08:17 [be8] INFO · ANP Vendas · snapshot + preços aplicados · 3 produtos × 27 UFs
-2026-05-26 08:56:30 [be8] INFO · ======================================================================
-2026-05-26 08:56:30 [be8] INFO · INICIANDO ATUALIZAÇÃO · 2026-05-26T08:56:30
-2026-05-26 08:56:30 [be8] INFO · ======================================================================
-2026-05-26 08:56:33 [be8] INFO · BCB USD: 5.0072 (Δ=-0.13562026326286675) · 61 pontos
-2026-05-26 08:56:34 [be8] INFO · BCB EUR: 5.8304 (Δ=0.20968684472861002) · 61 pontos
-2026-05-26 08:56:34 [be8] INFO · ✓ BCB · Câmbio PTAX OK em 4.3s
-2026-05-26 08:56:35 [be8] INFO · Yahoo brent: 96.09 · 74 pontos
-2026-05-26 08:56:36 [be8] INFO · Yahoo wti: 92.66 · 74 pontos
-2026-05-26 08:56:36 [be8] INFO · Yahoo soja: 1190.25 · 74 pontos
-2026-05-26 08:56:37 [be8] INFO · Yahoo milho: 459.00 · 74 pontos
-2026-05-26 08:56:37 [be8] INFO · Yahoo trigo: 639.50 · 74 pontos
-2026-05-26 08:56:38 [be8] INFO · Yahoo oleo_soja: 73.87 · 74 pontos
-2026-05-26 08:56:38 [be8] INFO · Yahoo farelo: 329.50 · 74 pontos
-2026-05-26 08:56:39 [be8] INFO · Yahoo gas: 3.07 · 74 pontos
-2026-05-26 08:56:39 [be8] INFO · ✓ Yahoo Finance · Commodities OK em 4.8s
-2026-05-26 08:56:40 [be8] INFO · ANP · tentando URL descoberta: https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan/2026/02-cados-abertos-preco-gasolina-etanol.csv
-2026-05-26 08:56:46 [be8] INFO · ANP · CSV salvo em C:\Be8 - Project\Be8 - Bench\BENCH-BE8\downloads\anp\precos_2026-05-26.csv (7508 KB)
-2026-05-26 08:56:46 [be8] INFO · ANP combustíveis OK · 44931 linhas · ref 28/02/2026
-2026-05-26 08:56:46 [be8] INFO · ✓ ANP · Preços combustíveis OK em 7.1s
-2026-05-26 08:56:48 [be8] INFO · ANP B100 · planilha descoberta: https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls
-2026-05-26 08:56:49 [be8] INFO · ANP B100 · raw salvo: ProducaoBiodiesel_2026-05-26.xlsx
-2026-05-26 08:56:49 [be8] INFO · ANP B100 · planilha capturada de https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls · usando snapshot
-2026-05-26 08:56:49 [be8] INFO · ✓ ANP · Biodiesel B100 OK em 2.8s
-2026-05-26 08:56:55 [be8] INFO · ANP Vendas · preço não encontrado para diesel_b
-2026-05-26 08:56:55 [be8] INFO · ANP Vendas · preço enriquecido para gasolina_c: R$ 6.3002/L (27 UFs)
-2026-05-26 08:56:55 [be8] INFO · ANP Vendas · preço enriquecido para etanol_hidratado: R$ 4.7661/L (27 UFs)
-2026-05-26 08:56:55 [be8] INFO · ANP Vendas · snapshot + preços aplicados · 3 produtos × 27 UFs
-2026-05-26 08:56:55 [be8] INFO · ✓ ANP · Vendas por UF/distribuidora OK em 6.2s
-2026-05-26 08:56:57 [be8] INFO · CONAB · TXT baixado: 2722845 bytes
-2026-05-26 08:56:57 [be8] INFO · CONAB · delimitador detectado: ';'
-2026-05-26 08:56:57 [be8] INFO · CONAB · cabeçalho: ['ano_agricola', 'dsc_safra_previsao', 'uf', 'produto', 'id_produto', 'area_plantada_mil_ha', 'producao_mil_t', 'produtividade_mil_ha_mil_t']
-2026-05-26 08:56:57 [be8] INFO · CONAB · idx mapeados · produto=3 uf=2 safra/ano=0 tipo=1 prod=6 area=5
-2026-05-26 08:56:57 [be8] INFO · CONAB · 28443 registros · 100 safras únicas
-2026-05-26 08:56:57 [be8] INFO · CONAB · tipos de safra detectados: ['1ª SAFRA', '2ª SAFRA', '3ª SAFRA', 'UNICA']
-2026-05-26 08:56:57 [be8] INFO · CONAB · safras detectadas (mais recentes): ['2025/26', '2025', '2024/25']
-2026-05-26 08:56:57 [be8] INFO · CONAB · culturas com TOTAL na safra 2025/26: {'Soja': False, 'Milho': False, 'Trigo': False}
-2026-05-26 08:56:57 [be8] INFO · CONAB · Trigo zerado em 2025/26, buscando safra alternativa...
-2026-05-26 08:56:57 [be8] INFO · CONAB · safra alternativa para Trigo: 2025 (produção 60.2 Mt)
-2026-05-26 08:56:57 [be8] INFO · CONAB · Milho safra 2025/26: 27 UFs · total 1326.6 Mt
-2026-05-26 08:56:57 [be8] INFO · CONAB · Soja safra 2025/26: 27 UFs · total 1752.0 Mt
-2026-05-26 08:56:57 [be8] INFO · CONAB · Trigo safra 2025/26: 27 UFs · total 60.2 Mt
-2026-05-26 08:56:57 [be8] INFO · CONAB OK · safra 2025/26 · 81 registros
-2026-05-26 08:56:57 [be8] INFO · ✓ CONAB · Safras OK em 2.1s
-2026-05-26 08:56:58 [be8] INFO · SIDRA produção Soja: 27 UFs
-2026-05-26 08:56:58 [be8] INFO · SIDRA produção Milho_1: 27 UFs
-2026-05-26 08:56:59 [be8] INFO · SIDRA produção Milho_2: 27 UFs
-2026-05-26 08:56:59 [be8] INFO · SIDRA produção Trigo: 27 UFs
-2026-05-26 08:57:00 [be8] INFO · SIDRA área plantada Soja: 27 UFs
-2026-05-26 08:57:00 [be8] INFO · SIDRA área plantada Milho_1: 27 UFs
-2026-05-26 08:57:01 [be8] INFO · SIDRA área plantada Milho_2: 27 UFs
-2026-05-26 08:57:01 [be8] INFO · SIDRA área plantada Trigo: 27 UFs
-2026-05-26 08:57:01 [be8] INFO · IBGE SIDRA OK · 3 culturas · 61 UFs
-2026-05-26 08:57:01 [be8] INFO · ✓ IBGE SIDRA · LSPA OK em 4.1s
-2026-05-26 08:57:03 [be8] INFO · Comex import NCM 27101921 · YTD FOB US$ 3194389720
-2026-05-26 08:57:04 [be8] INFO · Comex export NCM 38260000 · YTD FOB US$ 54295775
-2026-05-26 08:57:05 [be8] INFO · Comex import NCM 38260000 · YTD FOB US$ 20394
-2026-05-26 08:57:05 [be8] INFO · Comex export NCM 15071000 · YTD FOB US$ 799069250
-2026-05-26 08:57:06 [be8] INFO · Comex export NCM 15079011 · YTD FOB US$ 33848303
-2026-05-26 08:57:07 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:08 [be8] INFO · Comex export NCM 23040010 · YTD FOB US$ 590160291
-2026-05-26 08:57:09 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:11 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:13 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:17 [be8] WARNING · ComexStat import NCM 29051100: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
-2026-05-26 08:57:18 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:19 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:22 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
-2026-05-26 08:57:26 [be8] WARNING · ComexStat export NCM 12010090: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
-2026-05-26 08:57:26 [be8] INFO · ✓ ComexStat · Comércio exterior OK em 24.2s
-2026-05-26 08:57:26 [be8] WARNING · FRED_API_KEY ausente · pulando FRED
-2026-05-26 08:57:26 [be8] WARNING · EIA_API_KEY ausente · pulando EIA
-2026-05-26 08:57:26 [be8] INFO · ✓ FRED + EIA · Macro/Energia OK em 0.0s
-2026-05-26 08:57:26 [be8] INFO · USDA · snapshot WASDE aplicado · Brasil soja 41.86% · Brasil biodiesel 16.9%
-2026-05-26 08:57:26 [be8] INFO · ✓ USDA WASDE · Benchmark global OK em 0.0s
-2026-05-26 08:57:27 [be8] INFO · RSS agencia_brasil_economia: 5 relevantes / 10 itens
-2026-05-26 08:57:27 [be8] INFO · RSS agencia_brasil_geral: 9 relevantes / 10 itens
-2026-05-26 08:57:29 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
-2026-05-26 08:57:30 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
-2026-05-26 08:57:32 [be8] WARNING · RSS noticias_agricolas falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
-2026-05-26 08:57:33 [be8] INFO · RSS canal_rural: 5 relevantes / 10 itens
-2026-05-26 08:57:54 [be8] WARNING · HTTP retry 1/2 em 1s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
-2026-05-26 08:58:15 [be8] WARNING · HTTP retry 2/2 em 2s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
-2026-05-26 08:58:17 [be8] WARNING · RSS epbr_biocombustiveis falhou: HTTP falhou após 2 tentativas: HTTP Error 522: <none>
-2026-05-26 08:58:19 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
-2026-05-26 08:58:23 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
-2026-05-26 08:58:25 [be8] WARNING · RSS gov_anp falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
-2026-05-26 08:58:25 [be8] INFO · Notícias OK · 17 únicas de 19 capturadas
-2026-05-26 08:58:25 [be8] INFO · ✓ Notícias setoriais (RSS) OK em 59.2s
-2026-05-26 08:58:25 [be8] INFO · Perfil Be8 atualizado
-2026-05-26 08:58:25 [be8] INFO · ✓ Be8 · Perfil institucional OK em 0.0s
-2026-05-26 08:58:25 [be8] INFO · ======================================================================
-2026-05-26 08:58:25 [be8] INFO · FIM · 12 OK · 0 ERROS · 114.9s
-2026-05-26 08:58:25 [be8] INFO · ======================================================================
+2026-05-26 12:10:51 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:10:52 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:10:54 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:10:58 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:10:59 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:11:01 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:11:05 [be8] WARNING · HTTP retry 1/3 em 1s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:11:06 [be8] WARNING · HTTP retry 2/3 em 2s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:11:08 [be8] WARNING · HTTP retry 3/3 em 4s · https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/vdpb… · HTTP Error 403: Forbidden
+2026-05-26 12:11:12 [be8] INFO · ANP Vendas · sem preços do coletor ao vivo · usando snapshot embutido para 3 produtos
+2026-05-26 12:11:12 [be8] INFO · ANP Vendas · snapshot aplicado para diesel_b: 27 UFs
+2026-05-26 12:11:12 [be8] INFO · ANP Vendas · snapshot aplicado para gasolina_c: 27 UFs
+2026-05-26 12:11:12 [be8] INFO · ANP Vendas · snapshot aplicado para etanol_hidratado: 27 UFs
+2026-05-26 12:11:12 [be8] INFO · ANP Vendas · snapshot + preços aplicados · 3 produtos × 27 UFs
+2026-05-26 09:24:43 [be8] INFO · ======================================================================
+2026-05-26 09:24:43 [be8] INFO · INICIANDO ATUALIZAÇÃO · 2026-05-26T09:24:43
+2026-05-26 09:24:43 [be8] INFO · ======================================================================
+2026-05-26 09:24:46 [be8] INFO · BCB USD: 5.0072 (Δ=-0.13562026326286675) · 61 pontos
+2026-05-26 09:24:47 [be8] INFO · BCB EUR: 5.8304 (Δ=0.20968684472861002) · 61 pontos
+2026-05-26 09:24:47 [be8] INFO · ✓ BCB · Câmbio PTAX OK em 4.2s
+2026-05-26 09:24:48 [be8] INFO · Yahoo brent: 96.02 · 74 pontos
+2026-05-26 09:24:49 [be8] INFO · Yahoo wti: 92.64 · 74 pontos
+2026-05-26 09:24:49 [be8] INFO · Yahoo soja: 1190.50 · 74 pontos
+2026-05-26 09:24:50 [be8] INFO · Yahoo milho: 458.75 · 74 pontos
+2026-05-26 09:24:50 [be8] INFO · Yahoo trigo: 639.50 · 74 pontos
+2026-05-26 09:24:51 [be8] INFO · Yahoo oleo_soja: 73.75 · 74 pontos
+2026-05-26 09:24:51 [be8] INFO · Yahoo farelo: 329.40 · 74 pontos
+2026-05-26 09:24:52 [be8] INFO · Yahoo gas: 3.07 · 74 pontos
+2026-05-26 09:24:52 [be8] INFO · ✓ Yahoo Finance · Commodities OK em 4.4s
+2026-05-26 09:24:53 [be8] INFO · ANP · tentando URL descoberta: https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan/2026/02-cados-abertos-preco-gasolina-etanol.csv
+2026-05-26 09:24:58 [be8] INFO · ANP · CSV salvo em C:\Be8 - Project\Be8 - Bench\BENCH-BE8\downloads\anp\precos_2026-05-26.csv (7508 KB)
+2026-05-26 09:24:58 [be8] INFO · ANP combustíveis OK · 44931 linhas · ref 28/02/2026
+2026-05-26 09:24:58 [be8] INFO · ✓ ANP · Preços combustíveis OK em 6.5s
+2026-05-26 09:25:00 [be8] INFO · ANP B100 · planilha descoberta: https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls
+2026-05-26 09:25:00 [be8] INFO · ANP B100 · raw salvo: ProducaoBiodiesel_2026-05-26.xlsx
+2026-05-26 09:25:00 [be8] INFO · ANP B100 · planilha capturada de https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/pb/producao-biodiesel-m3.xls · usando snapshot
+2026-05-26 09:25:00 [be8] INFO · ✓ ANP · Biodiesel B100 OK em 2.2s
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · enrich · keys disponíveis no índice: ['etanol', 'etanol_hidratado', 'gasolina', 'gasolina_aditivada']
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · preço não encontrado para diesel_b · usando snapshot embutido
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · snapshot aplicado para diesel_b: 27 UFs
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · gasolina_c ← chave de preço: 'gasolina'
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · preço enriquecido para gasolina_c: R$ 6.3002/L (27 UFs)
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · etanol_hidratado ← chave de preço: 'etanol_hidratado'
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · preço enriquecido para etanol_hidratado: R$ 4.7661/L (27 UFs)
+2026-05-26 09:25:02 [be8] INFO · ANP Vendas · snapshot + preços aplicados · 3 produtos × 27 UFs
+2026-05-26 09:25:02 [be8] INFO · ✓ ANP · Vendas por UF/distribuidora OK em 1.8s
+2026-05-26 09:25:04 [be8] INFO · CONAB · TXT baixado: 2722845 bytes
+2026-05-26 09:25:04 [be8] INFO · CONAB · delimitador detectado: ';'
+2026-05-26 09:25:04 [be8] INFO · CONAB · cabeçalho: ['ano_agricola', 'dsc_safra_previsao', 'uf', 'produto', 'id_produto', 'area_plantada_mil_ha', 'producao_mil_t', 'produtividade_mil_ha_mil_t']
+2026-05-26 09:25:04 [be8] INFO · CONAB · idx mapeados · produto=3 uf=2 safra/ano=0 tipo=1 prod=6 area=5
+2026-05-26 09:25:04 [be8] INFO · CONAB · 28443 registros · 100 safras únicas
+2026-05-26 09:25:04 [be8] INFO · CONAB · tipos de safra detectados: ['1ª SAFRA', '2ª SAFRA', '3ª SAFRA', 'UNICA']
+2026-05-26 09:25:04 [be8] INFO · CONAB · safras detectadas (mais recentes): ['2025/26', '2025', '2024/25']
+2026-05-26 09:25:04 [be8] INFO · CONAB · DIAG · Soja AC safra 2025/26: 1 tipos · [('UNICA', 'UNICA', 832.0)]
+2026-05-26 09:25:04 [be8] INFO · CONAB · DIAG · Milho AC safra 2025/26: 3 tipos · [('1ª SAFRA', '1A SAFRA', 978.0), ('2ª SAFRA', '2A SAFRA', 493.0), ('3ª SAFRA', '3A SAFRA', 0)]
+2026-05-26 09:25:04 [be8] INFO · CONAB · culturas com TOTAL na safra 2025/26: {'Soja': False, 'Milho': False, 'Trigo': False}
+2026-05-26 09:25:04 [be8] INFO · CONAB · Trigo zerado em 2025/26, buscando safra alternativa...
+2026-05-26 09:25:04 [be8] INFO · CONAB · safra alternativa para Trigo: 2025 (produção 60.2 Mt)
+2026-05-26 09:25:04 [be8] INFO · CONAB · Milho safra 2025/26: 27 UFs · total 1326.6 Mt
+2026-05-26 09:25:04 [be8] INFO · CONAB · Soja safra 2025/26: 27 UFs · total 1752.0 Mt
+2026-05-26 09:25:04 [be8] INFO · CONAB · Trigo safra 2025/26: 27 UFs · total 60.2 Mt
+2026-05-26 09:25:04 [be8] WARNING · CONAB · SANITY · Milho 1326.6 Mt > teto 800 Mt · dividindo por 8
+2026-05-26 09:25:04 [be8] INFO · CONAB · SANITY · Milho corrigido: 165.8 Mt
+2026-05-26 09:25:04 [be8] WARNING · CONAB · SANITY · Soja 1752.0 Mt > teto 1000 Mt · dividindo por 9
+2026-05-26 09:25:04 [be8] INFO · CONAB · SANITY · Soja corrigido: 194.7 Mt
+2026-05-26 09:25:04 [be8] INFO · CONAB OK · safra 2025/26 · 81 registros
+2026-05-26 09:25:04 [be8] INFO · ✓ CONAB · Safras OK em 1.4s
+2026-05-26 09:25:05 [be8] INFO · SIDRA produção Soja: 27 UFs
+2026-05-26 09:25:06 [be8] INFO · SIDRA produção Milho_1: 27 UFs
+2026-05-26 09:25:07 [be8] INFO · SIDRA produção Milho_2: 27 UFs
+2026-05-26 09:25:07 [be8] INFO · SIDRA produção Trigo: 27 UFs
+2026-05-26 09:25:08 [be8] INFO · SIDRA área plantada Soja: 27 UFs
+2026-05-26 09:25:09 [be8] INFO · SIDRA área plantada Milho_1: 27 UFs
+2026-05-26 09:25:10 [be8] INFO · SIDRA área plantada Milho_2: 27 UFs
+2026-05-26 09:25:10 [be8] INFO · SIDRA área plantada Trigo: 27 UFs
+2026-05-26 09:25:10 [be8] INFO · IBGE SIDRA OK · 3 culturas · 61 UFs
+2026-05-26 09:25:10 [be8] INFO · ✓ IBGE SIDRA · LSPA OK em 6.8s
+2026-05-26 09:25:11 [be8] INFO · Comex import NCM 27101921 · YTD FOB US$ 3194389720
+2026-05-26 09:25:12 [be8] INFO · Comex export NCM 38260000 · YTD FOB US$ 54295775
+2026-05-26 09:25:12 [be8] INFO · Comex import NCM 38260000 · YTD FOB US$ 20394
+2026-05-26 09:25:13 [be8] INFO · Comex export NCM 15071000 · YTD FOB US$ 799069250
+2026-05-26 09:25:14 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:15 [be8] INFO · Comex export NCM 15079011 · YTD FOB US$ 33848303
+2026-05-26 09:25:16 [be8] INFO · Comex export NCM 23040010 · YTD FOB US$ 590160291
+2026-05-26 09:25:16 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:18 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:20 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:24 [be8] WARNING · ComexStat import NCM 29051100: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
+2026-05-26 09:25:25 [be8] WARNING · POST retry 1/3 em 1s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:26 [be8] WARNING · POST retry 2/3 em 2s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:29 [be8] WARNING · POST retry 3/3 em 4s · HTTP Error 429: Too Many Requests
+2026-05-26 09:25:33 [be8] WARNING · ComexStat export NCM 12010090: POST falhou após 3 tentativas: HTTP Error 429: Too Many Requests
+2026-05-26 09:25:33 [be8] INFO · ✓ ComexStat · Comércio exterior OK em 22.4s
+2026-05-26 09:25:33 [be8] WARNING · FRED_API_KEY ausente · pulando FRED
+2026-05-26 09:25:33 [be8] WARNING · EIA_API_KEY ausente · pulando EIA
+2026-05-26 09:25:33 [be8] INFO · ✓ FRED + EIA · Macro/Energia OK em 0.0s
+2026-05-26 09:25:33 [be8] INFO · USDA · snapshot WASDE aplicado · Brasil soja 41.86% · Brasil biodiesel 16.9%
+2026-05-26 09:25:33 [be8] INFO · ✓ USDA WASDE · Benchmark global OK em 0.0s
+2026-05-26 09:25:33 [be8] INFO · RSS agencia_brasil_economia: 5 relevantes / 10 itens
+2026-05-26 09:25:34 [be8] INFO · RSS agencia_brasil_geral: 9 relevantes / 10 itens
+2026-05-26 09:25:35 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
+2026-05-26 09:25:36 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.noticiasagricolas.com.br/rss/noticias… · HTTP Error 404: Not Found
+2026-05-26 09:25:38 [be8] WARNING · RSS noticias_agricolas falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
+2026-05-26 09:25:38 [be8] INFO · RSS canal_rural: 4 relevantes / 10 itens
+2026-05-26 09:25:59 [be8] WARNING · HTTP retry 1/2 em 1s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
+2026-05-26 09:26:20 [be8] WARNING · HTTP retry 2/2 em 2s · https://epbr.com.br/feed/… · HTTP Error 522: <none>
+2026-05-26 09:26:22 [be8] WARNING · RSS epbr_biocombustiveis falhou: HTTP falhou após 2 tentativas: HTTP Error 522: <none>
+2026-05-26 09:26:23 [be8] WARNING · HTTP retry 1/2 em 1s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
+2026-05-26 09:26:26 [be8] WARNING · HTTP retry 2/2 em 2s · https://www.gov.br/anp/pt-br/assuntos/noticias/RSS… · HTTP Error 404: Not Found
+2026-05-26 09:26:28 [be8] WARNING · RSS gov_anp falhou: HTTP falhou após 2 tentativas: HTTP Error 404: Not Found
+2026-05-26 09:26:28 [be8] INFO · Notícias OK · 16 únicas de 18 capturadas
+2026-05-26 09:26:28 [be8] INFO · ✓ Notícias setoriais (RSS) OK em 54.9s
+2026-05-26 09:26:28 [be8] INFO · Perfil Be8 atualizado
+2026-05-26 09:26:28 [be8] INFO · ✓ Be8 · Perfil institucional OK em 0.0s
+2026-05-26 09:26:28 [be8] INFO · ======================================================================
+2026-05-26 09:26:28 [be8] INFO · FIM · 12 OK · 0 ERROS · 104.6s
+2026-05-26 09:26:28 [be8] INFO · ======================================================================

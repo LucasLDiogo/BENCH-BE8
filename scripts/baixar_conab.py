@@ -224,18 +224,30 @@ def parse_txt(raw: bytes) -> dict:
 
     culturas = {}  # cultura → {uf: {producao, area, rendimento, producao_anterior}}
 
-    # === LÓGICA DEFINITIVA PARA EVITAR DUPLA CONTAGEM ===
-    # CONAB publica para cada (cultura, UF, ano_agricola) múltiplas linhas:
-    #   tipo_safra = '1A SAFRA' / '2A SAFRA' / '3A SAFRA' / 'UNICA' / 'IRRIGADA' / 'SEQUEIRO' / 'TOTAL' / 'VERAO' / 'INVERNO' / ...
-    # Estratégia:
-    #   1) Se existe 'TOTAL' para (cultura, UF, ano) → usa SÓ o TOTAL
-    #   2) Senão, soma 1A + 2A + 3A + ÚNICA (safras concorrentes)
-    #   3) NUNCA soma IRRIGADA + SEQUEIRO (são desagregações do total) → ignora se houver outras
-    #   4) NUNCA soma VERAO + INVERNO (mesma razão)
+    # === LÓGICA DEFINITIVA v5 ===
+    # O CSV CONAB pode usar variações de tipo: '1ª SAFRA' (com 'ª' tipográfico) ou
+    # '1A SAFRA' (com 'a' simples). Normalizamos antes de comparar.
 
-    SAFRAS_PRIMARIAS = {'TOTAL', 'GERAL'}                          # se existe, usa exclusivamente
-    SAFRAS_ADITIVAS  = {'1A SAFRA', '2A SAFRA', '3A SAFRA', 'UNICA', '4A SAFRA'}  # somáveis entre si
-    SAFRAS_ALTERNATIVAS = {'IRRIGADA', 'SEQUEIRO', 'VERAO', 'INVERNO', 'PRIMAVERA', 'OUTONO'}  # desagregações; ignorar
+    def normaliza_tipo(t):
+        """Normaliza tipo_safra para comparação robusta.
+        Ex.: '1ª SAFRA' → '1A SAFRA' · '2ª safra' → '2A SAFRA' · 'única' → 'UNICA'"""
+        if not t: return ''
+        # Remove acentos e ordinais
+        out = t.upper().strip()
+        out = out.replace('Ã', 'A').replace('Á', 'A').replace('Ä', 'A').replace('Â', 'A')
+        out = out.replace('Õ', 'O').replace('Ó', 'O').replace('Ô', 'O')
+        out = out.replace('É', 'E').replace('Ê', 'E')
+        out = out.replace('Í', 'I').replace('Ú', 'U')
+        out = out.replace('Ç', 'C')
+        out = out.replace('ª', 'A').replace('º', 'O').replace('°', 'O')
+        # Espaços múltiplos → único
+        out = re.sub(r'\s+', ' ', out)
+        return out
+
+    # Sets já normalizados
+    SAFRAS_PRIMARIAS = {'TOTAL', 'GERAL'}
+    SAFRAS_ADITIVAS  = {'1A SAFRA', '2A SAFRA', '3A SAFRA', '4A SAFRA', 'UNICA'}
+    SAFRAS_ALTERNATIVAS = {'IRRIGADA', 'SEQUEIRO', 'VERAO', 'INVERNO', 'PRIMAVERA', 'OUTONO'}
 
     def classifica_cultura(produto_raw):
         pl = (produto_raw or '').upper().strip()
@@ -244,45 +256,70 @@ def parse_txt(raw: bytes) -> dict:
         if 'TRIGO' in pl: return 'Trigo'
         return None
 
-    # PASSO 1: Agrupar por (cultura, uf, ano) → lista de (tipo_safra, producao, area, rendimento)
-    agg = {}  # (cultura, uf, ano) → list of records
+    # PASSO 1: Agrupar por (cultura, uf, ano) → lista de (tipo_safra_normalizado, producao, ...)
+    agg = {}
     for (produto, uf, ano, tipo), rec in bucket.items():
         cultura = classifica_cultura(produto)
         if not cultura: continue
         key = (cultura, uf, ano)
         agg.setdefault(key, []).append({
-            'tipo': tipo, 'producao': rec['producao'] or 0,
-            'area': rec['area'] or 0, 'rendimento': rec['rendimento'] or 0,
+            'tipo_raw': tipo,
+            'tipo': normaliza_tipo(tipo),
+            'producao': rec['producao'] or 0,
+            'area': rec['area'] or 0,
+            'rendimento': rec['rendimento'] or 0,
         })
 
-    # PASSO 2: Para cada (cultura, uf, ano), aplicar lógica de seleção
+    # DIAGNÓSTICO: amostra de tipos por cultura na safra recente
+    for cultura_target in ['Soja', 'Milho', 'Trigo']:
+        amostra = {}
+        for (cultura, uf, ano), records in agg.items():
+            if cultura == cultura_target and ano == safra_recente:
+                if uf not in amostra:
+                    amostra[uf] = [(r['tipo_raw'], r['tipo'], r['producao']) for r in records]
+                if len(amostra) >= 1: break
+        if amostra:
+            for uf, regs in amostra.items():
+                log.info(f"CONAB · DIAG · {cultura_target} {uf} safra {safra_recente}: {len(regs)} tipos · {regs}")
+                break
+
+    # PASSO 2: Consolida com lógica robusta
     def consolida(records):
-        """Recebe lista de registros e retorna {producao, area, rendimento} final."""
+        """Retorna {producao, area, rendimento} usando lógica de seleção."""
         if not records: return {'producao': 0, 'area': 0, 'rendimento': 0}
 
-        # Procura registro PRIMÁRIO (TOTAL/GERAL)
+        # PRIMÁRIO (TOTAL/GERAL): usa exclusivamente
         primario = [r for r in records if r['tipo'] in SAFRAS_PRIMARIAS]
         if primario:
             r = primario[0]
             return {'producao': r['producao'], 'area': r['area'], 'rendimento': r['rendimento']}
 
-        # Se não tem primário, soma os ADITIVOS
+        # ADITIVOS (1A + 2A + 3A + UNICA): soma
         aditivos = [r for r in records if r['tipo'] in SAFRAS_ADITIVAS]
         if aditivos:
             prod = sum(r['producao'] for r in aditivos)
             area = sum(r['area'] for r in aditivos)
-            # rendimento ponderado
             wsum = sum(r['rendimento'] * r['producao'] for r in aditivos)
             rend = wsum / prod if prod > 0 else 0
             return {'producao': prod, 'area': area, 'rendimento': rend}
 
-        # Senão, soma TODOS os registros disponíveis (último recurso)
-        prod = sum(r['producao'] for r in records)
-        area = sum(r['area'] for r in records)
-        rend = (sum(r['rendimento'] * r['producao'] for r in records) / prod) if prod > 0 else 0
-        return {'producao': prod, 'area': area, 'rendimento': rend}
+        # ALTERNATIVOS APENAS (IRRIGADA, SEQUEIRO): também soma, pois são complementares
+        alternativos = [r for r in records if r['tipo'] in SAFRAS_ALTERNATIVAS]
+        if alternativos:
+            prod = sum(r['producao'] for r in alternativos)
+            area = sum(r['area'] for r in alternativos)
+            wsum = sum(r['rendimento'] * r['producao'] for r in alternativos)
+            rend = wsum / prod if prod > 0 else 0
+            return {'producao': prod, 'area': area, 'rendimento': rend}
 
-    # Identificar safras com TOTAL detectado por cultura (para diagnóstico)
+        # ÚLTIMO RECURSO: pega o MAIOR (não soma — evita duplicatas)
+        if records:
+            best = max(records, key=lambda r: r['producao'])
+            return {'producao': best['producao'], 'area': best['area'], 'rendimento': best['rendimento']}
+
+        return {'producao': 0, 'area': 0, 'rendimento': 0}
+
+    # Diagnóstico TOTAL por cultura
     cultura_tem_total = {'Soja': False, 'Milho': False, 'Trigo': False}
     for (cultura, uf, ano), records in agg.items():
         if ano != safra_recente: continue
@@ -337,6 +374,24 @@ def parse_txt(raw: bytes) -> dict:
     for cult, ufs in culturas.items():
         tot = sum((u['producao'] or 0) for u in ufs.values()) / 1000  # mil t → Mt
         log.info(f"CONAB · {cult} safra {safra_recente}: {len(ufs)} UFs · total {tot:.1f} Mt")
+
+    # SANITY CHECK: limites razoáveis (Brasil 2025/26)
+    # Soja: 140-200 Mt · Milho: 100-160 Mt · Trigo: 5-15 Mt
+    # Se valor estourar 5x o teto, é bug - aplica fator corretivo automático
+    LIMITES = {'Soja': (200, 'Mt'), 'Milho': (160, 'Mt'), 'Trigo': (15, 'Mt')}
+    for cult, ufs in culturas.items():
+        teto, _ = LIMITES.get(cult, (1000, 'Mt'))
+        tot_mt = sum((u['producao'] or 0) for u in ufs.values()) / 1000
+        if tot_mt > teto * 5:
+            # Provável duplicação - calcula fator corretivo
+            fator = round(tot_mt / teto)
+            log.warning(f"CONAB · SANITY · {cult} {tot_mt:.1f} Mt > teto {teto*5} Mt · dividindo por {fator}")
+            for uf in ufs:
+                ufs[uf]['producao'] = (ufs[uf]['producao'] or 0) / fator
+                ufs[uf]['area'] = (ufs[uf]['area'] or 0) / fator
+                ufs[uf]['producao_anterior'] = (ufs[uf]['producao_anterior'] or 0) / fator
+            tot_novo = sum(u['producao'] for u in ufs.values()) / 1000
+            log.info(f"CONAB · SANITY · {cult} corrigido: {tot_novo:.1f} Mt")
 
     return {
         'safra_atual': safra_recente,
