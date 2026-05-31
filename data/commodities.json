@@ -1,18 +1,18 @@
 {
   "fonte": "Yahoo Finance",
   "status": "ok",
-  "ultima_atualizacao": "2026-05-30T17:03:01.536050+00:00",
+  "ultima_atualizacao": "2026-05-31T11:24:30.005085+00:00",
   "dados": {
     "brent": {
       "ticker": "BZ=F",
       "nome": "Brent",
       "mercado": "ICE",
       "unidade": "USD/bbl",
-      "cotacao": 92.05000305175781,
+      "cotacao": 91.12000274658203,
       "cotacao_anterior": 93.70999908447266,
-      "variacao_pct": -1.771418257317962,
-      "variacao_7d": -17.280729635590824,
-      "variacao_30d": -7.385045158431798,
+      "variacao_pct": -2.7638420266720245,
+      "variacao_7d": -18.11645960986973,
+      "variacao_30d": -8.320753288914633,
       "data_ref": "2026-05-29",
       "serie_90d": [
         {
@@ -265,7 +265,7 @@
         },
         {
           "data": "2026-05-29",
-          "valor": 92.05000305175781
+          "valor": 91.12000274658203
         }
       ]
     },
