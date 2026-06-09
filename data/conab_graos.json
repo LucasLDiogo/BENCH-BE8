@@ -1,7 +1,7 @@
 {
   "fonte": "CONAB",
   "status": "pendente",
-  "ultima_atualizacao": "2026-06-09T12:30:06.107534+00:00",
+  "ultima_atualizacao": "2026-06-09T18:04:26.686405+00:00",
   "dados": {},
   "erro": "Página CONAB requer download manual do CSV. Salve como /data/conab_graos_raw.csv."
 }
