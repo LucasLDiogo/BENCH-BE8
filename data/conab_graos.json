@@ -1,7 +1,7 @@
 {
   "fonte": "CONAB",
-  "status": "indisponivel",
-  "ultima_atualizacao": "2026-06-13T17:35:05.730291+00:00",
+  "status": "pendente",
+  "ultima_atualizacao": "2026-06-14T11:48:18.050809+00:00",
   "dados": {},
-  "erro": "Página CONAB indisponível e CSV local ausente. Baixe manualmente o CSV em https://www.conab.gov.br/info-agro/safras/serie-historica-das-safras e salve como conab_graos_raw.csv dentro de /data."
+  "erro": "Página CONAB requer download manual do CSV. Salve como /data/conab_graos_raw.csv."
 }
