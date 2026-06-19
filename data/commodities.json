@@ -1,18 +1,18 @@
 {
   "fonte": "Yahoo Finance",
   "status": "ok",
-  "ultima_atualizacao": "2026-06-19T13:26:05.958133+00:00",
+  "ultima_atualizacao": "2026-06-19T17:56:33.530933+00:00",
   "dados": {
     "brent": {
       "ticker": "BZ=F",
       "nome": "Brent",
       "mercado": "ICE",
       "unidade": "USD/bbl",
-      "cotacao": 79.43000030517578,
+      "cotacao": 80.58999633789062,
       "cotacao_anterior": 79.8499984741211,
-      "variacao_pct": -0.5259839411035573,
-      "variacao_7d": -14.683134686350341,
-      "variacao_30d": -20.617627180469725,
+      "variacao_pct": 0.9267349754669816,
+      "variacao_7d": -13.437166854205545,
+      "variacao_30d": -19.458326699740088,
       "data_ref": "2026-06-19",
       "serie_90d": [
         {
@@ -273,7 +273,7 @@
         },
         {
           "data": "2026-06-19",
-          "valor": 79.43000030517578
+          "valor": 80.58999633789062
         }
       ]
     },
@@ -282,11 +282,11 @@
       "nome": "WTI",
       "mercado": "NYMEX",
       "unidade": "USD/bbl",
-      "cotacao": 75.6500015258789,
+      "cotacao": 76.54000091552734,
       "cotacao_anterior": 76.5999984741211,
-      "variacao_pct": -1.240204917971557,
-      "variacao_7d": -15.972450792396062,
-      "variacao_30d": -20.208835066021102,
+      "variacao_pct": -0.07832579606906893,
+      "variacao_7d": -14.983892087835576,
+      "variacao_30d": -19.2701161412596,
       "data_ref": "2026-06-19",
       "serie_90d": [
         {
@@ -547,7 +547,7 @@
         },
         {
           "data": "2026-06-19",
-          "valor": 75.6500015258789
+          "valor": 76.54000091552734
         }
       ]
     },
@@ -1906,11 +1906,11 @@
       "nome": "Gás Natural",
       "mercado": "NYMEX",
       "unidade": "USD/MMBtu",
-      "cotacao": 3.2269999980926514,
+      "cotacao": 3.197999954223633,
       "cotacao_anterior": 3.2330000400543213,
-      "variacao_pct": -0.18558743851945975,
-      "variacao_7d": 1.3186830790476252,
-      "variacao_30d": 16.540264927895816,
+      "variacao_pct": -1.0825884750097436,
+      "variacao_7d": 0.40816363195117433,
+      "variacao_30d": 15.492953865790577,
       "data_ref": "2026-06-19",
       "serie_90d": [
         {
@@ -2171,7 +2171,7 @@
         },
         {
           "data": "2026-06-19",
-          "valor": 3.2269999980926514
+          "valor": 3.197999954223633
         }
       ]
     }
