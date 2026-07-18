@@ -1,7 +1,7 @@
 {
   "fonte": "USDA FAS PSD",
   "status": "indisponivel",
-  "ultima_atualizacao": "2026-07-18T10:55:03.737789+00:00",
+  "ultima_atualizacao": "2026-07-18T16:57:07.151745+00:00",
   "dados": {},
   "erro": "API USDA não respondeu (pode ser mudança de endpoint)."
 }
