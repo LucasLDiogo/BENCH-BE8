@@ -1,7 +1,7 @@
 {
   "fonte": "Yahoo Finance",
   "status": "ok",
-  "ultima_atualizacao": "2026-07-25T16:55:15.718664+00:00",
+  "ultima_atualizacao": "2026-07-26T11:11:44.720034+00:00",
   "dados": {
     "brent": {
       "ticker": "BZ=F",
@@ -532,11 +532,11 @@
       "nome": "Soja",
       "mercado": "CBOT",
       "unidade": "cent/bu",
-      "cotacao": 1248.0,
+      "cotacao": 1253.5,
       "cotacao_anterior": 1237.5,
-      "variacao_pct": 0.8484848484848486,
-      "variacao_7d": 3.8053649407361196,
-      "variacao_30d": 11.130899376669635,
+      "variacao_pct": 1.2929292929292928,
+      "variacao_7d": 4.262840507381992,
+      "variacao_30d": 11.620658949243099,
       "data_ref": "2026-07-24",
       "serie_90d": [
         {
@@ -785,7 +785,7 @@
         },
         {
           "data": "2026-07-24",
-          "valor": 1248.0
+          "valor": 1253.5
         }
       ]
     },
@@ -794,11 +794,11 @@
       "nome": "Milho",
       "mercado": "CBOT",
       "unidade": "cent/bu",
-      "cotacao": 464.25,
+      "cotacao": 487.25,
       "cotacao_anterior": 464.0,
-      "variacao_pct": 0.05387931034482758,
-      "variacao_7d": 3.7430167597765367,
-      "variacao_30d": 10.799522673031026,
+      "variacao_pct": 5.010775862068965,
+      "variacao_7d": 8.88268156424581,
+      "variacao_30d": 16.288782816229116,
       "data_ref": "2026-07-24",
       "serie_90d": [
         {
@@ -1047,7 +1047,7 @@
         },
         {
           "data": "2026-07-24",
-          "valor": 464.25
+          "valor": 487.25
         }
       ]
     },
@@ -1318,11 +1318,11 @@
       "nome": "Óleo de Soja",
       "mercado": "CBOT",
       "unidade": "cent/lb",
-      "cotacao": 74.33000183105469,
+      "cotacao": 72.01000213623047,
       "cotacao_anterior": 75.58999633789062,
-      "variacao_pct": -1.666879968089569,
-      "variacao_7d": 1.933630962034031,
-      "variacao_30d": -1.3274923346513863,
+      "variacao_pct": -4.736068759227641,
+      "variacao_7d": -1.2479375419161582,
+      "variacao_30d": -4.4072741459240925,
       "data_ref": "2026-07-24",
       "serie_90d": [
         {
@@ -1571,7 +1571,7 @@
         },
         {
           "data": "2026-07-24",
-          "valor": 74.33000183105469
+          "valor": 72.01000213623047
         }
       ]
     },
@@ -1580,11 +1580,11 @@
       "nome": "Farelo de Soja",
       "mercado": "CBOT",
       "unidade": "USD/ton",
-      "cotacao": 331.29998779296875,
+      "cotacao": 335.20001220703125,
       "cotacao_anterior": 329.8999938964844,
-      "variacao_pct": 0.42436917926214435,
-      "variacao_7d": 3.888364419508092,
-      "variacao_30d": 9.738322123505926,
+      "variacao_pct": 1.6065530186732613,
+      "variacao_7d": 5.111326002670887,
+      "variacao_30d": 11.030148719368574,
       "data_ref": "2026-07-24",
       "serie_90d": [
         {
@@ -1833,7 +1833,7 @@
         },
         {
           "data": "2026-07-24",
-          "valor": 331.29998779296875
+          "valor": 335.20001220703125
         }
       ]
     },
@@ -1842,11 +1842,11 @@
       "nome": "Gás Natural",
       "mercado": "NYMEX",
       "unidade": "USD/MMBtu",
-      "cotacao": 2.871000051498413,
+      "cotacao": 2.888000011444092,
       "cotacao_anterior": 2.9159998893737793,
-      "variacao_pct": -1.543204375259084,
-      "variacao_7d": -1.812584570714061,
-      "variacao_30d": -9.858709479507905,
+      "variacao_pct": -0.9602153289416129,
+      "variacao_7d": -1.2311905966539045,
+      "variacao_30d": -9.324958765187862,
       "data_ref": "2026-07-24",
       "serie_90d": [
         {
@@ -2095,7 +2095,7 @@
         },
         {
           "data": "2026-07-24",
-          "valor": 2.871000051498413
+          "valor": 2.888000011444092
         }
       ]
     }
