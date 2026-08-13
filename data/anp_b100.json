@@ -1,7 +1,7 @@
 {
   "fonte": "ANP B100",
   "status": "indisponivel",
-  "ultima_atualizacao": "2026-08-12T16:55:14.367466+00:00",
+  "ultima_atualizacao": "2026-08-13T10:50:11.731818+00:00",
   "dados": {},
   "erro": "Nenhuma URL candidata da ANP retornou XLS. Pode ter mudado o caminho — atualize CANDIDATAS no script."
 }
