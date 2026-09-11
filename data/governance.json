@@ -1,7 +1,7 @@
 {
   "fonte": "Manifesto consolidado Be8",
   "status": "fallback",
-  "ultima_atualizacao": "2026-09-10T18:57:20.872190+00:00",
+  "ultima_atualizacao": "2026-09-11T13:55:19.384179+00:00",
   "fontes": [
     {
       "arquivo": "cambio.json",
@@ -12,7 +12,7 @@
       "endpoint": "olinda.bcb.gov.br/odata/CotacaoMoeda",
       "status": "erro",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:56:58.410100+00:00"
+      "ultima_verificacao": "2026-09-11T13:54:59.430435+00:00"
     },
     {
       "arquivo": "commodities.json",
@@ -23,7 +23,7 @@
       "endpoint": "query1.finance.yahoo.com",
       "status": "ok",
       "linhas": 8,
-      "ultima_verificacao": "2026-09-10T18:56:59.046179+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:00.106153+00:00"
     },
     {
       "arquivo": "conab_graos.json",
@@ -34,7 +34,7 @@
       "endpoint": "conab.gov.br/info-agro/safras",
       "status": "pendente",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:18.191261+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:16.167337+00:00"
     },
     {
       "arquivo": "anp_combustiveis.json",
@@ -45,7 +45,7 @@
       "endpoint": "gov.br/anp · SLP",
       "status": "erro",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:06.219182+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:05.907228+00:00"
     },
     {
       "arquivo": "anp_b100.json",
@@ -56,7 +56,7 @@
       "endpoint": "gov.br/anp · biodiesel",
       "status": "indisponivel",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:12.758760+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:11.910967+00:00"
     },
     {
       "arquivo": "anp_vendas.json",
@@ -67,7 +67,7 @@
       "endpoint": "gov.br/anp · vendas-derivados",
       "status": "indisponivel",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:16.240849+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:14.696868+00:00"
     },
     {
       "arquivo": "comex.json",
@@ -78,7 +78,7 @@
       "endpoint": "api-comexstat.mdic.gov.br",
       "status": "erro",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:18.451976+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:16.590184+00:00"
     },
     {
       "arquivo": "noticias.json",
@@ -89,7 +89,7 @@
       "endpoint": "noticiasagricolas.com.br/rss",
       "status": "erro",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:20.867919+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:19.379443+00:00"
     },
     {
       "arquivo": "be8_profile.json",
@@ -100,7 +100,7 @@
       "endpoint": "/scripts/gerar_be8_profile.py",
       "status": "ok",
       "linhas": 20,
-      "ultima_verificacao": "2026-09-10T18:57:20.869294+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:19.380875+00:00"
     },
     {
       "arquivo": "usda_benchmarks.json",
@@ -111,7 +111,7 @@
       "endpoint": "apps.fas.usda.gov/PSDOnlineApi",
       "status": "indisponivel",
       "linhas": 0,
-      "ultima_verificacao": "2026-09-10T18:57:18.825996+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:16.860148+00:00"
     },
     {
       "fonte": "FRED",
@@ -141,7 +141,7 @@
       "endpoint": "br.investing.com",
       "status": "indisponivel",
       "linhas": null,
-      "ultima_verificacao": "2026-09-10T18:57:20.871078+00:00"
+      "ultima_verificacao": "2026-09-11T13:55:19.382936+00:00"
     },
     {
       "fonte": "CEPEA/ESALQ",
