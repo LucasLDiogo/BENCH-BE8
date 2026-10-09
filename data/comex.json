@@ -1,7 +1,7 @@
 {
   "fonte": "ComexStat MDIC",
   "status": "fallback",
-  "ultima_atualizacao": "2026-10-09T16:41:18.129049+00:00",
+  "ultima_atualizacao": "2026-10-09T20:33:52.649852+00:00",
   "dados": {
     "soja": {
       "volume_kg": 0.0,
@@ -45,7 +45,49 @@
         }
       ]
     },
-    "metanol": {
+    "oleo": {
+      "volume_kg": 0.0,
+      "volume_fob_usd": 0.0,
+      "paises_top": [
+        {
+          "coAno": "2026"
+        },
+        {
+          "coAno": "2025"
+        },
+        {
+          "coAno": "2024"
+        },
+        {
+          "coAno": "2023"
+        },
+        {
+          "coAno": "2022"
+        }
+      ]
+    },
+    "biodiesel": {
+      "volume_kg": 0.0,
+      "volume_fob_usd": 0.0,
+      "paises_top": [
+        {
+          "coAno": "2026"
+        },
+        {
+          "coAno": "2025"
+        },
+        {
+          "coAno": "2024"
+        },
+        {
+          "coAno": "2023"
+        },
+        {
+          "coAno": "2022"
+        }
+      ]
+    },
+    "diesel": {
       "volume_kg": 0.0,
       "volume_fob_usd": 0.0,
       "paises_top": [
@@ -68,5 +110,5 @@
     },
     "ref_ano": 2026
   },
-  "erro": "falha em: ['oleo', 'biodiesel', 'diesel']"
+  "erro": "falha em: ['metanol']"
 }
