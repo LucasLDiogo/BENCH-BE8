@@ -1,18 +1,18 @@
 {
   "fonte": "Yahoo Finance",
   "status": "ok",
-  "ultima_atualizacao": "2026-10-12T19:28:08.146805+00:00",
+  "ultima_atualizacao": "2026-10-12T22:43:51.508443+00:00",
   "dados": {
     "brent": {
       "ticker": "BZ=F",
       "nome": "Brent",
       "mercado": "ICE",
       "unidade": "USD/bbl",
-      "cotacao": 106.5,
+      "cotacao": 106.04000091552734,
       "cotacao_anterior": 104.72000122070312,
-      "variacao_pct": 1.6997696319210598,
-      "variacao_7d": 4.095398828454279,
-      "variacao_30d": 19.247567922200847,
+      "variacao_pct": 1.260503895566471,
+      "variacao_7d": 3.6457857940983636,
+      "variacao_30d": 18.732509029526636,
       "data_ref": "2026-10-12",
       "serie_90d": [
         {
@@ -273,7 +273,7 @@
         },
         {
           "data": "2026-10-12",
-          "valor": 106.5
+          "valor": 106.04000091552734
         }
       ]
     },
@@ -282,11 +282,11 @@
       "nome": "WTI",
       "mercado": "NYMEX",
       "unidade": "USD/bbl",
-      "cotacao": 93.52999877929688,
+      "cotacao": 93.29000091552734,
       "cotacao_anterior": 91.8499984741211,
-      "variacao_pct": 1.829069497098712,
-      "variacao_7d": 0.7106665373057008,
-      "variacao_30d": 12.14627945813004,
+      "variacao_pct": 1.5677762279026854,
+      "variacao_7d": 0.4522430887521106,
+      "variacao_30d": 11.85851224064976,
       "data_ref": "2026-10-12",
       "serie_90d": [
         {
@@ -547,7 +547,7 @@
         },
         {
           "data": "2026-10-12",
-          "valor": 93.52999877929688
+          "valor": 93.29000091552734
         }
       ]
     },
@@ -1926,11 +1926,11 @@
       "nome": "Gás Natural",
       "mercado": "NYMEX",
       "unidade": "USD/MMBtu",
-      "cotacao": 3.1740000247955322,
+      "cotacao": 3.187000036239624,
       "cotacao_anterior": 3.2200000286102295,
-      "variacao_pct": -1.4285715343471947,
-      "variacao_7d": 6.976744746675238,
-      "variacao_30d": 9.903047514478066,
+      "variacao_pct": -1.0248444744532645,
+      "variacao_7d": 7.414898147776126,
+      "variacao_30d": 10.353186413113022,
       "data_ref": "2026-10-12",
       "serie_90d": [
         {
@@ -2191,7 +2191,7 @@
         },
         {
           "data": "2026-10-12",
-          "valor": 3.1740000247955322
+          "valor": 3.187000036239624
         }
       ]
     }
