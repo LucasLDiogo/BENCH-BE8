@@ -1,9 +1,9 @@
 {
   "fonte": "ComexStat MDIC",
   "status": "fallback",
-  "ultima_atualizacao": "2026-10-16T14:23:56.573086+00:00",
+  "ultima_atualizacao": "2026-10-16T19:20:54.782885+00:00",
   "dados": {
-    "farelo": {
+    "soja": {
       "volume_kg": 0.0,
       "volume_fob_usd": 0.0,
       "paises_top": [
@@ -26,5 +26,5 @@
     },
     "ref_ano": 2026
   },
-  "erro": "falha em: ['soja', 'oleo', 'biodiesel', 'diesel', 'metanol']"
+  "erro": "falha em: ['farelo', 'oleo', 'biodiesel', 'diesel', 'metanol']"
 }
