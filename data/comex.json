@@ -1,7 +1,72 @@
 {
   "fonte": "ComexStat MDIC",
-  "status": "erro",
-  "ultima_atualizacao": "2026-11-10T17:22:30.369230+00:00",
-  "dados": {},
-  "erro": "todos os 6 NCMs falharam"
+  "status": "fallback",
+  "ultima_atualizacao": "2026-11-10T21:40:10.908554+00:00",
+  "dados": {
+    "oleo": {
+      "volume_kg": 0.0,
+      "volume_fob_usd": 0.0,
+      "paises_top": [
+        {
+          "coAno": "2026"
+        },
+        {
+          "coAno": "2025"
+        },
+        {
+          "coAno": "2024"
+        },
+        {
+          "coAno": "2023"
+        },
+        {
+          "coAno": "2022"
+        }
+      ]
+    },
+    "biodiesel": {
+      "volume_kg": 0.0,
+      "volume_fob_usd": 0.0,
+      "paises_top": [
+        {
+          "coAno": "2026"
+        },
+        {
+          "coAno": "2025"
+        },
+        {
+          "coAno": "2024"
+        },
+        {
+          "coAno": "2023"
+        },
+        {
+          "coAno": "2022"
+        }
+      ]
+    },
+    "metanol": {
+      "volume_kg": 0.0,
+      "volume_fob_usd": 0.0,
+      "paises_top": [
+        {
+          "coAno": "2026"
+        },
+        {
+          "coAno": "2025"
+        },
+        {
+          "coAno": "2024"
+        },
+        {
+          "coAno": "2023"
+        },
+        {
+          "coAno": "2022"
+        }
+      ]
+    },
+    "ref_ano": 2026
+  },
+  "erro": "falha em: ['soja', 'farelo', 'diesel']"
 }
