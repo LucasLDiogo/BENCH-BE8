@@ -1,7 +1,7 @@
 {
   "fonte": "Yahoo Finance",
   "status": "ok",
-  "ultima_atualizacao": "2026-11-15T16:40:20.358117+00:00",
+  "ultima_atualizacao": "2026-11-15T20:49:33.337624+00:00",
   "dados": {
     "brent": {
       "ticker": "BZ=F",
@@ -548,11 +548,11 @@
       "nome": "Soja",
       "mercado": "CBOT",
       "unidade": "cent/bu",
-      "cotacao": 1243.0,
+      "cotacao": 1231.5,
       "cotacao_anterior": 1227.0,
-      "variacao_pct": 1.3039934800325998,
-      "variacao_7d": 4.169285564634402,
-      "variacao_30d": -2.757676510854684,
+      "variacao_pct": 0.36674816625916873,
+      "variacao_7d": 3.205531112507857,
+      "variacao_30d": -3.657344025034227,
       "data_ref": "2026-11-13",
       "serie_90d": [
         {
@@ -809,7 +809,7 @@
         },
         {
           "data": "2026-11-13",
-          "valor": 1243.0
+          "valor": 1231.5
         }
       ]
     },
@@ -1628,11 +1628,11 @@
       "nome": "Farelo de Soja",
       "mercado": "CBOT",
       "unidade": "USD/ton",
-      "cotacao": 329.79998779296875,
+      "cotacao": 327.79998779296875,
       "cotacao_anterior": 325.3999938964844,
-      "variacao_pct": 1.3521800795989236,
-      "variacao_7d": 3.5153739720313015,
-      "variacao_30d": -4.322606291383986,
+      "variacao_pct": 0.7375519181010975,
+      "variacao_7d": 2.8876275935989715,
+      "variacao_30d": -4.902820950267947,
       "data_ref": "2026-11-13",
       "serie_90d": [
         {
@@ -1889,7 +1889,7 @@
         },
         {
           "data": "2026-11-13",
-          "valor": 329.79998779296875
+          "valor": 327.79998779296875
         }
       ]
     },
