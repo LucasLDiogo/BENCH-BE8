@@ -1,7 +1,7 @@
 {
   "fonte": "Agente de atualização Be8",
   "status": "fallback",
-  "ultima_atualizacao": "2026-11-18T22:50:47.341628+00:00",
+  "ultima_atualizacao": "2026-11-19T18:43:12.460313+00:00",
   "exec_summary": "Ciclo concluído com 3/10 fontes ao vivo. Erros em: cambio.json, anp_combustiveis.json, noticias.json. Painel atualizado.",
   "fontes_ok": 3,
   "fontes_total": 10,
